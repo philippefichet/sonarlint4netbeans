@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="Editors">
+        <folder name="AnnotationTypes">
+            <file name="SonarLint"
+                  url="nbresloc:/fr/philippefichet/sonarlint/netbeans/sonarlint-annotation.xml">
+                <attr name="requireProject" boolvalue="false"/>
+            </file>
+        </folder>
+    </folder>
+</filesystem>

@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+AutoUpdate-Show-In-Client: true
+OpenIDE-Module: fr.philippefichet.sonarlint.netbeans
+OpenIDE-Module-Layer: fr/philippefichet/sonarlint/netbeans/layer.xml
+OpenIDE-Module-Localizing-Bundle: fr/philippefichet/sonarlint/netbeans/Bundle.properties
+OpenIDE-Module-Specification-Version: 1.0
+
