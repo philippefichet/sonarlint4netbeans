@@ -5,11 +5,11 @@
  */
 package fr.philippefichet.sonarlint.netbeans;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 
@@ -23,8 +23,10 @@ public class FSClientInputFile implements ClientInputFile {
     private final String relativePath;
     private final boolean isTest;
     private final Charset encoding;
+    private final String content;
 
-    public FSClientInputFile(final Path path, String relativePath, final boolean isTest, final Charset encoding) {
+    public FSClientInputFile(String content, Path path, String relativePath, boolean isTest, Charset encoding) {
+        this.content = content;
         this.path = path;
         this.relativePath = relativePath;
         this.isTest = isTest;
@@ -53,12 +55,12 @@ public class FSClientInputFile implements ClientInputFile {
 
     @Override
     public InputStream inputStream() throws IOException {
-        return Files.newInputStream(path);
+        return new ByteArrayInputStream(content.getBytes());
     }
 
     @Override
     public String contents() throws IOException {
-        return new String(Files.readAllBytes(path), encoding);
+        return content;
     }
 
     @Override

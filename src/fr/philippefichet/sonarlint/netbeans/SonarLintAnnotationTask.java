@@ -12,7 +12,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,14 +84,11 @@ public class SonarLintAnnotationTask implements CancellableTask<CompilationInfo>
             });
         }
 
-        LOG.severe("SonarLintAnnotationTask run : " + new Date());
         File toFile = FileUtil.toFile(fileObject);
-        LOG.severe("SonarLintAnnotationTask file : " + toFile.getAbsolutePath());
-        LOG.severe("SonarLintAnnotationTask file : " + toFile.getParent());
         Path path = toFile.toPath();
         List<ClientInputFile> files = new ArrayList<>();
         // TODO use project or file charset
-        files.add(new FSClientInputFile(path.toAbsolutePath(), path.toFile().getName(), false, Charset.defaultCharset()));
+        files.add(new FSClientInputFile(p.getText(), path.toAbsolutePath(), path.toFile().getName(), false, Charset.defaultCharset()));
         String sonarLintHome = System.getProperty("user.home") + File.separator + ".sonarlint4netbeans";
         List<Issue> issues = new ArrayList<>();
         AnalysisResults analyze = standaloneSonarLintEngineImpl.analyze(
@@ -107,9 +103,6 @@ public class SonarLintAnnotationTask implements CancellableTask<CompilationInfo>
             null
         );
 
-        LOG.severe("analyze = " + analyze);
-        LOG.severe("issues = " + issues);
-
         issues.forEach(sue -> {
             int startLineOffset = NbDocument.findLineOffset(editorCookie.getDocument(), sue.getStartLine() - 1);
             int startOffset = startLineOffset + sue.getStartLineOffset();
@@ -119,20 +112,24 @@ public class SonarLintAnnotationTask implements CancellableTask<CompilationInfo>
             currentAnnocationOnFileObject.add(new SonarLintAnnotation(sue.getRuleKey() + " = " + sue.getRuleName(), startOffset, length));
         });
 
-        for (SonarLintAnnotation sonarLintAnnocation : previousAnnotationOnFileObject) {
-            NbDocument.removeAnnotation(editorCookie.getDocument(), sonarLintAnnocation);
+        // Remove all previous Sonarlint annotations
+        for (SonarLintAnnotation sonarLintAnnotation : previousAnnotationOnFileObject) {
+            NbDocument.removeAnnotation(editorCookie.getDocument(), sonarLintAnnotation);
         }
-        for (final SonarLintAnnotation sonarLintAnnocation : currentAnnocationOnFileObject) {
+
+        // Add current issue as annotations
+        for (final SonarLintAnnotation sonarLintAnnotation : currentAnnocationOnFileObject) {
             NbDocument.addAnnotation(editorCookie.getDocument(), new Position() {
                 @Override
                 public int getOffset() {
-                    return (int) sonarLintAnnocation.getStartOffest();
+                    return (int) sonarLintAnnotation.getStartOffest();
                 }
-            }, sonarLintAnnocation.getLength(), sonarLintAnnocation);
-            sonarLintAnnocation.moveToFront();
+            }, sonarLintAnnotation.getLength(), sonarLintAnnotation);
+            sonarLintAnnotation.moveToFront();
         }
+
+        // Current annotation become futur previous annotation
         ANNOTATIONS_BY_FILEOBJECT.put(fileObject, currentAnnocationOnFileObject);
-        LOG.severe("SonarLintAnnotationTask end at " + System.nanoTime());
     }
 
 }
