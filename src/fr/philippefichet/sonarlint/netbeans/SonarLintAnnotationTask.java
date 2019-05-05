@@ -10,6 +10,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +27,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
-import org.sonarsource.sonarlint.core.StandaloneSonarLintEngineImpl;
+import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
+import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
@@ -40,11 +42,11 @@ public class SonarLintAnnotationTask implements CancellableTask<CompilationInfo>
 
     private static final Logger LOG = Logger.getLogger(SonarLintAnnotationTask.class.getCanonicalName());
     private static final Map<FileObject, List<SonarLintAnnotation>> ANNOTATIONS_BY_FILEOBJECT = Collections.synchronizedMap(new HashMap<FileObject, List<SonarLintAnnotation>>());
-    private final StandaloneSonarLintEngineImpl standaloneSonarLintEngineImpl;
+    private final SonarLintEngine standaloneSonarLintEngineImpl;
     private final FileObject fileObject;
 
-    public SonarLintAnnotationTask(StandaloneSonarLintEngineImpl standaloneSonarLintEngineImpl, FileObject fileObject) {
-        this.standaloneSonarLintEngineImpl = standaloneSonarLintEngineImpl;
+    public SonarLintAnnotationTask(SonarLintEngine sonarLintEngine, FileObject fileObject) {
+        this.standaloneSonarLintEngineImpl = sonarLintEngine;
         this.fileObject = fileObject;
         LOG.severe("SonarLintAnnotationTask constructor");
     }
@@ -56,17 +58,16 @@ public class SonarLintAnnotationTask implements CancellableTask<CompilationInfo>
 
     /**
      * Check if file is in test directory from project
+     *
      * @param fileObject
      * @return true if file is in test directory from project
      */
-    private boolean isTest(FileObject fileObject)
-    {
+    private boolean isTest(FileObject fileObject) {
         Project project = FileOwnerQuery.getOwner(fileObject);
         if (project != null) {
             File projectFile = FileUtil.toFile(project.getProjectDirectory());
             File file = FileUtil.toFile(fileObject);
-            if (file.getAbsolutePath().startsWith(projectFile.getAbsolutePath()))
-            {
+            if (file.getAbsolutePath().startsWith(projectFile.getAbsolutePath())) {
                 String relativeProjectPath = file.getAbsolutePath().replace(projectFile.getAbsolutePath(), "");
                 if (relativeProjectPath.contains(File.separator + "test" + File.separator)) {
                     LOG.severe(fileObject.getName() + " is test");
@@ -93,7 +94,7 @@ public class SonarLintAnnotationTask implements CancellableTask<CompilationInfo>
             previousAnnotationOnFileObject = new ArrayList<>();
             ANNOTATIONS_BY_FILEOBJECT.put(fileObject, previousAnnotationOnFileObject);
             final EditorCookie.Observable cookie = DataObject.find(fileObject)
-                .getCookie(EditorCookie.Observable.class);
+                    .getCookie(EditorCookie.Observable.class);
 
             // Remove annotation when close
             cookie.addPropertyChangeListener(new PropertyChangeListener() {
@@ -101,8 +102,8 @@ public class SonarLintAnnotationTask implements CancellableTask<CompilationInfo>
                 public void propertyChange(PropertyChangeEvent evt) {
                     String propertyName = evt.getPropertyName();
                     if ((propertyName == null
-                        || EditorCookie.Observable.PROP_OPENED_PANES.equals(propertyName))
-                        && editorCookie.getOpenedPanes() == null) {
+                            || EditorCookie.Observable.PROP_OPENED_PANES.equals(propertyName))
+                            && editorCookie.getOpenedPanes() == null) {
                         ANNOTATIONS_BY_FILEOBJECT.remove(fileObject);
                         cookie.removePropertyChangeListener(this);
                     }
@@ -115,31 +116,56 @@ public class SonarLintAnnotationTask implements CancellableTask<CompilationInfo>
         List<ClientInputFile> files = new ArrayList<>();
 
         files.add(new FSClientInputFile(
-            p.getText(),
-            path.toAbsolutePath(),
-            path.toFile().getName(),
-            isTest(fileObject),
-            FileEncodingQuery.getEncoding(fileObject))
+                p.getText(),
+                path.toAbsolutePath(),
+                path.toFile().getName(),
+                isTest(fileObject),
+                FileEncodingQuery.getEncoding(fileObject))
         );
         String sonarLintHome = System.getProperty("user.home") + File.separator + ".sonarlint4netbeans";
         List<Issue> issues = new ArrayList<>();
+        Collection<RuleDetails> allRuleDetails = standaloneSonarLintEngineImpl.getAllRuleDetails();
+        List<RuleKey> excludedRules = new ArrayList<>();
+        List<RuleKey> includedRules = new ArrayList<>();
+        for (RuleDetails allRuleDetail : allRuleDetails) {
+            RuleKey ruleKey = RuleKey.parse(allRuleDetail.getKey());
+            if (standaloneSonarLintEngineImpl.isExcluded(allRuleDetail)) {
+                excludedRules.add(ruleKey);
+            } else {
+                includedRules.add(ruleKey);
+            }
+        }
+
         AnalysisResults analyze = standaloneSonarLintEngineImpl.analyze(
-            new StandaloneAnalysisConfiguration(
-                new File(sonarLintHome).toPath(),
-                new File(sonarLintHome + File.separator + "work").toPath(),
-                files,
-                Collections.emptyMap()
-            ),
-            issues::add,
-            null,
-            null
+                new StandaloneAnalysisConfiguration(
+                        new File(sonarLintHome).toPath(),
+                        new File(sonarLintHome + File.separator + "work").toPath(),
+                        files,
+                        Collections.emptyMap(),
+                        excludedRules,
+                        includedRules
+                ),
+                issues::add,
+                null,
+                null
         );
 
         issues.forEach(sue -> {
-            int startLineOffset = NbDocument.findLineOffset(editorCookie.getDocument(), sue.getStartLine() - 1);
-            int startOffset = startLineOffset + sue.getStartLineOffset();
-            int endLineOffset = NbDocument.findLineOffset(editorCookie.getDocument(), sue.getEndLine() - 1);
-            int endOffset = endLineOffset + sue.getEndLineOffset();
+            Integer startLine = sue.getStartLine();
+            Integer endLine = sue.getEndLine();
+            Integer startLineOffset = sue.getStartLineOffset();
+            Integer endLineOffset = sue.getEndLineOffset();
+            if (startLine == null || endLine == null) {
+                startLine = 1;
+                endLine = 1;
+                startLineOffset = 0;
+                endLineOffset = 0;
+            }
+
+            int nbStartLineOffset = NbDocument.findLineOffset(editorCookie.getDocument(), startLine - 1);
+            int startOffset = nbStartLineOffset + startLineOffset;
+            int nbEndLineOffset = NbDocument.findLineOffset(editorCookie.getDocument(), endLine - 1);
+            int endOffset = nbEndLineOffset + endLineOffset;
             int length = endOffset - startOffset;
             currentAnnocationOnFileObject.add(new SonarLintAnnotation(sue.getRuleKey() + " = " + sue.getRuleName(), startOffset, length));
         });
