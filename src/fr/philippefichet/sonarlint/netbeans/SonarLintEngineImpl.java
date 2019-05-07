@@ -58,6 +58,7 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
             LOG.log(Level.SEVERE, "SonarLintAnnotationTaskFactory end at {0}", System.nanoTime());
         }).start();
 
+        @SuppressWarnings("unchecked")
         List<Map<String, String>> fromJson = gson.fromJson(getPreferences().get("excludedRules", null), List.class);
         if (fromJson == null) {
             whenInitialized(engine -> {
