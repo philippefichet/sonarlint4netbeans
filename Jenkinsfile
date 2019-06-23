@@ -14,7 +14,7 @@ pipeline {
             steps {
                 ansiColor('xterm') {
                     sh """
-                        /opt/netbeans/extide/ant/bin/ant -Dnbplatform.default.netbeans.dest.dir=/opt/netbeans/ -Dnbplatform.default.harness.dir='\${nbplatform.default.netbeans.dest.dir}/harness' nbm | ccze -A
+                        /opt/netbeans/extide/ant/bin/ant -Dnbplatform.active=default -Dnbplatform.default.netbeans.dest.dir=/opt/netbeans/ -Dnbplatform.default.harness.dir='\${nbplatform.default.netbeans.dest.dir}/harness' nbm | ccze -A
                     """
                 }
                 archiveArtifacts '**/*.nbm'
