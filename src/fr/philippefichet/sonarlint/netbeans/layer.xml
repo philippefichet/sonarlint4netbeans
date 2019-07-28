@@ -9,4 +9,23 @@
             </file>
         </folder>
     </folder>
+    <folder name="TaskList">
+        <folder name="Groups">
+            <file name="sonarlint.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.spi.tasklist.Task.createGroup"/>
+                <attr name="localizingBundle" stringvalue="fr.philippefichet.sonarlint.netbeans.Bundle"/>
+                <attr name="groupName" stringvalue="nb-sonarlint"/>
+                <attr name="diplayNameKey" stringvalue="LBL_sonarlint_group"/>
+                <attr name="descriptionKey" stringvalue="HINT_sonarlint_group"/>
+                <attr name="iconKey" stringvalue="ICON_whitelist"/>
+                <attr name="position" intvalue="150"/>
+            </file>
+        </folder>
+        <folder name="Scanners">
+            <file name="SonarLintTaskScanner.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.tasklist.FileTaskScanner"/>
+                <attr name="instanceCreate" methodvalue="fr.philippefichet.sonarlint.netbeans.SonarLintTaskScanner.create"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>

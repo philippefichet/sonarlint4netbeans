@@ -7,10 +7,7 @@ package fr.philippefichet.sonarlint.netbeans;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
-import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -19,20 +16,11 @@ import java.util.logging.Logger;
 import javax.swing.text.Position;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
-import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
-import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
-import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
 
 /**
  *
@@ -54,29 +42,6 @@ public class SonarLintAnnotationTask implements CancellableTask<CompilationInfo>
     @Override
     public void cancel() {
 
-    }
-
-    /**
-     * Check if file is in test directory from project
-     *
-     * @param fileObject
-     * @return true if file is in test directory from project
-     */
-    private boolean isTest(FileObject fileObject) {
-        Project project = FileOwnerQuery.getOwner(fileObject);
-        if (project != null) {
-            File projectFile = FileUtil.toFile(project.getProjectDirectory());
-            File file = FileUtil.toFile(fileObject);
-            if (file.getAbsolutePath().startsWith(projectFile.getAbsolutePath())) {
-                String relativeProjectPath = file.getAbsolutePath().replace(projectFile.getAbsolutePath(), "");
-                if (relativeProjectPath.contains(File.separator + "test" + File.separator)) {
-                    LOG.severe(fileObject.getName() + " is test");
-                    return true;
-                }
-            }
-        }
-        LOG.severe(fileObject.getName() + " is not test");
-        return false;
     }
 
     @Override
@@ -111,45 +76,7 @@ public class SonarLintAnnotationTask implements CancellableTask<CompilationInfo>
             });
         }
 
-        File toFile = FileUtil.toFile(fileObject);
-        Path path = toFile.toPath();
-        List<ClientInputFile> files = new ArrayList<>();
-
-        files.add(new FSClientInputFile(
-                p.getText(),
-                path.toAbsolutePath(),
-                path.toFile().getName(),
-                isTest(fileObject),
-                FileEncodingQuery.getEncoding(fileObject))
-        );
-        String sonarLintHome = System.getProperty("user.home") + File.separator + ".sonarlint4netbeans";
-        List<Issue> issues = new ArrayList<>();
-        Collection<RuleDetails> allRuleDetails = standaloneSonarLintEngineImpl.getAllRuleDetails();
-        List<RuleKey> excludedRules = new ArrayList<>();
-        List<RuleKey> includedRules = new ArrayList<>();
-        for (RuleDetails allRuleDetail : allRuleDetails) {
-            RuleKey ruleKey = RuleKey.parse(allRuleDetail.getKey());
-            if (standaloneSonarLintEngineImpl.isExcluded(allRuleDetail)) {
-                excludedRules.add(ruleKey);
-            } else {
-                includedRules.add(ruleKey);
-            }
-        }
-
-        AnalysisResults analyze = standaloneSonarLintEngineImpl.analyze(
-                new StandaloneAnalysisConfiguration(
-                        new File(sonarLintHome).toPath(),
-                        new File(sonarLintHome + File.separator + "work").toPath(),
-                        files,
-                        Collections.emptyMap(),
-                        excludedRules,
-                        includedRules
-                ),
-                issues::add,
-                null,
-                null
-        );
-
+        List<Issue> issues = SonarLintUtils.analyze(fileObject, p.getText());
         issues.forEach(sue -> {
             Integer startLine = sue.getStartLine();
             Integer endLine = sue.getEndLine();
