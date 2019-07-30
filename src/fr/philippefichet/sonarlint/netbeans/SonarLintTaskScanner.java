@@ -53,7 +53,10 @@ public class SonarLintTaskScanner extends FileTaskScanner implements PropertyCha
         try {
             List<Issue> analyze = SonarLintUtils.analyze(fo, null);
             return analyze.stream()
-                .map(issue -> Task.create(fo, "nb-sonarlint", issue.getRuleName(), issue.getStartLine()))
+                .map(issue -> {
+                    Integer startLine = issue.getStartLine();
+                    return Task.create(fo, "nb-sonarlint", issue.getRuleName(), startLine == null ? 1 : startLine);
+                })
                 .collect(Collectors.toList());
         } catch (IOException ex) {
             LOG.log(Level.SEVERE, "Error during analyze {0}: {1}", new Object[]{fo.getName(), ex.getMessage()});
