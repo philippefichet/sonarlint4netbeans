@@ -60,6 +60,9 @@ public final class SonarLintUtils {
         }
 
         File toFile = FileUtil.toFile(fileObject);
+        if (toFile == null) {
+            return Collections.emptyList();
+        }
         Path path = toFile.toPath();
         List<ClientInputFile> files = new ArrayList<>();
         files.add(new FSClientInputFile(
@@ -70,15 +73,17 @@ public final class SonarLintUtils {
             FileEncodingQuery.getEncoding(fileObject))
         );
 
+        StandaloneAnalysisConfiguration standaloneAnalysisConfiguration =
+            StandaloneAnalysisConfiguration.builder()
+            .setBaseDir(new File(sonarLintHome).toPath())
+            .addInputFiles(files)
+            .addExcludedRules(excludedRules)
+            .addIncludedRules(includedRules)
+            .build();
+
+
         AnalysisResults analyze = sonarLintEngine.analyze(
-            new StandaloneAnalysisConfiguration(
-                new File(sonarLintHome).toPath(),
-                new File(sonarLintHome + File.separator + "work").toPath(),
-                files,
-                Collections.emptyMap(),
-                excludedRules,
-                includedRules
-            ),
+            standaloneAnalysisConfiguration,
             issues::add,
             null,
             null

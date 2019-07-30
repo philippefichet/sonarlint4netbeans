@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,20 +38,24 @@ import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneGlobalConf
  */
 public final class SonarLintEngineImpl implements SonarLintEngine {
 
-    public static final String SONAR_JAVA_PLUGIN_VERSION = "5.12.1.17771";
+    public static final String SONAR_JAVA_PLUGIN_VERSION = "5.13.1.18282";
+    public static final String SONAR_JAVASCRIPT_PLUGIN_VERSION = "5.2.1.7778";
     private static final Logger LOG = Logger.getLogger(SonarLintEngine.class.getCanonicalName());
     private final Gson gson = new Gson();
     private StandaloneSonarLintEngineImpl standaloneSonarLintEngineImpl;
     private final List<RuleKey> excludedRules = new ArrayList<>();
     private final List<Consumer<SonarLintEngine>> consumerWaitingInitialization = new ArrayList<>();
     private final List<Consumer<SonarLintEngine>> configurationChanged = new ArrayList<>();
+    private final Map<String, URL> pluginURLs = new HashMap<>();
 
     public SonarLintEngineImpl() throws MalformedURLException {
         long startAt = System.currentTimeMillis();
-        URL sonarJavaPluginURL = getClass().getResource("/fr/philippefichet/sonarlint/netbeans/resources/sonar-java-plugin-5.12.1.17771.jar");
+        pluginURLs.put("java", getClass().getResource("/fr/philippefichet/sonarlint/netbeans/resources/sonar-java-plugin-" + SONAR_JAVA_PLUGIN_VERSION + ".jar"));
+        pluginURLs.put("javascript", getClass().getResource("/fr/philippefichet/sonarlint/netbeans/resources/sonar-javascript-plugin-" + SONAR_JAVASCRIPT_PLUGIN_VERSION + ".jar"));
+        LOG.log(Level.SEVERE, "plugins: {0}", pluginURLs);
         new Thread(() -> {
             StandaloneGlobalConfiguration config = StandaloneGlobalConfiguration.builder()
-                    .addPlugin(sonarJavaPluginURL)
+                    .addPlugins(pluginURLs.values().toArray(new URL[pluginURLs.values().size()]))
                     .build();
             standaloneSonarLintEngineImpl = new StandaloneSonarLintEngineImpl(config);
             consumerWaitingInitialization.forEach(consumer -> consumer.accept(this));
