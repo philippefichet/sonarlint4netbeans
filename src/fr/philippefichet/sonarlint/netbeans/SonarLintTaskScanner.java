@@ -55,7 +55,7 @@ public class SonarLintTaskScanner extends FileTaskScanner implements PropertyCha
             return analyze.stream()
                 .map(issue -> {
                     Integer startLine = issue.getStartLine();
-                    return Task.create(fo, "nb-sonarlint", issue.getRuleName(), startLine == null ? 1 : startLine);
+                    return Task.create(fo, "nb-sonarlint", issue.getRuleKey() + " = " + issue.getRuleName(), startLine == null ? 1 : startLine);
                 })
                 .collect(Collectors.toList());
         } catch (IOException ex) {
