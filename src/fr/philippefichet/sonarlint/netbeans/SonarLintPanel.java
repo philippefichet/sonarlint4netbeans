@@ -92,7 +92,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
                 return r1.getKey().compareTo(r2.getKey());
             }).map(ruleDetail -> new Object[]{
                 !engine.isExcluded(ruleDetail),
-                ruleDetail.getLanguage(),
+                ruleDetail.getLanguageKey(),
                 ruleDetail.getKey(),
                 ruleDetail.getName()}
             ).collect(Collectors.toList()).forEach(rulesDefaultTableModel::addRow);

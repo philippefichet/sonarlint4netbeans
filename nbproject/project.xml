@@ -159,12 +159,12 @@
             </module-dependencies>
             <public-packages/>
             <class-path-extension>
-                <runtime-relative-path>ext/sonarlint-core-4.3.1.2486.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/sonarlint-core-4.3.1.2486.jar</binary-origin>
+                <runtime-relative-path>ext/sonarlint-core-4.6.0.2652.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/sonarlint-core-4.6.0.2652.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/sonarlint-client-api-4.3.1.2486.jar</runtime-relative-path>
-                <binary-origin>release/modules/ext/sonarlint-client-api-4.3.1.2486.jar</binary-origin>
+                <runtime-relative-path>ext/sonarlint-client-api-4.6.0.2652.jar</runtime-relative-path>
+                <binary-origin>release/modules/ext/sonarlint-client-api-4.6.0.2652.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

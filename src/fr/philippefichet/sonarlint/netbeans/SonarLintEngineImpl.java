@@ -52,8 +52,8 @@ import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneGlobalConf
  */
 public final class SonarLintEngineImpl implements SonarLintEngine {
 
-    public static final String SONAR_JAVA_PLUGIN_VERSION = "5.13.1.18282";
-    public static final String SONAR_JAVASCRIPT_PLUGIN_VERSION = "5.2.1.7778";
+    public static final String SONAR_JAVA_PLUGIN_VERSION = "5.14.0.18788";
+    public static final String SONAR_JAVASCRIPT_PLUGIN_VERSION = "6.0.1.10206";
     private static final Logger LOG = Logger.getLogger(SonarLintEngine.class.getCanonicalName());
     private final Gson gson = new Gson();
     private StandaloneSonarLintEngineImpl standaloneSonarLintEngineImpl;
