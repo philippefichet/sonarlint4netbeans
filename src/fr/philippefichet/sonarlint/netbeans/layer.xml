@@ -28,4 +28,12 @@
             </file>
         </folder>
     </folder>
+    <folder name="OptionsExport">
+        <folder name="Java">
+            <file name="SonarLint">
+                <attr name="displayName" bundlevalue="fr.philippefichet.sonarlint.netbeans.Bundle#OptionsExport.displayName"/>
+                <attr name="include" stringvalue="config/Preferences/fr/philippefichet/sonarlint/.*"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>
