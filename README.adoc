@@ -21,3 +21,6 @@ image::docs/OptionsJavaSonarLintAnalyzers.jpg[]
 
 .SonarLint rules enabled or disabled
 image::docs/OptionsJavaSonarLintRules.jpg[]
+
+.Sonar rule details window
+image::docs/SonarRuleDetailsWindow.jpg[]
