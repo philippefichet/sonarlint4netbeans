@@ -11,4 +11,5 @@
       severity="none"
       glyph="nbresloc:/fr/philippefichet/sonarlint/netbeans/resources/sonarlint.png"
       type="linepart"
+      waveunderline="0xFF0000"
  />
