@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -119,12 +118,10 @@ public final class SonarLintUtils {
             if (file.getAbsolutePath().startsWith(projectFile.getAbsolutePath())) {
                 String relativeProjectPath = file.getAbsolutePath().replace(projectFile.getAbsolutePath(), "");
                 if (relativeProjectPath.contains(File.separator + "test" + File.separator)) {
-                    LOG.log(Level.FINE, "{} is test", fileObject.getName());
                     return true;
                 }
             }
         }
-        LOG.log(Level.FINE, "{} is not test", fileObject.getName());
         return false;
     }
 }

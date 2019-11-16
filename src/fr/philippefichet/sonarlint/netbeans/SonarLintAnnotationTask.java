@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 import javax.swing.text.Position;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -42,7 +41,6 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
  */
 public class SonarLintAnnotationTask implements CancellableTask<CompilationInfo> {
 
-    private static final Logger LOG = Logger.getLogger(SonarLintAnnotationTask.class.getCanonicalName());
     private static final Map<FileObject, List<SonarLintAnnotation>> ANNOTATIONS_BY_FILEOBJECT = Collections.synchronizedMap(new HashMap<FileObject, List<SonarLintAnnotation>>());
     private final SonarLintEngine standaloneSonarLintEngineImpl;
     private final FileObject fileObject;
@@ -50,7 +48,6 @@ public class SonarLintAnnotationTask implements CancellableTask<CompilationInfo>
     public SonarLintAnnotationTask(SonarLintEngine sonarLintEngine, FileObject fileObject) {
         this.standaloneSonarLintEngineImpl = sonarLintEngine;
         this.fileObject = fileObject;
-        LOG.severe("SonarLintAnnotationTask constructor");
     }
 
     @Override
@@ -64,7 +61,6 @@ public class SonarLintAnnotationTask implements CancellableTask<CompilationInfo>
         if (standaloneSonarLintEngineImpl == null) {
             return;
         }
-        LOG.severe("SonarLintAnnotationTask start at " + System.nanoTime());
         final EditorCookie editorCookie = DataObject.find(fileObject).getCookie(EditorCookie.class);
         List<SonarLintAnnotation> currentAnnocationOnFileObject = new ArrayList<>();
         List<SonarLintAnnotation> previousAnnotationOnFileObject = ANNOTATIONS_BY_FILEOBJECT.get(fileObject);

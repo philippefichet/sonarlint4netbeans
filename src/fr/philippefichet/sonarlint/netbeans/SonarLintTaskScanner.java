@@ -80,13 +80,11 @@ public class SonarLintTaskScanner extends FileTaskScanner implements PropertyCha
 
     @Override
     public void attach(Callback callback) {
-        LOG.log(Level.FINE, "attach = callback = {0}", callback);
         this.callback = callback;
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        LOG.log(Level.FINE, "propertyChange = evt.getPropertyName() = {0}", evt.getPropertyName());
     }
 
 }

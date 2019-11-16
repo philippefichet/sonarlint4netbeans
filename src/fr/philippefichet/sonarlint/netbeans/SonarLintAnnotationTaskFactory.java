@@ -20,7 +20,6 @@
 package fr.philippefichet.sonarlint.netbeans;
 
 import java.net.MalformedURLException;
-import java.util.logging.Logger;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -33,8 +32,6 @@ import org.openide.util.Lookup;
  * @author v
  */
 public class SonarLintAnnotationTaskFactory extends EditorAwareJavaSourceTaskFactory {
-
-    private static final Logger LOG = Logger.getLogger(SonarLintAnnotationTaskFactory.class.getCanonicalName());
 
     public SonarLintAnnotationTaskFactory() throws MalformedURLException {
         super(JavaSource.Phase.UP_TO_DATE, JavaSource.Priority.LOW);

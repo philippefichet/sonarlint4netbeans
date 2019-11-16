@@ -54,7 +54,6 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
 
     public static final String SONAR_JAVA_PLUGIN_VERSION = "5.14.0.18788";
     public static final String SONAR_JAVASCRIPT_PLUGIN_VERSION = "6.0.1.10206";
-    private static final Logger LOG = Logger.getLogger(SonarLintEngine.class.getCanonicalName());
     private final Gson gson = new Gson();
     private StandaloneSonarLintEngineImpl standaloneSonarLintEngineImpl;
     private final List<RuleKey> excludedRules = new ArrayList<>();
@@ -63,10 +62,8 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
     private final Map<String, URL> pluginURLs = new HashMap<>();
 
     public SonarLintEngineImpl() throws MalformedURLException {
-        long startAt = System.currentTimeMillis();
         pluginURLs.put("java", getClass().getResource("/fr/philippefichet/sonarlint/netbeans/resources/sonar-java-plugin-" + SONAR_JAVA_PLUGIN_VERSION + ".jar"));
         pluginURLs.put("javascript", getClass().getResource("/fr/philippefichet/sonarlint/netbeans/resources/sonar-javascript-plugin-" + SONAR_JAVASCRIPT_PLUGIN_VERSION + ".jar"));
-        LOG.log(Level.SEVERE, "plugins: {0}", pluginURLs);
         new Thread(() -> {
             StandaloneGlobalConfiguration config = StandaloneGlobalConfiguration.builder()
                     .addPlugins(pluginURLs.values().toArray(new URL[pluginURLs.values().size()]))
@@ -74,7 +71,6 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
             standaloneSonarLintEngineImpl = new StandaloneSonarLintEngineImpl(config);
             consumerWaitingInitialization.forEach(consumer -> consumer.accept(this));
             consumerWaitingInitialization.clear();
-            LOG.log(Level.SEVERE, "SonarLintAnnotationTaskFactory end at {0}", System.nanoTime());
         }).start();
 
         @SuppressWarnings("unchecked")
@@ -94,8 +90,6 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
                 excludedRules.add(RuleKey.parse(ruleKey.get("repository") + ":" + ruleKey.get("rule")));
             }
         }
-        long endAt = System.currentTimeMillis();
-        LOG.log(Level.SEVERE, "init SonarLintEngine done in {0}ms.", endAt - startAt);
     }
 
     @Override
