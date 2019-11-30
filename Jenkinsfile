@@ -12,12 +12,12 @@ pipeline {
               dockerfile true
             }
             steps {
-                ansiColor('xterm') {
-                    sh """
-                        /opt/netbeans/extide/ant/bin/ant -Dnbplatform.active=default -Dnbplatform.default.netbeans.dest.dir=/opt/netbeans/ -Dnbplatform.default.harness.dir='\${nbplatform.default.netbeans.dest.dir}/harness' nbm | ccze -A
-                    """
-                }
-                archiveArtifacts '**/*.nbm'
+              ansiColor('xterm') {
+                sh """
+                  /opt/apache-maven-3.6.1/bin/mvn -Dnetbeans.installation=/opt/netbeans/ install
+                """
+              }
+              archiveArtifacts '**/*.nbm'
             }
         }
     }
