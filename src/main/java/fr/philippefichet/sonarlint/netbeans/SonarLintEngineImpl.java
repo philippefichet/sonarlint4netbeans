@@ -52,8 +52,8 @@ import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneGlobalConf
  */
 public final class SonarLintEngineImpl implements SonarLintEngine {
 
-    public static final String SONAR_JAVA_PLUGIN_VERSION = "5.14.0.18788";
-    public static final String SONAR_JAVASCRIPT_PLUGIN_VERSION = "6.0.1.10206";
+    public static final String SONAR_JAVA_PLUGIN_VERSION = "6.1.0.20866";
+    public static final String SONAR_JAVASCRIPT_PLUGIN_VERSION = "6.2.0.12043";
     private final Gson gson = new Gson();
     private StandaloneSonarLintEngineImpl standaloneSonarLintEngineImpl;
     private final List<RuleKey> excludedRules = new ArrayList<>();

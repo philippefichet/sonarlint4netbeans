@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.philippefichet.sonarlint</groupId>
     <artifactId>sonarlint4netbeans</artifactId>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <packaging>nbm</packaging>
     <name>SonarLint for Netbeans</name>
     <organization>
@@ -59,12 +59,12 @@
         <dependency>
             <groupId>org.sonarsource.sonarlint.core</groupId>
             <artifactId>sonarlint-client-api</artifactId>
-            <version>4.6.0.2652</version>
+            <version>4.8.0.14729</version>
         </dependency>
         <dependency>
             <groupId>org.sonarsource.sonarlint.core</groupId>
             <artifactId>sonarlint-core</artifactId>
-            <version>4.6.0.2652</version>
+            <version>4.8.0.14729</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
