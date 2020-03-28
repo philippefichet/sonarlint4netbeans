@@ -133,7 +133,7 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
             try {
                 Thread.sleep(100L);
             } catch (InterruptedException ex) {
-                Logger.getLogger(SonarLintAnnotationTaskFactory.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(SonarLintEngineImpl.class.getName()).log(Level.SEVERE, null, ex);
                 Thread.currentThread().interrupt();
             }
         }

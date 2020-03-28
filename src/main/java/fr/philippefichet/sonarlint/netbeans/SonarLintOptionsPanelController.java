@@ -28,10 +28,9 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
-        location = "Java",
         displayName = "#AdvancedOption_DisplayName_SonarLint",
         keywords = "#AdvancedOption_Keywords_SonarLint",
-        keywordsCategory = "Java/SonarLint"
+        keywordsCategory = "SonarLint"
 )
 @org.openide.util.NbBundle.Messages({"AdvancedOption_DisplayName_SonarLint=SonarLint", "AdvancedOption_Keywords_SonarLint=sonarlint"})
 public final class SonarLintOptionsPanelController extends OptionsPanelController {

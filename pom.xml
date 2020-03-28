@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>fr.philippefichet.sonarlint</groupId>
     <artifactId>sonarlint4netbeans</artifactId>
-    <version>1.0.4</version>
+    <version>1.1.0</version>
     <packaging>nbm</packaging>
     <name>SonarLint for Netbeans</name>
     <organization>
@@ -73,11 +73,6 @@
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
-            <artifactId>org-netbeans-modules-java-source</artifactId>
-            <version>RELEASE110</version>
-        </dependency>
-        <dependency>
-            <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-settings</artifactId>
             <version>RELEASE110</version>
         </dependency>
@@ -143,11 +138,6 @@
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
-            <artifactId>org-netbeans-modules-java-source-base</artifactId>
-            <version>RELEASE110</version>
-        </dependency>
-        <dependency>
-            <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-options-api</artifactId>
             <version>RELEASE110</version>
         </dependency>
@@ -156,8 +146,14 @@
             <artifactId>org-openide-text</artifactId>
             <version>RELEASE110</version>
         </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-parsing-api</artifactId>
+            <version>RELEASE110</version>
+        </dependency>
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+    <description>SonarLint integration for Netbeans</description>
 </project>

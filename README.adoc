@@ -4,9 +4,10 @@
 
 Features:
 
-- SonarLint for Java in editor and Action Item
-- SonarLint for Javascript in Action Item
-- Enable/Disable rules in Options/Java/SonarLint
+- Support Java and Javascript
+- Annotation in editor
+- Type SonarLint in Action Items
+- Enable/Disable Rules in Tools/Options/Miscellaneous/SonarLint
 
 == Screenshot
 
