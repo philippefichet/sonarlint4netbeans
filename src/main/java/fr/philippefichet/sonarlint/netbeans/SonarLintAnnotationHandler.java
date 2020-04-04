@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javax.swing.text.Position;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -44,6 +45,27 @@ public final class SonarLintAnnotationHandler {
     private static final Map<FileObject, List<SonarLintAnnotation>> ANNOTATIONS_BY_FILEOBJECT = Collections.synchronizedMap(new HashMap<FileObject, List<SonarLintAnnotation>>());
 
     private SonarLintAnnotationHandler() {
+    }
+    
+    public static Optional<SonarLintAnnotation> getSonarLintAnnotation(
+        FileObject fileObject,
+        long startOffset,
+        int length,
+        String shortDescription
+    )
+    {
+        List<SonarLintAnnotation> sonarlintAnnotaions = ANNOTATIONS_BY_FILEOBJECT.get(fileObject);
+        if (sonarlintAnnotaions != null) {
+            for (SonarLintAnnotation sonarlintAnnotaion : sonarlintAnnotaions) {
+                if (sonarlintAnnotaion.getStartOffest() == startOffset
+                    && sonarlintAnnotaion.getLength() == length
+                    && sonarlintAnnotaion.getShortDescription().equals(shortDescription)
+                ) {
+                    return Optional.of(sonarlintAnnotaion);
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     public static void analyze(SonarLintEngine standaloneSonarLintEngineImpl, FileObject fileObject, String textToAnalyze) throws DataObjectNotFoundException, IOException {
@@ -94,7 +116,7 @@ public final class SonarLintAnnotationHandler {
             int nbEndLineOffset = NbDocument.findLineOffset(editorCookie.getDocument(), endLine - 1);
             int endOffset = nbEndLineOffset + endLineOffset;
             int length = endOffset - startOffset;
-            currentAnnocationOnFileObject.add(new SonarLintAnnotation(sue.getRuleKey() + " = " + sue.getRuleName(), startOffset, length));
+            currentAnnocationOnFileObject.add(new SonarLintAnnotation(sue.getRuleKey(), sue.getRuleName(), startOffset, length));
         });
 
         // Remove all previous Sonarlint annotations

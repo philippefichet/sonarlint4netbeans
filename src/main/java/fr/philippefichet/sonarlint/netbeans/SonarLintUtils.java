@@ -51,6 +51,12 @@ public final class SonarLintUtils {
 
     private SonarLintUtils() {
     }
+    
+    public static String toURL(RuleDetails ruleDetails)
+    {
+        String[] keySplit = ruleDetails.getKey().split(":");
+        return "https://rules.sonarsource.com/" + keySplit[0] + "/RSPEC-" + keySplit[1].substring(1);
+    }
 
     public static List<Issue> analyze(FileObject fileObject, String contentToAnalyze) throws IOException {
         SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);

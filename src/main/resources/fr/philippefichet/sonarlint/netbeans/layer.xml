@@ -2,6 +2,11 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Editors">
+        <folder name="GlyphGutterActions">
+            <file name="fr-philippefichet-sonarlint-netbeans-SonarLintGlyphAction.instance">
+                <attr name="position" intvalue="1500"/>
+            </file>
+        </folder>
         <folder name="text">
             <folder name="x-java">
                 <file name="fr-philippefichet-sonarlint-netbeans-SonarLintParserResultTaskFactory.instance">

@@ -19,12 +19,19 @@
  */
 package fr.philippefichet.sonarlint.netbeans;
 
+import java.awt.Desktop;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Optional;
 import javax.swing.DefaultListModel;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
 import org.netbeans.api.settings.ConvertAsProperties;
+import org.openide.ErrorManager;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
@@ -91,6 +98,21 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
         sonarLintRuleDetailsEditor.setEditable(false);
         sonarLintRuleDetailsEditor.setContentType("text/html");
         jScrollPane1.setViewportView(sonarLintRuleDetailsEditor);
+        if (Desktop.isDesktopSupported()) {
+            sonarLintRuleDetailsEditor.addHyperlinkListener(new HyperlinkListener() {
+                @Override
+                public void hyperlinkUpdate(HyperlinkEvent e) {
+                    if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                        try {
+                            Desktop.getDesktop().browse(e.getURL().toURI());
+                        } catch (URISyntaxException | IOException ex) {
+                            ErrorManager.getDefault().log("Unable to open browser on URL: " + e.getURL());
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            });
+        }
 
         add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
@@ -117,7 +139,10 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
             Optional<RuleDetails> optionalRuleDetails = engine.getRuleDetails(selectedValue);
             if (optionalRuleDetails.isPresent()) {
                 RuleDetails ruleDetails = optionalRuleDetails.get();
-                sonarLintRuleDetailsEditor.setText(ruleDetails.getHtmlDescription());
+                sonarLintRuleDetailsEditor.setText(
+                    "<h1><a href=\"" + SonarLintUtils.toURL(ruleDetails) + "\">" + ruleDetails.getName() + "</a></h1>"
+                    + ruleDetails.getHtmlDescription()
+                );
                 sonarLintRuleDetailsEditor.getCaret().moveDot(0);
             }
         });
@@ -164,5 +189,12 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
     void readProperties(java.util.Properties p) {
         String version = p.getProperty("version");
         // TODO read your settings according to their version
+    }
+    
+    public void setSonarRuleKeyFilter(String sonarRuleKeyFilter)
+    {
+        this.sonarRuleKeyFilter.setText(sonarRuleKeyFilter);
+        sonarLintAllRules.setSelectedValue(sonarRuleKeyFilter, true);
+        updateUI();
     }
 }

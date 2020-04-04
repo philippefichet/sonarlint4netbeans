@@ -74,6 +74,9 @@
               <Connection code="&quot;text/html&quot;" type="code"/>
             </Property>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_AddingCodePost" type="java.lang.String" value="if (Desktop.isDesktopSupported()) {&#xa;    sonarLintRuleDetailsEditor.addHyperlinkListener(new HyperlinkListener() {&#xa;        @Override&#xa;        public void hyperlinkUpdate(HyperlinkEvent e) {&#xa;            if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {&#xa;                try {&#xa;                    Desktop.getDesktop().browse(e.getURL().toURI());&#xa;                } catch (URISyntaxException | IOException ex) {&#xa;                    ErrorManager.getDefault().log(&quot;Unable to open browser on URL: &quot; + e.getURL());&#xa;                    Exceptions.printStackTrace(ex);&#xa;                }&#xa;             }&#xa;        }&#xa;    });&#xa;}"/>
+          </AuxValues>
         </Component>
       </SubComponents>
     </Container>

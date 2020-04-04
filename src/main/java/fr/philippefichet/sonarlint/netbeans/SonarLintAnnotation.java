@@ -27,16 +27,20 @@ import org.openide.text.Annotation;
  */
 public class SonarLintAnnotation extends Annotation {
 
-    private static final String ANNOTATION_TYPE = "fr-philippefichet-sonarlint-netbeans-annotation";
+    public static final String ANNOTATION_TYPE = "fr-philippefichet-sonarlint-netbeans-annotation";
     private final long startOffest;
     private final int length;
     private final String shortDescription;
+    private final String ruleKey;
+    private final String ruleName;
 
-    public SonarLintAnnotation(String shortDescription, long startOffest, int length) {
+    public SonarLintAnnotation(String ruleKey, String ruleName, long startOffest, int length) {
         super();
         this.startOffest = startOffest;
         this.length = length;
-        this.shortDescription = shortDescription;
+        this.shortDescription = ruleKey + "\n" + ruleName + "\nClick to show details";
+        this.ruleKey = ruleKey;
+        this.ruleName = ruleName;
     }
 
     public long getStartOffest() {
@@ -57,4 +61,11 @@ public class SonarLintAnnotation extends Annotation {
         return shortDescription;
     }
 
+    public String getRuleKey() {
+        return ruleKey;
+    }
+
+    public String getRuleName() {
+        return ruleName;
+    }
 }

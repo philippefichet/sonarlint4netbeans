@@ -18,10 +18,10 @@ image::docs/JavaEditorAnnotationAndActionItems.jpg[]
 image::docs/JavascriptActionItems.jpg[]
 
 .SonarLint analyzer name and version
-image::docs/OptionsJavaSonarLintAnalyzers.jpg[]
+image::docs/OptionsSonarLintAnalyzers.jpg[]
 
 .SonarLint rules enabled or disabled
-image::docs/OptionsJavaSonarLintRules.jpg[]
+image::docs/OptionsSonarLintRules.jpg[]
 
 .Sonar rule details window
 image::docs/SonarRuleDetailsWindow.jpg[]
