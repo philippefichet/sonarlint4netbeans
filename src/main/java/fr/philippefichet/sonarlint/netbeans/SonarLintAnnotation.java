@@ -20,27 +20,33 @@
 package fr.philippefichet.sonarlint.netbeans;
 
 import org.openide.text.Annotation;
-
 /**
  *
  * @author FICHET Philippe
  */
 public class SonarLintAnnotation extends Annotation {
 
-    public static final String ANNOTATION_TYPE = "fr-philippefichet-sonarlint-netbeans-annotation";
+    public static final String ANNOTATION_TYPE_GENERIC = "fr-philippefichet-sonarlint-netbeans-annotation-generic";
+    public static final String ANNOTATION_TYPE_INFO = "fr-philippefichet-sonarlint-netbeans-annotation-info";
+    public static final String ANNOTATION_TYPE_MINOR = "fr-philippefichet-sonarlint-netbeans-annotation-minor";
+    public static final String ANNOTATION_TYPE_MAJOR = "fr-philippefichet-sonarlint-netbeans-annotation-major";
+    public static final String ANNOTATION_TYPE_CRITIAL = "fr-philippefichet-sonarlint-netbeans-annotation-critical";
+    public static final String ANNOTATION_TYPE_BLOCKER = "fr-philippefichet-sonarlint-netbeans-annotation-blocker";
     private final long startOffest;
     private final int length;
     private final String shortDescription;
     private final String ruleKey;
     private final String ruleName;
+    private final String severity;
 
-    public SonarLintAnnotation(String ruleKey, String ruleName, long startOffest, int length) {
+    public SonarLintAnnotation(String ruleKey, String ruleName, String severity, long startOffest, int length) {
         super();
         this.startOffest = startOffest;
         this.length = length;
-        this.shortDescription = ruleKey + "\n" + ruleName + "\nClick to show details";
         this.ruleKey = ruleKey;
         this.ruleName = ruleName;
+        this.severity = severity;
+        this.shortDescription = ruleKey + "\n" + ruleName + "\nClick to show details";
     }
 
     public long getStartOffest() {
@@ -53,7 +59,20 @@ public class SonarLintAnnotation extends Annotation {
 
     @Override
     public String getAnnotationType() {
-        return ANNOTATION_TYPE;
+        switch(severity) {
+            case "INFO":
+                return ANNOTATION_TYPE_INFO;
+            case "MINOR":
+                return ANNOTATION_TYPE_MINOR;
+            case "MAJOR":
+                return ANNOTATION_TYPE_MAJOR;
+            case "CRITICAL":
+                return ANNOTATION_TYPE_CRITIAL;
+            case "BLOCKER":
+                return ANNOTATION_TYPE_BLOCKER;
+            default:
+                return ANNOTATION_TYPE_GENERIC;
+        }
     }
 
     @Override
@@ -67,5 +86,9 @@ public class SonarLintAnnotation extends Annotation {
 
     public String getRuleName() {
         return ruleName;
+    }
+    
+    public String getSeverity() {
+        return severity;
     }
 }

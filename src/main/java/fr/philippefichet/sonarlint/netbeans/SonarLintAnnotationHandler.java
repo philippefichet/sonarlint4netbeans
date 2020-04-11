@@ -116,7 +116,15 @@ public final class SonarLintAnnotationHandler {
             int nbEndLineOffset = NbDocument.findLineOffset(editorCookie.getDocument(), endLine - 1);
             int endOffset = nbEndLineOffset + endLineOffset;
             int length = endOffset - startOffset;
-            currentAnnocationOnFileObject.add(new SonarLintAnnotation(sue.getRuleKey(), sue.getRuleName(), startOffset, length));
+            currentAnnocationOnFileObject.add(
+                new SonarLintAnnotation(
+                    sue.getRuleKey(),
+                    sue.getRuleName(),
+                    sue.getSeverity(),
+                    startOffset,
+                    length
+                )
+            );
         });
 
         // Remove all previous Sonarlint annotations

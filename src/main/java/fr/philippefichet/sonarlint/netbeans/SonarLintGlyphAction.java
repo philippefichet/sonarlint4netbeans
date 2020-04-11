@@ -52,9 +52,14 @@ public class SonarLintGlyphAction extends AbstractAction
                 SonarLintGlyphAction.class, 
                 "SonarLintGlyphAction.TXT_GlyphActionName" // NOI18N
             )
-        );  
+        );
         putValue("supported-annotation-types", new String[] {
-            SonarLintAnnotation.ANNOTATION_TYPE
+            SonarLintAnnotation.ANNOTATION_TYPE_GENERIC,
+            SonarLintAnnotation.ANNOTATION_TYPE_BLOCKER,
+            SonarLintAnnotation.ANNOTATION_TYPE_CRITIAL,
+            SonarLintAnnotation.ANNOTATION_TYPE_INFO,
+            SonarLintAnnotation.ANNOTATION_TYPE_MAJOR,
+            SonarLintAnnotation.ANNOTATION_TYPE_MINOR,
         });
     }
 

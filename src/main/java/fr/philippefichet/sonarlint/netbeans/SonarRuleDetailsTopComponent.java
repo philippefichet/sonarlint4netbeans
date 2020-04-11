@@ -19,12 +19,17 @@
  */
 package fr.philippefichet.sonarlint.netbeans;
 
+import java.awt.Component;
 import java.awt.Desktop;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Optional;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import org.netbeans.api.settings.ConvertAsProperties;
@@ -116,6 +121,22 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
 
         add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
+        SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
+        sonarLintAllRules.setCellRenderer(new ListCellRenderer<String>() {
+            @Override
+            public Component getListCellRendererComponent(JList<? extends String> list, String value, int index, boolean isSelected, boolean cellHasFocus) {
+                Optional<RuleDetails> ruleDetails = sonarLintEngine.getRuleDetails(value);
+                DefaultListCellRenderer defaultListCellRenderer = new DefaultListCellRenderer();
+                Component cell = defaultListCellRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (ruleDetails.isPresent()) {
+                    Optional<ImageIcon> toImageIcon = SonarLintUtils.toImageIcon(ruleDetails.get().getSeverity());
+                    if (toImageIcon.isPresent()) {
+                        defaultListCellRenderer.setIcon(toImageIcon.get());
+                    }
+                }
+                return cell;
+            }
+        });
         initListAllRuleDetails();
         sonarLintAllRules.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
@@ -194,6 +215,8 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
     public void setSonarRuleKeyFilter(String sonarRuleKeyFilter)
     {
         this.sonarRuleKeyFilter.setText(sonarRuleKeyFilter);
+        ruleKeyFilter = this.sonarRuleKeyFilter.getText().toLowerCase();
+        initListAllRuleDetails();
         sonarLintAllRules.setSelectedValue(sonarRuleKeyFilter, true);
         updateUI();
     }

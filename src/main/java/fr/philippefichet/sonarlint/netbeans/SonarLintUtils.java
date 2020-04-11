@@ -21,13 +21,16 @@ package fr.philippefichet.sonarlint.netbeans;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Logger;
+import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -50,6 +53,15 @@ public final class SonarLintUtils {
     private static final Logger LOG = Logger.getLogger(SonarLintUtils.class.getCanonicalName());
 
     private SonarLintUtils() {
+    }
+    
+    public static Optional<ImageIcon> toImageIcon(String severity)
+    {
+        URL resource = SonarLintUtils.class.getClassLoader().getResource("fr/philippefichet/sonarlint/netbeans/resources/sonarlint-" + severity.toLowerCase() + ".png");
+        if (resource == null) {
+            return Optional.empty();
+        }
+        return Optional.of(new ImageIcon(resource, severity));
     }
     
     public static String toURL(RuleDetails ruleDetails)

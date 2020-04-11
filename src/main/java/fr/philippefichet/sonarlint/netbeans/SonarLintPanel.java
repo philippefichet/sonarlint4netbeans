@@ -20,18 +20,23 @@
 package fr.philippefichet.sonarlint.netbeans;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 import org.openide.util.Lookup;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
@@ -85,14 +90,16 @@ public final class SonarLintPanel extends javax.swing.JPanel {
 
             rulesDefaultTableModel.addColumn("");
             rulesDefaultTableModel.addColumn("Language");
+            rulesDefaultTableModel.addColumn("Severity");
             rulesDefaultTableModel.addColumn("Key");
             rulesDefaultTableModel.addColumn("Details");
             Collection<RuleDetails> allRuleDetails = engine.getAllRuleDetails();
             allRuleDetails.stream().sorted((r1, r2) -> {
                 return r1.getKey().compareTo(r2.getKey());
-            }).map(ruleDetail -> new Object[]{
+            }).map(ruleDetail -> new Object[] {
                 !engine.isExcluded(ruleDetail),
                 ruleDetail.getLanguageKey(),
+                ruleDetail.getSeverity(),
                 ruleDetail.getKey(),
                 ruleDetail.getName()}
             ).collect(Collectors.toList()).forEach(rulesDefaultTableModel::addRow);
@@ -104,7 +111,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
                 if (column == 0) {
                     int firstRow = e.getFirstRow();
                     RuleKey ruleKey = RuleKey.parse(
-                            rulesDefaultTableModel.getValueAt(firstRow, 2).toString()
+                            rulesDefaultTableModel.getValueAt(firstRow, 3).toString()
                     );
                     Object valueAt = rulesDefaultTableModel.getValueAt(firstRow, column);
                     ruleKeyChanged.put(ruleKey, (Boolean) valueAt);
@@ -142,6 +149,19 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         JTable rulesTable = new JTable(rulesDefaultTableModel);
         rulesTable.getColumnModel().getColumn(0).setMaxWidth(50);
         rulesTable.getColumnModel().getColumn(1).setMaxWidth(250);
+        rulesTable.getColumnModel().getColumn(2).setMaxWidth(200);
+        rulesTable.getColumnModel().getColumn(2).setCellRenderer(new TableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                DefaultTableCellRenderer defaultTableCellRenderer = new DefaultTableCellRenderer();
+                String severity = String.valueOf(value);
+                Optional<ImageIcon> toImageIcon = SonarLintUtils.toImageIcon(severity);
+                if (toImageIcon.isPresent()) {
+                    defaultTableCellRenderer.setIcon(toImageIcon.get());
+                }
+                return defaultTableCellRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            }
+        });
         optionPanel.add(rulesTable.getTableHeader(), BorderLayout.NORTH);
         optionPanel.add(rulesTable, BorderLayout.CENTER);
     }

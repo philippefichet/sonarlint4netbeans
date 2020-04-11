@@ -8,6 +8,7 @@ Features:
 - Annotation in editor
 - Type SonarLint in Action Items
 - Enable/Disable Rules in Tools/Options/Miscellaneous/SonarLint
+- Severity icons
 
 == Screenshot
 

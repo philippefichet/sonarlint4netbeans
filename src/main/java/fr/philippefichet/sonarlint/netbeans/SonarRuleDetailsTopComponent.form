@@ -102,7 +102,7 @@
             <EventHandler event="valueChanged" listener="javax.swing.event.ListSelectionListener" parameters="javax.swing.event.ListSelectionEvent" handler="sonarLintAllRulesValueChanged"/>
           </Events>
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="initListAllRuleDetails();"/>
+            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);&#xa;sonarLintAllRules.setCellRenderer(new ListCellRenderer&lt;String&gt;() {&#xa;    @Override&#xa;    public Component getListCellRendererComponent(JList&lt;? extends String&gt; list, String value, int index, boolean isSelected, boolean cellHasFocus) {&#xa;        Optional&lt;RuleDetails&gt; ruleDetails = sonarLintEngine.getRuleDetails(value);&#xa;        DefaultListCellRenderer defaultListCellRenderer = new DefaultListCellRenderer();&#xa;        Component cell = defaultListCellRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);&#xa;        if (ruleDetails.isPresent()) {&#xa;            Optional&lt;ImageIcon&gt; toImageIcon = SonarLintUtils.toImageIcon(ruleDetails.get().getSeverity());&#xa;            if (toImageIcon.isPresent()) {&#xa;                defaultListCellRenderer.setIcon(toImageIcon.get());&#xa;            }&#xa;        }&#xa;        return cell;&#xa;    }&#xa;});&#xa;initListAllRuleDetails();"/>
             <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
           </AuxValues>
         </Component>

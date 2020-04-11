@@ -3,12 +3,12 @@
           "-//NetBeans//DTD annotation type 1.1//EN"
           "https://netbeans.org/dtds/annotation-type-1_1.dtd">
 
-<type name="fr-philippefichet-sonarlint-netbeans-annotation-generic"
+<type name="fr-philippefichet-sonarlint-netbeans-annotation-blocker"
       description_key="SonarLintAnnotation.label"
       localizing_bundle="fr.philippefichet.sonarlint.netbeans.Bundle"
       visible="true"
       severity="none"
-      glyph="nbresloc:/fr/philippefichet/sonarlint/netbeans/resources/sonarlint.png"
+      glyph="nbresloc:/fr/philippefichet/sonarlint/netbeans/resources/sonarlint-blocker.png"
       type="linepart"
-      waveunderline="0xFF0000"
+      waveunderline="0xD4333F"
  />
