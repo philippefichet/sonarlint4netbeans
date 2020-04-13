@@ -138,6 +138,7 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
             }
         });
         initListAllRuleDetails();
+        sonarLintAllRules.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         sonarLintAllRules.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 sonarLintAllRulesValueChanged(evt);
@@ -175,7 +176,7 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
             DefaultListModel<String> model = new DefaultListModel<>();
             Collection<RuleDetails> rules = engine.getAllRuleDetails();
             rules.stream().sorted((r1, r2) -> r1.getKey().compareTo(r2.getKey()))
-            .filter(rule -> ruleKeyFilter.isEmpty() || rule.getKey().toLowerCase().contains(ruleKeyFilter))
+            .filter(SonarLintUtils.FilterBy.keyAndName(ruleKeyFilter))
             .forEach(rule -> model.addElement(rule.getKey()));
             sonarLintAllRules.setModel(model);
             sonarLintAllRules.updateUI();

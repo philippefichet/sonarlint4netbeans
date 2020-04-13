@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -54,7 +55,34 @@ public final class SonarLintUtils {
 
     private SonarLintUtils() {
     }
-    
+
+    public static class FilterBy {
+
+        private FilterBy() {
+        }
+
+       /**
+         * Create a predicat to filter rule detail by language key
+         * @param languageKey language key to filter
+         * @return Predicat to filter rule detail by language key
+         */
+        public static Predicate<RuleDetails> languageKey(String languageKey) {
+            return ruleDetail -> ruleDetail.getLanguageKey().equals(languageKey);
+        }
+
+        /**
+         * Create a predicat to filter rule detail by key or name
+         * @param keyOrName key or name to filter
+         * @return Predicat to filter rule detail by key or name
+         */
+        public static Predicate<RuleDetails> keyAndName(String keyOrName) {
+            String ruleFilterLowerCase = keyOrName.toLowerCase();
+            return ruleDetail -> keyOrName.isEmpty()
+                || ruleDetail.getKey().toLowerCase().contains(ruleFilterLowerCase)
+                || ruleDetail.getName().toLowerCase().contains(ruleFilterLowerCase);
+        }
+    }
+
     public static Optional<ImageIcon> toImageIcon(String severity)
     {
         URL resource = SonarLintUtils.class.getClassLoader().getResource("fr/philippefichet/sonarlint/netbeans/resources/sonarlint-" + severity.toLowerCase() + ".png");
@@ -63,7 +91,7 @@ public final class SonarLintUtils {
         }
         return Optional.of(new ImageIcon(resource, severity));
     }
-    
+
     public static String toURL(RuleDetails ruleDetails)
     {
         String[] keySplit = ruleDetails.getKey().split(":");

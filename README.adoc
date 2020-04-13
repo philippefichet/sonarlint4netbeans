@@ -8,6 +8,7 @@ Features:
 - Annotation in editor
 - Type SonarLint in Action Items
 - Enable/Disable Rules in Tools/Options/Miscellaneous/SonarLint
+- Filter Rules in Tools/Options/Miscellaneous/SonarLint option panel and "Sonar Rule Details" window
 - Severity icons
 
 == Screenshot
@@ -24,5 +25,14 @@ image::docs/OptionsSonarLintAnalyzers.jpg[]
 .SonarLint rules enabled or disabled
 image::docs/OptionsSonarLintRules.jpg[]
 
-.Sonar rule details window
-image::docs/SonarRuleDetailsWindow.jpg[]
+.SonarLint rules enabled or disabled with key filter
+image::docs/OptionsSonarLintRulesWithKeyFilter.jpg[]
+
+.SonarLint rules enabled or disabled with name filter
+image::docs/OptionsSonarLintRulesWithNameFilter.jpg[]
+
+.Sonar rule details window with key filter
+image::docs/SonarRuleDetailsWindowWithKeyFilter.jpg[]
+
+.Sonar rule details window with name filter
+image::docs/SonarRuleDetailsWindowWithNameFilter.jpg[]

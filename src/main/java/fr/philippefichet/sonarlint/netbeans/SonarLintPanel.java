@@ -21,24 +21,28 @@ package fr.philippefichet.sonarlint.netbeans;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.FlowLayout;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import org.openide.util.Lookup;
-import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.connected.LoadedAnalyzer;
 
@@ -49,17 +53,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
     private final Map<RuleKey, Boolean> ruleKeyChanged = new HashMap<>();
     private DefaultTableModel analyzerDefaultTableModel = new DefaultTableModel();
 
-    private DefaultTableModel rulesDefaultTableModel = new DefaultTableModel() {
-        @Override
-        public boolean isCellEditable(int row, int column) {
-            return column < 1;
-        }
-
-        @Override
-        public Class<?> getColumnClass(int columnIndex) {
-            return columnIndex == 0 ? Boolean.class : String.class;
-        }
-    };
+    private SonarLintRuleTableModel rulesDefaultTableModel = new SonarLintRuleTableModel();
 
     public SonarLintPanel(SonarLintOptionsPanelController controller) {
         this.controller = controller;
@@ -88,23 +82,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
                 });
             }
 
-            rulesDefaultTableModel.addColumn("");
-            rulesDefaultTableModel.addColumn("Language");
-            rulesDefaultTableModel.addColumn("Severity");
-            rulesDefaultTableModel.addColumn("Key");
-            rulesDefaultTableModel.addColumn("Details");
-            Collection<RuleDetails> allRuleDetails = engine.getAllRuleDetails();
-            allRuleDetails.stream().sorted((r1, r2) -> {
-                return r1.getKey().compareTo(r2.getKey());
-            }).map(ruleDetail -> new Object[] {
-                !engine.isExcluded(ruleDetail),
-                ruleDetail.getLanguageKey(),
-                ruleDetail.getSeverity(),
-                ruleDetail.getKey(),
-                ruleDetail.getName()}
-            ).collect(Collectors.toList()).forEach(rulesDefaultTableModel::addRow);
-
-            rulesDefaultTableModel.addTableModelListener((e) -> {
+            rulesDefaultTableModel.addTableModelListener(e -> {
                 controller.changed();
                 int column = e.getColumn();
 
@@ -120,7 +98,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
 
             categoriesList.addListSelectionListener((e) -> {
                 if ("Rules".equals(categoriesList.getSelectedValue())) {
-                    initRulesPanel();
+                    initRulesPanel(engine);
                 }
                 if ("Analyzers".equals(categoriesList.getSelectedValue())) {
                     initAnalyzersPanel();
@@ -130,7 +108,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
             });
 
             // Rule panel by default
-            initRulesPanel();
+            initRulesPanel(engine);
             optionPanel.revalidate();
             optionPanel.repaint();
         });
@@ -144,8 +122,35 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         optionPanel.add(analyzersTable, BorderLayout.CENTER);
     }
 
-    private void initRulesPanel() {
+    private void initRulesPanel(SonarLintEngine engine) {
         optionPanel.removeAll();
+        
+        JPanel languageKeyContainer = new JPanel(new FlowLayout());
+        JTextField rulesFilter = new JTextField();
+        rulesFilter.setColumns(20);
+        JComboBox<String> comboLanguageKey = new JComboBox<>();
+        engine.getAllRuleDetails().stream()
+            .map(r -> r.getLanguageKey())
+            .distinct()
+            .forEach(comboLanguageKey::addItem);
+        rulesFilter.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                rulesDefaultTableModel.setRules(engine, (String)comboLanguageKey.getSelectedItem(), rulesFilter.getText());
+            }
+        });
+        comboLanguageKey.addActionListener(
+            e ->
+            rulesDefaultTableModel.setRules(engine, (String)comboLanguageKey.getSelectedItem(), rulesFilter.getText())
+        );
+        languageKeyContainer.add(new JLabel("language key: "));
+        languageKeyContainer.add(comboLanguageKey);
+        languageKeyContainer.add(new JSeparator());
+        languageKeyContainer.add(new JLabel("filter: "));
+        languageKeyContainer.add(rulesFilter);
+        
+        JPanel northContainer = new JPanel();
+        northContainer.setLayout(new BoxLayout(northContainer, BoxLayout.Y_AXIS));
         JTable rulesTable = new JTable(rulesDefaultTableModel);
         rulesTable.getColumnModel().getColumn(0).setMaxWidth(50);
         rulesTable.getColumnModel().getColumn(1).setMaxWidth(250);
@@ -162,7 +167,11 @@ public final class SonarLintPanel extends javax.swing.JPanel {
                 return defaultTableCellRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             }
         });
-        optionPanel.add(rulesTable.getTableHeader(), BorderLayout.NORTH);
+
+        rulesDefaultTableModel.setRules(engine, (String)comboLanguageKey.getSelectedItem(), rulesFilter.getText());
+        northContainer.add(languageKeyContainer);
+        northContainer.add(rulesTable.getTableHeader());
+        optionPanel.add(northContainer, BorderLayout.NORTH);
         optionPanel.add(rulesTable, BorderLayout.CENTER);
     }
 
@@ -178,8 +187,10 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         categoriesLabel = new javax.swing.JLabel();
         categoriesScrollPanel = new javax.swing.JScrollPane();
         categoriesList = new javax.swing.JList<>();
+        optionScrollPane = new javax.swing.JScrollPane();
         optionPanel = new javax.swing.JPanel();
 
+        setPreferredSize(getPreferredSize());
         setLayout(new java.awt.BorderLayout(10, 0));
 
         categoriesPanel.setLayout(new javax.swing.BoxLayout(categoriesPanel, javax.swing.BoxLayout.PAGE_AXIS));
@@ -192,15 +203,21 @@ public final class SonarLintPanel extends javax.swing.JPanel {
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
+        categoriesList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        categoriesList.setSelectedIndex(0);
         categoriesScrollPanel.setViewportView(categoriesList);
 
         categoriesPanel.add(categoriesScrollPanel);
 
         add(categoriesPanel, java.awt.BorderLayout.WEST);
 
+        optionScrollPane.setViewportView(null);
+
         optionPanel.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         optionPanel.setLayout(new java.awt.BorderLayout());
-        add(optionPanel, java.awt.BorderLayout.CENTER);
+        optionScrollPane.setViewportView(optionPanel);
+
+        add(optionScrollPane, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
     void load() {
@@ -235,10 +252,11 @@ public final class SonarLintPanel extends javax.swing.JPanel {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel categoriesLabel;
-    private javax.swing.JList<String> categoriesList;
-    private javax.swing.JPanel categoriesPanel;
-    private javax.swing.JScrollPane categoriesScrollPanel;
-    private javax.swing.JPanel optionPanel;
+    javax.swing.JLabel categoriesLabel;
+    javax.swing.JList<String> categoriesList;
+    javax.swing.JPanel categoriesPanel;
+    javax.swing.JScrollPane categoriesScrollPanel;
+    javax.swing.JPanel optionPanel;
+    javax.swing.JScrollPane optionScrollPane;
     // End of variables declaration//GEN-END:variables
 }
