@@ -243,7 +243,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         });
 
         sonarLintEngine.excludeRuleKeys(ruleKeysDisable);
-        sonarLintEngine.includeRuleKyes(ruleKeysEnable);
+        sonarLintEngine.includeRuleKeys(ruleKeysEnable);
     }
 
     boolean valid() {

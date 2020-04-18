@@ -19,17 +19,14 @@
  */
 package fr.philippefichet.sonarlint.netbeans;
 
-import java.awt.Component;
 import java.awt.Desktop;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Optional;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
-import javax.swing.ImageIcon;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import org.netbeans.api.settings.ConvertAsProperties;
@@ -41,6 +38,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
+import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
 /**
  * Top component which displays something.
@@ -121,22 +119,7 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
 
         add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
-        SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
-        sonarLintAllRules.setCellRenderer(new ListCellRenderer<String>() {
-            @Override
-            public Component getListCellRendererComponent(JList<? extends String> list, String value, int index, boolean isSelected, boolean cellHasFocus) {
-                Optional<RuleDetails> ruleDetails = sonarLintEngine.getRuleDetails(value);
-                DefaultListCellRenderer defaultListCellRenderer = new DefaultListCellRenderer();
-                Component cell = defaultListCellRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if (ruleDetails.isPresent()) {
-                    Optional<ImageIcon> toImageIcon = SonarLintUtils.toImageIcon(ruleDetails.get().getSeverity());
-                    if (toImageIcon.isPresent()) {
-                        defaultListCellRenderer.setIcon(toImageIcon.get());
-                    }
-                }
-                return cell;
-            }
-        });
+        initListAllRuleDetailsRenderer();
         initListAllRuleDetails();
         sonarLintAllRules.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         sonarLintAllRules.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
@@ -170,6 +153,35 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
         });
     }//GEN-LAST:event_sonarLintAllRulesValueChanged
 
+    private void initListAllRuleDetailsRenderer()
+    {
+        SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
+        sonarLintEngine.whenConfigurationChanged(engine -> sonarLintAllRules.repaint());
+        sonarLintAllRules.setCellRenderer(new SonarLintListCellRenderer(sonarLintEngine));
+        sonarLintAllRules.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int locationToIndex = sonarLintAllRules.locationToIndex(e.getPoint());
+                if (locationToIndex != -1 && 
+                    sonarLintAllRules.getCellBounds(locationToIndex,locationToIndex).contains(e.getPoint())
+                    && ((SonarLintListCellRenderer)sonarLintAllRules.getCellRenderer())
+                        .clickOnCkeckBox(e.getPoint())
+                ) {
+                    Optional<RuleDetails> ruleDetails = sonarLintEngine.getRuleDetails(sonarLintAllRules.getSelectedValue());
+                    ruleDetails.ifPresent(rule -> {
+                        RuleKey ruleKey = RuleKey.parse(rule.getKey());
+                        if (sonarLintEngine.isExcluded(rule)) {
+                            sonarLintEngine.includeRuleKey(ruleKey);
+                        } else {
+                            sonarLintEngine.excludeRuleKey(ruleKey);
+                        }
+                        sonarLintAllRules.repaint();
+                    });
+                }
+            }
+        });
+    }
+    
     private void initListAllRuleDetails() {
         SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
         sonarLintEngine.whenInitialized((SonarLintEngine engine) -> {

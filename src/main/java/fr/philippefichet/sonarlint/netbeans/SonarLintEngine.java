@@ -98,11 +98,25 @@ public interface SonarLintEngine {
     public void excludeRuleKeys(List<RuleKey> ruleKey);
 
     /**
-     * incldue one rule
+     * set rules to include
+     *
+     * @param ruleKeys rules to include
+     */
+    public void includeRuleKeys(List<RuleKey> ruleKeys);
+
+    /**
+     * include one rule
      *
      * @param ruleKey rule to include
      */
-    public void includeRuleKyes(List<RuleKey> ruleKey);
+    public void includeRuleKey(RuleKey ruleKey);
+
+    /**
+     * exclude one rule
+     *
+     * @param ruleKey rule to exclude
+     */
+    public void excludeRuleKey(RuleKey ruleKey);
 
     /**
      * Check if rule must be exclude

@@ -105,7 +105,7 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
     }
 
     @Override
-    public void includeRuleKyes(List<RuleKey> ruleKeys) {
+    public void includeRuleKeys(List<RuleKey> ruleKeys) {
         excludedRules.removeAll(ruleKeys);
         getPreferences().put("excludedRules", gson.toJson(excludedRules));
         fireConfigurationChange();
@@ -178,5 +178,19 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
 
     private void fireConfigurationChange() {
         configurationChanged.forEach(consumer -> consumer.accept(this));
+    }
+
+    @Override
+    public void includeRuleKey(RuleKey ruleKey) {
+        excludedRules.remove(ruleKey);
+        getPreferences().put("excludedRules", gson.toJson(excludedRules));
+        fireConfigurationChange();
+    }
+
+    @Override
+    public void excludeRuleKey(RuleKey ruleKey) {
+        excludedRules.add(ruleKey);
+        getPreferences().put("excludedRules", gson.toJson(excludedRules));
+        fireConfigurationChange();
     }
 }
