@@ -1,3 +1,6 @@
+:toc:
+:toclevels: 5
+
 = sonarlint4netbeans
 
 == SonarLint integration for Apache Netbeans
@@ -10,6 +13,17 @@ Features:
 - Enable/Disable Rules in Tools/Options/Miscellaneous/SonarLint
 - Filter Rules in Tools/Options/Miscellaneous/SonarLint option panel and "Sonar Rule Details" window
 - Severity icons
+
+== Release 1.x to 2.x
+
+Release 2.0.0 want publish this plugin in new Netbeans portal based on Maven central repository. +
+For this, all package are renamed and have
+
+=== Preferences
+
+In Netbeans `User dirrectory` move `config/Preferences/fr/philippefichet/sonarlint/netbeans.properties` to `config/Preferences/com/github/philippefichet/sonarlint4netbeans/netbeans.properties`. +
+
+You can found Netbeans `User dirrectory` in menu `Help/About`. +
 
 == Screenshot
 

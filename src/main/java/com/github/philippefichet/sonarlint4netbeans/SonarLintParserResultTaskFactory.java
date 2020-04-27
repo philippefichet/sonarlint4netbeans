@@ -17,3 +17,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
+package com.github.philippefichet.sonarlint4netbeans;
+
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.openide.util.Lookup;
+
+/**
+ *
+ * @author FICHET Philippe
+ */
+public class SonarLintParserResultTaskFactory extends TaskFactory {
+
+    @Override
+    public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+        SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
+        return Collections.singletonList(new SonarLintParserResultTask(sonarLintEngine));
+    }
+}

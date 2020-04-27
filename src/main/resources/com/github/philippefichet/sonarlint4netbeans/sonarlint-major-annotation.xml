@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE type PUBLIC
+          "-//NetBeans//DTD annotation type 1.1//EN"
+          "https://netbeans.org/dtds/annotation-type-1_1.dtd">
+
+<type name="com-github-philippefichet-sonarlint4netbeans-annotation-major"
+      description_key="SonarLintAnnotation.label"
+      localizing_bundle="com.github.philippefichet.sonarlint4netbeans.Bundle"
+      visible="true"
+      severity="none"
+      glyph="nbresloc:/com/github/philippefichet/sonarlint4netbeans/resources/sonarlint-major.png"
+      type="linepart"
+      waveunderline="0xD4333F"
+ />

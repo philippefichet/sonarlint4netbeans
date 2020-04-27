@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 AutoUpdate-Show-In-Client: true
-OpenIDE-Module: fr.philippefichet.sonarlint.netbeans/1
+OpenIDE-Module: com.github.philippefichet.sonarlint4netbeans/1
 OpenIDE-Module-Implementation-Version: 2
-OpenIDE-Module-Layer: fr/philippefichet/sonarlint/netbeans/layer.xml
-OpenIDE-Module-Localizing-Bundle: fr/philippefichet/sonarlint/netbeans/Bundle.properties
+OpenIDE-Module-Layer: com/github/philippefichet/sonarlint4netbeans/layer.xml
+OpenIDE-Module-Localizing-Bundle: com/github/philippefichet/sonarlint4netbeans/Bundle.properties
 OpenIDE-Module-Requires: org.openide.windows.WindowManager
 
