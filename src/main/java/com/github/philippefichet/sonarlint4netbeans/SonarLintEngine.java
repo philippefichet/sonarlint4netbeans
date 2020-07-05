@@ -140,4 +140,26 @@ public interface SonarLintEngine {
      * @param consumer consumer to call when configuration engine is changed.
      */
     public void whenConfigurationChanged(Consumer<SonarLintEngine> consumer);
+
+    /**
+     * Add parameter value on rule by parameter name
+     * @param ruleKey rule key (ex: java:S108)
+     * @param parameterName paramater name of rule
+     * @param parameterValue paramater value
+     */
+    public void setRuleParameter(String ruleKey, String parameterName, String parameterValue);
+
+    /**
+     * Remove parameter value on rule by parameter name
+     * @param ruleKey rule key (ex: java:S108)
+     * @param parameterName paramater name of rule
+     */
+    public void removeRuleParameter(String ruleKey, String parameterName);
+
+    /**
+     * Retrieve parameter value on rule only if changed
+     * @param ruleKey rule key (ex: java:S108)
+     * @return value of rule parameter or empty if not value changed
+     */
+    public Optional<String> getRuleParameter(String ruleKey, String parameterName);
 }

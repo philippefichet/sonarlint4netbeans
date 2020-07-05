@@ -20,8 +20,6 @@
 package com.github.philippefichet.sonarlint4netbeans;
 
 import java.awt.Desktop;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collection;
@@ -38,10 +36,10 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
-import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
 /**
  * Top component which displays something.
+ * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
 @ConvertAsProperties(
     dtd = "-//com.github.philippefichet.sonarlint4netbeans//SonarRuleDetails//EN",
@@ -158,28 +156,7 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
         SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
         sonarLintEngine.whenConfigurationChanged(engine -> sonarLintAllRules.repaint());
         sonarLintAllRules.setCellRenderer(new SonarLintListCellRenderer(sonarLintEngine));
-        sonarLintAllRules.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                int locationToIndex = sonarLintAllRules.locationToIndex(e.getPoint());
-                if (locationToIndex != -1 && 
-                    sonarLintAllRules.getCellBounds(locationToIndex,locationToIndex).contains(e.getPoint())
-                    && ((SonarLintListCellRenderer)sonarLintAllRules.getCellRenderer())
-                        .clickOnCkeckBox(e.getPoint())
-                ) {
-                    Optional<RuleDetails> ruleDetails = sonarLintEngine.getRuleDetails(sonarLintAllRules.getSelectedValue());
-                    ruleDetails.ifPresent(rule -> {
-                        RuleKey ruleKey = RuleKey.parse(rule.getKey());
-                        if (sonarLintEngine.isExcluded(rule)) {
-                            sonarLintEngine.includeRuleKey(ruleKey);
-                        } else {
-                            sonarLintEngine.excludeRuleKey(ruleKey);
-                        }
-                        sonarLintAllRules.repaint();
-                    });
-                }
-            }
-        });
+        sonarLintAllRules.addMouseListener(new SonarLintListMouseAdapter(sonarLintAllRules, sonarLintEngine));
     }
     
     private void initListAllRuleDetails() {

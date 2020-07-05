@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.stream.Collectors;
 import javax.swing.table.DefaultTableModel;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
+import org.sonarsource.sonarlint.core.container.standalone.rule.StandaloneRule;
 
 
 /**
@@ -31,15 +32,20 @@ import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
  */
 public class SonarLintRuleTableModel extends DefaultTableModel {
 
+    public static final int ENABLE_COLUMN_INDEX = 0;
+    public static final int SETTINGS_COLUMN_INDEX = 1;
+    public static final int KEY_COLUMN_INDEX = 2;
+    public static final int SEVERITY_COLUMN_INDEX = 3;
+    
     public SonarLintRuleTableModel() {
         init();
     }
-    
+
     private void init() {
-        addColumn("");
-        addColumn("Language");
-        addColumn("Severity");
+        addColumn("Enable");
+        addColumn("Settings");
         addColumn("Key");
+        addColumn("Severity");
         addColumn("Details");
     }
 
@@ -57,20 +63,38 @@ public class SonarLintRuleTableModel extends DefaultTableModel {
             r1.getKey().compareTo(r2.getKey())
         ).map(ruleDetail -> new Object[] {
             !engine.isExcluded(ruleDetail),
-            ruleDetail.getLanguageKey(),
-            ruleDetail.getSeverity(),
+            hasParams(ruleDetail),
             ruleDetail.getKey(),
+            ruleDetail.getSeverity(),
             ruleDetail.getName()}
         ).collect(Collectors.toList()).forEach(this::addRow);
     }
-    
+
+    private boolean hasParams(RuleDetails ruleDetail) {
+        if (ruleDetail instanceof StandaloneRule) {
+            StandaloneRule standaloneRule = (StandaloneRule)ruleDetail;
+            if (!standaloneRule.params().isEmpty()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     @Override
     public boolean isCellEditable(int row, int column) {
-        return column < 1;
+        return column == ENABLE_COLUMN_INDEX;
     }
 
     @Override
     public Class<?> getColumnClass(int columnIndex) {
-        return columnIndex == 0 ? Boolean.class : String.class;
+        if (columnIndex == ENABLE_COLUMN_INDEX || columnIndex == SETTINGS_COLUMN_INDEX) {
+            return Boolean.class;
+        }
+        return String.class;
+    }
+    
+    public Object getRuleKeyValueAt(int row) {
+        return getValueAt(row, SonarLintRuleTableModel.KEY_COLUMN_INDEX);
     }
 }

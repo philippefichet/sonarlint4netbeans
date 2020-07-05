@@ -55,7 +55,7 @@
                     <licenseName>Lesser GPL 2.1</licenseName>
                     <licenseFile>${basedir}/LICENSE</licenseFile>
                     <homePageUrl>https://github.com/philippefichet/sonarlint4netbeans</homePageUrl>
-                    <equiresRestart>true</equiresRestart>
+                    <requiresRestart>true</requiresRestart>
                 </configuration>
             </plugin>
             <plugin>
@@ -66,6 +66,11 @@
                     <source>1.8</source>
                     <target>1.8</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.2</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -148,6 +153,16 @@
             <groupId>org.sonarsource.sonarlint.core</groupId>
             <artifactId>sonarlint-core</artifactId>
             <version>4.8.0.14729</version>
+        </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy</artifactId>
+            <version>1.10.10</version>
+        </dependency>
+        <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy-agent</artifactId>
+            <version>1.10.10</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
@@ -254,8 +269,31 @@
             <artifactId>org-netbeans-modules-editor-document</artifactId>
             <version>RELEASE110</version>
         </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.6.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>5.6.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.6.2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!--
+            skip verify because when add net.bytebuddy:byte-buddy-agent dependency have this error:
+            Uncategorized problems with NetBeans dependency verification (maybe MNBMODULE-102 or wrong maven dependency metadata). Supposedly external classes are used in the project's binaries but the classes are not found on classpath. Class usages: [java.lang.Module]
+        -->
+        <maven.nbm.verify>skip</maven.nbm.verify>
     </properties>
 </project>

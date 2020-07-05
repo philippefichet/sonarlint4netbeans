@@ -20,10 +20,11 @@
 package com.github.philippefichet.sonarlint4netbeans;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -31,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.swing.BoxLayout;
-import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -39,12 +39,14 @@ import javax.swing.JProgressBar;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
 import org.openide.util.Lookup;
+import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.connected.LoadedAnalyzer;
+import org.sonarsource.sonarlint.core.container.standalone.rule.StandaloneRule;
 
 public final class SonarLintPanel extends javax.swing.JPanel {
 
@@ -89,7 +91,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
                 if (column == 0) {
                     int firstRow = e.getFirstRow();
                     RuleKey ruleKey = RuleKey.parse(
-                            rulesDefaultTableModel.getValueAt(firstRow, 3).toString()
+                        rulesDefaultTableModel.getRuleKeyValueAt(firstRow).toString()
                     );
                     Object valueAt = rulesDefaultTableModel.getValueAt(firstRow, column);
                     ruleKeyChanged.put(ruleKey, (Boolean) valueAt);
@@ -122,26 +124,25 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         optionPanel.add(analyzersTable, BorderLayout.CENTER);
     }
 
-    private void initRulesPanel(SonarLintEngine engine) {
+    private void initRulesPanel(SonarLintEngine sonarLintEngine) {
         optionPanel.removeAll();
-        
         JPanel languageKeyContainer = new JPanel(new FlowLayout());
         JTextField rulesFilter = new JTextField();
         rulesFilter.setColumns(20);
         JComboBox<String> comboLanguageKey = new JComboBox<>();
-        engine.getAllRuleDetails().stream()
+        sonarLintEngine.getAllRuleDetails().stream()
             .map(r -> r.getLanguageKey())
             .distinct()
             .forEach(comboLanguageKey::addItem);
         rulesFilter.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
-                rulesDefaultTableModel.setRules(engine, (String)comboLanguageKey.getSelectedItem(), rulesFilter.getText());
+                rulesDefaultTableModel.setRules(sonarLintEngine, (String)comboLanguageKey.getSelectedItem(), rulesFilter.getText());
             }
         });
         comboLanguageKey.addActionListener(
             e ->
-            rulesDefaultTableModel.setRules(engine, (String)comboLanguageKey.getSelectedItem(), rulesFilter.getText())
+            rulesDefaultTableModel.setRules(sonarLintEngine, (String)comboLanguageKey.getSelectedItem(), rulesFilter.getText())
         );
         languageKeyContainer.add(new JLabel("language key: "));
         languageKeyContainer.add(comboLanguageKey);
@@ -152,23 +153,37 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         JPanel northContainer = new JPanel();
         northContainer.setLayout(new BoxLayout(northContainer, BoxLayout.Y_AXIS));
         JTable rulesTable = new JTable(rulesDefaultTableModel);
-        rulesTable.getColumnModel().getColumn(0).setMaxWidth(50);
-        rulesTable.getColumnModel().getColumn(1).setMaxWidth(250);
-        rulesTable.getColumnModel().getColumn(2).setMaxWidth(200);
-        rulesTable.getColumnModel().getColumn(2).setCellRenderer(new TableCellRenderer() {
+        rulesTable.setRowHeight(rulesTable.getRowHeight() + 2);
+        rulesTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        rulesTable.addMouseListener(new MouseAdapter() {
             @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                DefaultTableCellRenderer defaultTableCellRenderer = new DefaultTableCellRenderer();
-                String severity = String.valueOf(value);
-                Optional<ImageIcon> toImageIcon = SonarLintUtils.toImageIcon(severity);
-                if (toImageIcon.isPresent()) {
-                    defaultTableCellRenderer.setIcon(toImageIcon.get());
+            public void mouseClicked(MouseEvent e) {
+                if (rulesTable.columnAtPoint(e.getPoint()) == SonarLintRuleTableModel.SETTINGS_COLUMN_INDEX) {
+                    String ruleKey = (String)rulesTable.getValueAt(rulesTable.getSelectedRow(), SonarLintRuleTableModel.KEY_COLUMN_INDEX);
+                    Optional<RuleDetails> ruleDetails = sonarLintEngine.getRuleDetails(ruleKey);
+                    ruleDetails.ifPresent(rule -> {
+                        if (rule instanceof StandaloneRule) {
+                            StandaloneRule standaloneRule = (StandaloneRule)rule;
+                            if (!standaloneRule.params().isEmpty()) {
+                                SonarLintRuleSettings sonarLintRuleParameters = new SonarLintRuleSettings(sonarLintEngine, ruleKey);
+                                sonarLintRuleParameters.setVisible(true);
+                            }
+                        }
+                    });
                 }
-                return defaultTableCellRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             }
         });
+        TableColumnModel columnModel = rulesTable.getColumnModel();
+        columnModel.getColumn(SonarLintRuleTableModel.ENABLE_COLUMN_INDEX).setWidth(50);
+        columnModel.getColumn(SonarLintRuleTableModel.SETTINGS_COLUMN_INDEX).setWidth(50);
+        columnModel.getColumn(SonarLintRuleTableModel.SETTINGS_COLUMN_INDEX).setCellRenderer(new SonarLintSettingsTableCellRenderer());
+        columnModel.getColumn(SonarLintRuleTableModel.SEVERITY_COLUMN_INDEX).setWidth(100);
+        columnModel.getColumn(SonarLintRuleTableModel.SEVERITY_COLUMN_INDEX).setCellRenderer(new SonarLintSeverityTableCellRenderer());
+        columnModel.getColumn(SonarLintRuleTableModel.KEY_COLUMN_INDEX).setWidth(100);
+        columnModel.getColumn(SonarLintRuleTableModel.KEY_COLUMN_INDEX).setCellRenderer(new SonarLintRuleKeyTableCellRenderer(sonarLintEngine));
+        columnModel.getColumn(SonarLintRuleTableModel.SEVERITY_COLUMN_INDEX).setCellRenderer(new SonarLintSeverityTableCellRenderer());
 
-        rulesDefaultTableModel.setRules(engine, (String)comboLanguageKey.getSelectedItem(), rulesFilter.getText());
+        rulesDefaultTableModel.setRules(sonarLintEngine, (String)comboLanguageKey.getSelectedItem(), rulesFilter.getText());
         northContainer.add(languageKeyContainer);
         northContainer.add(rulesTable.getTableHeader());
         optionPanel.add(northContainer, BorderLayout.NORTH);
@@ -190,12 +205,11 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         optionScrollPane = new javax.swing.JScrollPane();
         optionPanel = new javax.swing.JPanel();
 
-        setPreferredSize(getPreferredSize());
         setLayout(new java.awt.BorderLayout(10, 0));
 
         categoriesPanel.setLayout(new javax.swing.BoxLayout(categoriesPanel, javax.swing.BoxLayout.PAGE_AXIS));
 
-        org.openide.awt.Mnemonics.setLocalizedText(categoriesLabel, org.openide.util.NbBundle.getMessage(SonarLintPanel.class, "SonarLintPanel.categoriesLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(categoriesLabel, "Categories");
         categoriesPanel.add(categoriesLabel);
 
         categoriesList.setModel(new javax.swing.AbstractListModel<String>() {

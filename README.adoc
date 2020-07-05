@@ -12,6 +12,7 @@ Features:
 - Type SonarLint in Action Items
 - Enable/Disable Rules in Tools/Options/Miscellaneous/SonarLint
 - Filter Rules in Tools/Options/Miscellaneous/SonarLint option panel and "Sonar Rule Details" window
+- Change rule settings in Tools/Options/Miscellaneous/SonarLint or in "Sonar Rule Details" window
 - Severity icons
 
 == Release 1.x to 2.x
@@ -24,6 +25,15 @@ For this, all package are renamed and have
 In Netbeans `User dirrectory` move `config/Preferences/fr/philippefichet/sonarlint/netbeans.properties` to `config/Preferences/com/github/philippefichet/sonarlint4netbeans/netbeans.properties`. +
 
 You can found Netbeans `User dirrectory` in menu `Help/About`. +
+
+== Rule settings
+
+You can change rule settings by left click on this icon image:docs/icon-settings.png[] in Tools/Options/Miscellaneous/SonarLint or in "Sonar Rule Details" window. +
+
+When a rule has no settings, this icon image:docs/icon-settings-empty.png[] is present. +
+
+.Sonar rule details window with name filter
+image::docs/SonarRuleDetailsWindowWithNameFilter.jpg[]
 
 == Screenshot
 
@@ -50,3 +60,9 @@ image::docs/SonarRuleDetailsWindowWithKeyFilter.jpg[]
 
 .Sonar rule details window with name filter
 image::docs/SonarRuleDetailsWindowWithNameFilter.jpg[]
+
+.Sonar rule details window without change settings on java:S1067 rule
+image::docs/SonarRuleDetailsWithSettingsNoChangeJavaS1067.jpg[]
+
+.Sonar rule details window with change to "5" the "max" settings on java:S1067 rule
+image::docs/SonarRuleDetailsWithSettingsChangeJavaS1067.jpg[]
