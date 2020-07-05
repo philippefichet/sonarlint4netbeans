@@ -147,12 +147,12 @@
         <dependency>
             <groupId>org.sonarsource.sonarlint.core</groupId>
             <artifactId>sonarlint-client-api</artifactId>
-            <version>4.8.0.14729</version>
+            <version>4.11.0.18104</version>
         </dependency>
         <dependency>
             <groupId>org.sonarsource.sonarlint.core</groupId>
             <artifactId>sonarlint-core</artifactId>
-            <version>4.8.0.14729</version>
+            <version>4.11.0.18104</version>
         </dependency>
         <dependency>
             <groupId>net.bytebuddy</groupId>

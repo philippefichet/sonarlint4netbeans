@@ -59,8 +59,10 @@ import org.sonarsource.sonarlint.core.container.standalone.rule.StandaloneRulePa
  */
 public final class SonarLintEngineImpl implements SonarLintEngine {
 
-    public static final String SONAR_JAVA_PLUGIN_VERSION = "6.1.0.20866";
-    public static final String SONAR_JAVASCRIPT_PLUGIN_VERSION = "6.2.0.12043";
+    // https://search.maven.org/artifact/org.sonarsource.java/sonar-java-plugin/
+    public static final String SONAR_JAVA_PLUGIN_VERSION = "6.5.0.22421";
+    // https://search.maven.org/artifact/org.sonarsource.javascript/sonar-javascript-plugin/
+    public static final String SONAR_JAVASCRIPT_PLUGIN_VERSION = "6.2.1.12157";
     private static final Logger LOG = Logger.getLogger(SonarLintEngineImpl.class.getName());
     private static final String PREFIX_PREFERENCE_RULE_PARAMETER = "rules.parameters.";
     private static final String PREFIX_EXCLUDE_RULE = "excludedRules";
