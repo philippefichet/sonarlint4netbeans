@@ -27,10 +27,14 @@ import java.util.Optional;
 import javax.swing.DefaultListModel;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.text.Document;
+import javax.swing.text.html.HTMLEditorKit;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.ErrorManager;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
@@ -66,6 +70,22 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
 
     public SonarRuleDetailsTopComponent() {
         initComponents();
+        SonarLintOptions sonarLintOptions = Lookup.getDefault().lookup(SonarLintOptions.class);
+        try {
+            sonarLintOptions.getSonarLintDetailsStyle().addFileChangeListener(new FileChangeAdapter() {
+                @Override
+                public void fileChanged(FileEvent fe) {
+                    // Reset previous stylesheet
+                    HTMLEditorKit htmlEditorKit = new HTMLEditorKit();
+                    Document createDefaultDocument = htmlEditorKit.createDefaultDocument();
+                    sonarLintRuleDetailsEditor.setDocument(createDefaultDocument);
+                    // Update editor
+                    sonarLintAllRulesValueChanged(null);
+                }
+            });
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         setName(Bundle.CTL_SonarRuleDetailsTopComponent());
         setToolTipText(Bundle.HINT_SonarRuleDetailsTopComponent());
 
@@ -80,8 +100,11 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
     private void initComponents() {
 
         sonarRuleKeyFilter = new javax.swing.JTextField();
+        jTabbedPane1 = new javax.swing.JTabbedPane();
         jScrollPane1 = new javax.swing.JScrollPane();
         sonarLintRuleDetailsEditor = new javax.swing.JEditorPane();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        sonarLintRuleDetailsEditorHtmlSource = new javax.swing.JEditorPane();
         jScrollPane2 = new javax.swing.JScrollPane();
         sonarLintAllRules = new javax.swing.JList<>();
 
@@ -115,7 +138,30 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
             });
         }
 
-        add(jScrollPane1, java.awt.BorderLayout.CENTER);
+        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(SonarRuleDetailsTopComponent.class, "SonarRuleDetailsTopComponent.jScrollPane1.TabConstraints.tabTitle"), jScrollPane1); // NOI18N
+
+        sonarLintRuleDetailsEditorHtmlSource.setEditable(false);
+        sonarLintRuleDetailsEditorHtmlSource.setContentType("text/plain");
+        jScrollPane3.setViewportView(sonarLintRuleDetailsEditorHtmlSource);
+        if (Desktop.isDesktopSupported()) {
+            sonarLintRuleDetailsEditor.addHyperlinkListener(new HyperlinkListener() {
+                @Override
+                public void hyperlinkUpdate(HyperlinkEvent e) {
+                    if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                        try {
+                            Desktop.getDesktop().browse(e.getURL().toURI());
+                        } catch (URISyntaxException | IOException ex) {
+                            ErrorManager.getDefault().log("Unable to open browser on URL: " + e.getURL());
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            });
+        }
+
+        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(SonarRuleDetailsTopComponent.class, "SonarRuleDetailsTopComponent.jScrollPane3.TabConstraints.tabTitle"), jScrollPane3); // NOI18N
+
+        add(jTabbedPane1, java.awt.BorderLayout.CENTER);
 
         initListAllRuleDetailsRenderer();
         initListAllRuleDetails();
@@ -137,15 +183,16 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
 
     private void sonarLintAllRulesValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_sonarLintAllRulesValueChanged
         String selectedValue = sonarLintAllRules.getSelectedValue();
+        SonarLintOptions sonarLintOptions = Lookup.getDefault().lookup(SonarLintOptions.class);
         SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
         sonarLintEngine.whenInitialized((SonarLintEngine engine) -> {
             Optional<RuleDetails> optionalRuleDetails = engine.getRuleDetails(selectedValue);
             if (optionalRuleDetails.isPresent()) {
                 RuleDetails ruleDetails = optionalRuleDetails.get();
-                sonarLintRuleDetailsEditor.setText(
-                    "<h1><a href=\"" + SonarLintUtils.toURL(ruleDetails) + "\">" + ruleDetails.getName() + "</a></h1>"
-                    + ruleDetails.getHtmlDescription()
-                );
+                String customCss = SonarLintUtils.toRuleDetailsStyleSheet(sonarLintOptions);
+                String html = SonarLintUtils.toHtmlDescription(ruleDetails);
+                sonarLintRuleDetailsEditor.setText(customCss + html);
+                sonarLintRuleDetailsEditorHtmlSource.setText(html);
                 sonarLintRuleDetailsEditor.getCaret().moveDot(0);
             }
         });
@@ -153,10 +200,11 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
 
     private void initListAllRuleDetailsRenderer()
     {
+        SonarLintOptions sonarLintOptions = Lookup.getDefault().lookup(SonarLintOptions.class);
         SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
         sonarLintEngine.whenConfigurationChanged(engine -> sonarLintAllRules.repaint());
         sonarLintAllRules.setCellRenderer(new SonarLintListCellRenderer(sonarLintEngine));
-        sonarLintAllRules.addMouseListener(new SonarLintListMouseAdapter(sonarLintAllRules, sonarLintEngine));
+        sonarLintAllRules.addMouseListener(new SonarLintListMouseAdapter(sonarLintAllRules, sonarLintOptions, sonarLintEngine));
     }
     
     private void initListAllRuleDetails() {
@@ -176,8 +224,11 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JList<String> sonarLintAllRules;
     private javax.swing.JEditorPane sonarLintRuleDetailsEditor;
+    private javax.swing.JEditorPane sonarLintRuleDetailsEditorHtmlSource;
     private javax.swing.JTextField sonarRuleKeyFilter;
     // End of variables declaration//GEN-END:variables
     @Override

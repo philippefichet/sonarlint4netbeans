@@ -67,13 +67,13 @@
             <Component class="javax.swing.JList" name="categoriesList">
               <Properties>
                 <Property name="model" type="javax.swing.ListModel" editor="org.netbeans.modules.form.editors2.ListModelEditor">
-                  <StringArray count="2">
-                    <StringItem index="0" value="Rules"/>
-                    <StringItem index="1" value="Analyzers"/>
+                  <StringArray count="3">
+                    <StringItem index="0" value="Options"/>
+                    <StringItem index="1" value="Rules"/>
+                    <StringItem index="2" value="Analyzers"/>
                   </StringArray>
                 </Property>
                 <Property name="selectionMode" type="int" value="0"/>
-                <Property name="selectedIndex" type="int" value="0"/>
               </Properties>
               <AuxValues>
                 <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>

@@ -49,6 +49,7 @@ public class SonarLintRuleSettings extends javax.swing.JDialog {
      * Creates new form SonarLintRuleParameters
      */
     public SonarLintRuleSettings(
+        SonarLintOptions sonarLintOptions,
         SonarLintEngine sonarLintEngine,
         String ruleKey
     ) {
@@ -58,7 +59,7 @@ public class SonarLintRuleSettings extends javax.swing.JDialog {
         if (ruleDetailsOptional.isPresent()) {
             RuleDetails ruleDetails = ruleDetailsOptional.get();
             if (ruleDetails instanceof StandaloneRule) {
-                initComponents(sonarLintEngine, (StandaloneRule)ruleDetails);
+                initComponents(sonarLintOptions, sonarLintEngine, (StandaloneRule)ruleDetails);
             } else {
                 mainTitle.setText("Cannot found parameters on rule \"" + ruleKey + "\"");
             }
@@ -89,15 +90,14 @@ public class SonarLintRuleSettings extends javax.swing.JDialog {
         }
     }
 
-    private void initComponents(SonarLintEngine sonarLintEngine, StandaloneRule ruleDetails) {
+    private void initComponents(SonarLintOptions sonarLintOptions, SonarLintEngine sonarLintEngine, StandaloneRule ruleDetails) {
         enableHyperlinkOnRuleDescription();
         String ruleKey = ruleDetails.getKey();
         // Set rule description and dialog
         StandaloneRule rule = (StandaloneRule)ruleDetails;
-        ruleDescription.setText(
-            "<h1><a href=\"" + SonarLintUtils.toURL(ruleDetails) + "\">" + ruleDetails.getName() + "</a></h1>"
-            + ruleDetails.getHtmlDescription()
-        );
+        String customCss = SonarLintUtils.toRuleDetailsStyleSheet(sonarLintOptions);
+        String html = SonarLintUtils.toHtmlDescription(ruleDetails);
+        ruleDescription.setText(customCss + html);
         setTitle(ruleKey + ": " + ruleDetails.getName());
         DefaultTableModel tableModel = (DefaultTableModel)ruleParametersTable.getModel();
         while (tableModel.getRowCount() > 0) {
