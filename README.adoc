@@ -13,6 +13,7 @@ Features:
 - Enable/Disable Rules in Tools/Options/Miscellaneous/SonarLint
 - Filter Rules in Tools/Options/Miscellaneous/SonarLint option panel and "Sonar Rule Details" window
 - Change rule settings in Tools/Options/Miscellaneous/SonarLint or in "Sonar Rule Details" window
+- Custom "Sonar Rule Details" window with CSS
 - Severity icons
 
 == Release 1.x to 2.x
@@ -60,6 +61,9 @@ image::docs/SonarRuleDetailsWindowWithKeyFilter.jpg[]
 
 .Sonar rule details window with name filter
 image::docs/SonarRuleDetailsWindowWithNameFilter.jpg[]
+
+.Sonar rule details window with custom style
+image::docs/SonarRuleDetailsWindowWithCustomStyleSheet.jpg[]
 
 .Sonar rule details window without change settings on java:S1067 rule
 image::docs/SonarRuleDetailsWithSettingsNoChangeJavaS1067.jpg[]
