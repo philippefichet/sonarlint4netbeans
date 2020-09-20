@@ -25,6 +25,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -42,6 +44,11 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
+import org.openide.cookies.EditorCookie;
+import org.openide.cookies.OpenCookie;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
@@ -105,6 +112,9 @@ public final class SonarLintPanel extends javax.swing.JPanel {
                 if ("Analyzers".equals(categoriesList.getSelectedValue())) {
                     initAnalyzersPanel();
                 }
+                if ("Options".equals(categoriesList.getSelectedValue())) {
+                    initOptionsPanel();
+                }
                 optionPanel.revalidate();
                 optionPanel.repaint();
             });
@@ -124,6 +134,34 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         optionPanel.add(analyzersTable, BorderLayout.CENTER);
     }
 
+    private void initOptionsPanel()
+    {
+        optionPanel.removeAll();
+        FlowLayout layout = new FlowLayout(FlowLayout.LEFT);
+        JPanel container = new JPanel(layout);
+        JButton open = new JButton("Edit stylesheet for sonar rule detail window");
+        open.addActionListener((l) -> {
+            SonarLintOptions sonarlintOptions = Lookup.getDefault().lookup(SonarLintOptions.class);
+            DataObject d;
+            try {
+                d = DataObject.find(sonarlintOptions.getSonarLintDetailsStyle());
+                EditorCookie ec = (EditorCookie)d.getLookup().lookup(EditorCookie.class);
+                if (ec == null) {
+                    OpenCookie oc = (OpenCookie)d.getLookup().lookup(OpenCookie.class);
+                    oc.open();
+                } else {
+                    ec.open();
+                }
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        });
+        container.add(open);
+        optionPanel.add(container);
+    }
+    
     private void initRulesPanel(SonarLintEngine sonarLintEngine) {
         optionPanel.removeAll();
         JPanel languageKeyContainer = new JPanel(new FlowLayout());
@@ -165,7 +203,8 @@ public final class SonarLintPanel extends javax.swing.JPanel {
                         if (rule instanceof StandaloneRule) {
                             StandaloneRule standaloneRule = (StandaloneRule)rule;
                             if (!standaloneRule.params().isEmpty()) {
-                                SonarLintRuleSettings sonarLintRuleParameters = new SonarLintRuleSettings(sonarLintEngine, ruleKey);
+                                SonarLintOptions sonarlintOptions = Lookup.getDefault().lookup(SonarLintOptions.class);
+                                SonarLintRuleSettings sonarLintRuleParameters = new SonarLintRuleSettings(sonarlintOptions, sonarLintEngine, ruleKey);
                                 sonarLintRuleParameters.setVisible(true);
                             }
                         }
@@ -209,16 +248,15 @@ public final class SonarLintPanel extends javax.swing.JPanel {
 
         categoriesPanel.setLayout(new javax.swing.BoxLayout(categoriesPanel, javax.swing.BoxLayout.PAGE_AXIS));
 
-        org.openide.awt.Mnemonics.setLocalizedText(categoriesLabel, "Categories");
+        org.openide.awt.Mnemonics.setLocalizedText(categoriesLabel, org.openide.util.NbBundle.getMessage(SonarLintPanel.class, "SonarLintPanel.categoriesLabel.text")); // NOI18N
         categoriesPanel.add(categoriesLabel);
 
         categoriesList.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Rules", "Analyzers" };
+            String[] strings = { "Options", "Rules", "Analyzers" };
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
         categoriesList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        categoriesList.setSelectedIndex(0);
         categoriesScrollPanel.setViewportView(categoriesList);
 
         categoriesPanel.add(categoriesScrollPanel);

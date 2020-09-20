@@ -37,6 +37,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
@@ -169,5 +170,33 @@ public final class SonarLintUtils {
             }
         }
         return false;
+    }
+
+    /**
+     * Retrive stylesheet for HTML rule detail description
+     * @param sonarLintOptions
+     * @return Stylesheet for HTML rule detail description
+     */
+    public static String toRuleDetailsStyleSheet(SonarLintOptions sonarLintOptions)
+    {
+        try {
+            return "<style>\n" + sonarLintOptions.getSonarLintDetailsStyle().asText() + "\n</style>";
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return "";
+        }
+    }
+
+    /**
+     * Retrieve HTML detail description of rule
+     * @param ruleDetails Detail of rule
+     * @return HTML detail description of rule
+     */
+    public static String toHtmlDescription(RuleDetails ruleDetails)
+    {
+        return "<div id=\"" + ruleDetails.getKey().replaceAll(":", "-") + "\">"
+            + "<h1><a href=\"" + SonarLintUtils.toURL(ruleDetails) + "\">" + ruleDetails.getName() + "</a></h1>"
+            + ruleDetails.getHtmlDescription()
+            + "</div>";
     }
 }

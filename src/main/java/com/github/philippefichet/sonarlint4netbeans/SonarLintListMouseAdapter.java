@@ -34,10 +34,12 @@ import org.sonarsource.sonarlint.core.container.standalone.rule.StandaloneRule;
 public class SonarLintListMouseAdapter extends MouseAdapter {
     private final JList<String> sonarLintAllRules;
     private final SonarLintEngine sonarLintEngine;
+    private final SonarLintOptions sonarLintOptions;
 
-    public SonarLintListMouseAdapter(JList<String> sonarLintAllRules, SonarLintEngine sonarLintEngine) {
+    public SonarLintListMouseAdapter(JList<String> sonarLintAllRules, SonarLintOptions sonarLintOptions, SonarLintEngine sonarLintEngine) {
         this.sonarLintAllRules = sonarLintAllRules;
         this.sonarLintEngine = sonarLintEngine;
+        this.sonarLintOptions = sonarLintOptions;
     }
     
     @Override
@@ -65,7 +67,7 @@ public class SonarLintListMouseAdapter extends MouseAdapter {
                     if (rule instanceof StandaloneRule) {
                         StandaloneRule standaloneRule = (StandaloneRule)rule;
                         if (!standaloneRule.params().isEmpty()) {
-                            SonarLintRuleSettings sonarLintRuleParameters = new SonarLintRuleSettings(sonarLintEngine, sonarLintAllRules.getSelectedValue());
+                            SonarLintRuleSettings sonarLintRuleParameters = new SonarLintRuleSettings(sonarLintOptions, sonarLintEngine, sonarLintAllRules.getSelectedValue());
                             sonarLintRuleParameters.setVisible(true);
                         }
                     }
