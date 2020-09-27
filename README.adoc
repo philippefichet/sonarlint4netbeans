@@ -36,6 +36,18 @@ When a rule has no settings, this icon image:docs/icon-settings-empty.png[] is p
 .Sonar rule details window with name filter
 image::docs/SonarRuleDetailsWindowWithNameFilter.jpg[]
 
+== "Sonar rule details" window StyleSheet
+
+You can customize "Sonar rule details" with CSS. +
+
+Go to Tools/Options/Miscellaneous/SonarLint and click on "Options" and on button "Edit stylesheet for sonar rule detail window". +
+
+[IMPORTANT] 
+====
+CSS is limited by https://docs.oracle.com/javase/8/docs/api/javax/swing/text/html/CSS.html[javax.swing.text.html.CSS], 
+consult the documentation to know the supported properties.
+====
+
 == Screenshot
 
 .SonarLint in Java editor and show action items for selected project
@@ -55,6 +67,9 @@ image::docs/OptionsSonarLintRulesWithKeyFilter.jpg[]
 
 .SonarLint rules enabled or disabled with name filter
 image::docs/OptionsSonarLintRulesWithNameFilter.jpg[]
+
+.SonarLint Options
+image::docs/OptionsSonarLintOptions
 
 .Sonar rule details window with key filter
 image::docs/SonarRuleDetailsWindowWithKeyFilter.jpg[]
