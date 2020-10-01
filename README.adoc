@@ -14,6 +14,7 @@ Features:
 - Filter Rules in Tools/Options/Miscellaneous/SonarLint option panel and "Sonar Rule Details" window
 - Change rule settings in Tools/Options/Miscellaneous/SonarLint or in "Sonar Rule Details" window
 - Custom "Sonar Rule Details" window with CSS
+- Enable or disabled test rules on test files
 - Severity icons
 
 == Release 1.x to 2.x

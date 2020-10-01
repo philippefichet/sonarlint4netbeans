@@ -21,6 +21,7 @@ package com.github.philippefichet.sonarlint4netbeans;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.awt.event.ItemEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -33,7 +34,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.swing.BoxLayout;
+import static javax.swing.BoxLayout.Y_AXIS;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -60,6 +63,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
     private final SonarLintOptionsPanelController controller;
 
     private final Map<RuleKey, Boolean> ruleKeyChanged = new HashMap<>();
+    private Boolean applyDifferentRulesOnTestFiles = null;
     private DefaultTableModel analyzerDefaultTableModel = new DefaultTableModel();
 
     private SonarLintRuleTableModel rulesDefaultTableModel = new SonarLintRuleTableModel();
@@ -137,11 +141,12 @@ public final class SonarLintPanel extends javax.swing.JPanel {
     private void initOptionsPanel()
     {
         optionPanel.removeAll();
-        FlowLayout layout = new FlowLayout(FlowLayout.LEFT);
-        JPanel container = new JPanel(layout);
+        JPanel container = new JPanel();
+        BoxLayout layout = new BoxLayout(container, Y_AXIS);
+        container.setLayout(layout);
+        SonarLintOptions sonarlintOptions = Lookup.getDefault().lookup(SonarLintOptions.class);
         JButton open = new JButton("Edit stylesheet for sonar rule detail window");
         open.addActionListener((l) -> {
-            SonarLintOptions sonarlintOptions = Lookup.getDefault().lookup(SonarLintOptions.class);
             DataObject d;
             try {
                 d = DataObject.find(sonarlintOptions.getSonarLintDetailsStyle());
@@ -159,6 +164,12 @@ public final class SonarLintPanel extends javax.swing.JPanel {
             }
         });
         container.add(open);
+        JCheckBox applyTestRules = new JCheckBox("Use other rules on test files", sonarlintOptions.applyDifferentRulesOnTestFiles());
+        applyTestRules.addItemListener(e -> {
+            controller.changed();
+            applyDifferentRulesOnTestFiles = e.getStateChange() == ItemEvent.SELECTED;
+        });
+        container.add(applyTestRules);
         optionPanel.add(container);
     }
     
@@ -283,6 +294,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
     }
 
     void store() {
+        SonarLintOptions sonarLintOptions = Lookup.getDefault().lookup(SonarLintOptions.class);
         SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
         List<RuleKey> ruleKeysEnable = new ArrayList<>();
         List<RuleKey> ruleKeysDisable = new ArrayList<>();
@@ -293,7 +305,9 @@ public final class SonarLintPanel extends javax.swing.JPanel {
                 ruleKeysDisable.add(ruleKey);
             }
         });
-
+        if (sonarLintOptions != null && applyDifferentRulesOnTestFiles != null) {
+            sonarLintOptions.useDifferentRulesOnTestFiles(applyDifferentRulesOnTestFiles);
+        }
         sonarLintEngine.excludeRuleKeys(ruleKeysDisable);
         sonarLintEngine.includeRuleKeys(ruleKeysEnable);
     }

@@ -67,6 +67,23 @@ public class SonarLintOptions {
         return NbPreferences.forModule(SonarLintOptions.class);
     }
 
+    /**
+     * Change options to apply different rules on test files
+     * @param applyDifferentRulesOnTestFiles true to apply different rules on test files, false to apply classic rules on test files
+     */
+    public void useDifferentRulesOnTestFiles(boolean applyDifferentRulesOnTestFiles) {
+        getPreferences().putBoolean("options.applyDifferentRulesOnTestFiles", applyDifferentRulesOnTestFiles);
+    }
+
+    /**
+     * Rettrieve true if analyzers may apply different rules on test files
+     * @return true if analyzers may apply different rules on test files; false to apply classic rules on test files
+     */
+    public boolean applyDifferentRulesOnTestFiles()
+    {
+        return getPreferences().getBoolean("options.applyDifferentRulesOnTestFiles", true);
+    }
+    
     private FileSystem getFileSystem()
     {
         if (createMemoryFileSystem == null)
