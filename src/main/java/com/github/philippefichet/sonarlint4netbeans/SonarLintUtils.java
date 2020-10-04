@@ -105,6 +105,9 @@ public final class SonarLintUtils {
             return Collections.emptyList();
         }
 
+        SonarLintOptions sonarlintOptions = Lookup.getDefault().lookup(SonarLintOptions.class);
+        boolean useTestRules = sonarlintOptions == null || sonarlintOptions.applyDifferentRulesOnTestFiles();
+
         String sonarLintHome = System.getProperty("user.home") + File.separator + ".sonarlint4netbeans";
         List<Issue> issues = new ArrayList<>();
         Collection<RuleDetails> allRuleDetails = sonarLintEngine.getAllRuleDetails();
@@ -125,11 +128,12 @@ public final class SonarLintUtils {
         }
         Path path = toFile.toPath();
         List<ClientInputFile> files = new ArrayList<>();
-        files.add(new FSClientInputFile(
+        boolean applyTestRules = useTestRules && SonarLintUtils.isTest(fileObject);
+       files.add(new FSClientInputFile(
             contentToAnalyze == null ? new String(Files.readAllBytes(path)) : contentToAnalyze,
             path.toAbsolutePath(),
             path.toFile().getName(),
-            SonarLintUtils.isTest(fileObject),
+            applyTestRules,
             FileEncodingQuery.getEncoding(fileObject))
         );
 
