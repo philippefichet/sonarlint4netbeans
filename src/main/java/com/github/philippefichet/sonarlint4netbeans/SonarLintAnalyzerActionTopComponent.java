@@ -126,42 +126,6 @@ public final class SonarLintAnalyzerActionTopComponent extends TopComponent {
         rp.post(() -> {
             SonarLintAnalyzerCancelableTask sonarLintAnalyzerCancelableTask = new SonarLintAnalyzerCancelableTask(sonarLintAnalyzerContainer, nodes);
             sonarLintAnalyzerCancelableTask.run();
-//            ProgressHandle handle = ProgressHandle.createHandle("SonarLint Anylazer (init)");
-//            handle.start();
-//            sonarLintAnalyzerContainer.starting();
-//            handle.progress(0);
-//            handle.progress("Init");
-//            List<File> files = SonarLintUtils.toFiles(nodes);
-//            // Exclude file supposed not analyzed by an analyzer
-//            SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
-//            List<String> fileSuffix = sonarLintEngine.getLoadedAnalyzers().stream().map(LoadedAnalyzer::key).collect(Collectors.toList());
-//            List<String> uriFormFiles = files.stream()
-//                .filter(file -> {
-//                    String[] absolutePathsplit = file.getAbsolutePath().split("\\.");
-//                    return absolutePathsplit.length > 0 && fileSuffix.contains(absolutePathsplit[absolutePathsplit.length - 1]);
-//                })
-//                .map(File::toPath)
-//                .map(Path::toUri)
-//                .map(URI::getPath)
-//                .collect(Collectors.toList());
-//            int maxFileSupposedAnalyzed = uriFormFiles.size();
-//            handle.switchToDeterminate(maxFileSupposedAnalyzed);
-//            ClientInputFileListener clientInputFileInputStreamEvent = (URI uri) -> {
-//                uriFormFiles.remove(uri.getPath());
-//                handle.setDisplayName("SonarLint Analyzer");
-//                handle.progress(maxFileSupposedAnalyzed - uriFormFiles.size());
-//                handle.progress(SonarLintUtils.toTruncateURI(uri, 75));
-//            };
-//            try {
-//                AnalysisResults analyze = SonarLintUtils.analyze(files, sonarLintAnalyzerContainer, clientInputFileInputStreamEvent);
-//                if (analyze.failedAnalysisFiles().size() > 0) {
-//                    LOG.warning("SonarLint analyze finish with \"" + analyze.failedAnalysisFiles().size() + "\" failed analysis files.");
-//                }
-//            } catch (IOException ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-//            sonarLintAnalyzerContainer.ending();
-//            handle.finish();
         });
     }
 }
