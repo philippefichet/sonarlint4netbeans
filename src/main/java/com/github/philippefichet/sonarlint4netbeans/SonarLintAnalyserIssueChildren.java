@@ -45,7 +45,7 @@ public class SonarLintAnalyserIssueChildren extends Children.Keys<Issue> {
         nodeInstancies.put(issue, new SonarLintAnalyserIssueNode(issue));
         List<Issue> keySet = new ArrayList<>(nodeInstancies.keySet());
         Collections.sort(keySet, issueComparator);
-        setKeys(nodeInstancies.keySet());
+        setKeys(keySet);
     }
 
     @Override

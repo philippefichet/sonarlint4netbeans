@@ -20,6 +20,8 @@
 package com.github.philippefichet.sonarlint4netbeans;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -70,7 +72,7 @@ public class SonarLintAnalyserIssueComparatorTest {
             ),
         };
     }
-    
+
     @ParameterizedTest
     @MethodSource("parametersForCompare")
     public void compare(Issue o1, Issue o2, CompareOrder compareOrder)
@@ -94,4 +96,31 @@ public class SonarLintAnalyserIssueComparatorTest {
                 Assertions.fail("Comparator Order \"" + compareOrder + "\" is not supported");
         }
     }
+
+    @ParameterizedTest
+    @MethodSource("parametersForCompare")
+    public void sort(Issue o1, Issue o2, CompareOrder compareOrder)
+    {
+        ArrayList<Issue> issues = new ArrayList<Issue>();
+        issues.add(o1);
+        issues.add(o2);
+        Collections.sort(issues, new SonarLintAnalyserIssueComparator());
+        switch (compareOrder) {
+            case FIRST:
+                Assertions.assertThat(issues)
+                    .containsExactly(o1, o2);
+                break;
+            case SECOND:
+                Assertions.assertThat(issues)
+                    .containsExactly(o2, o1);
+                break;
+            case TIED:
+                Assertions.assertThat(issues)
+                    .containsExactly(o1, o2);
+                break;
+            default:
+                Assertions.fail("Comparator Order \"" + compareOrder + "\" is not supported");
+        }
+    }
+
 }
