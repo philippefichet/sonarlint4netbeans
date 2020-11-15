@@ -10,6 +10,7 @@ Features:
 - Support Java and Javascript
 - Annotation in editor
 - Type SonarLint in Action Items
+- "Analyze with SonarLint" action on Project/package/files, Favorites tab, ...
 - Enable/Disable Rules in Tools/Options/Miscellaneous/SonarLint
 - Filter Rules in Tools/Options/Miscellaneous/SonarLint option panel and "Sonar Rule Details" window
 - Change rule settings in Tools/Options/Miscellaneous/SonarLint or in "Sonar Rule Details" window
@@ -27,6 +28,17 @@ For this, all package are renamed and have
 In Netbeans `User dirrectory` move `config/Preferences/fr/philippefichet/sonarlint/netbeans.properties` to `config/Preferences/com/github/philippefichet/sonarlint4netbeans/netbeans.properties`. +
 
 You can found Netbeans `User dirrectory` in menu `Help/About`. +
+
+== "Analyze with SonarLint"
+
+You can run an "Analyze with SonarLint by context menu (click right) on project, folder, many file, ... +
+This action is visible directly in context menu on through `Tools` sub menu. +
+
+.Analyze with SonarLint on project
+image::docs/SonarLintAnalyzerOnProject.jpg[]
+
+.Analyze with SonarLint in Favorites tab
+image::docs/SonarLintAnalyzerOnFavorites.jpg[]
 
 == Rule settings
 
@@ -56,6 +68,12 @@ image::docs/JavaEditorAnnotationAndActionItems.jpg[]
 
 .Show Action Items fo currently edited file only
 image::docs/JavascriptActionItems.jpg[]
+
+.Analyze with SonarLint on project
+image::docs/SonarLintAnalyzerOnProject.jpg[]
+
+.Analyze with SonarLint in Favorites tab
+image::docs/SonarLintAnalyzerOnFavorites.jpg[]
 
 .SonarLint analyzer name and version
 image::docs/OptionsSonarLintAnalyzers.jpg[]
