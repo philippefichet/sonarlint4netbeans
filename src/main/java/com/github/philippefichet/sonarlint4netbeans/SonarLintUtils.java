@@ -21,9 +21,14 @@ package com.github.philippefichet.sonarlint4netbeans;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,20 +36,27 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.sonarsource.sonarlint.core.client.api.common.ProgressMonitor;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
+import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
+import org.sonarsource.sonarlint.core.client.api.connected.LoadedAnalyzer;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
+import org.sonarsource.sonarlint.core.container.model.DefaultAnalysisResult;
 
 /**
  *
@@ -202,5 +214,153 @@ public final class SonarLintUtils {
             + "<h1><a href=\"" + SonarLintUtils.toURL(ruleDetails) + "\">" + ruleDetails.getName() + "</a></h1>"
             + ruleDetails.getHtmlDescription()
             + "</div>";
+    }
+
+    /**
+     * 
+     * @param files
+     * @param listener
+     * @param clientInputFileInputStreamEvent
+     * @return
+     * @throws IOException 
+     */
+    public static AnalysisResults analyze(
+        List<File> files,
+        IssueListener listener,
+        ClientInputFileListener clientInputFileInputStreamEvent,
+        SonarLintAnalyzerCancelableTask sonarLintAnalyzerCancelableTask
+    ) throws IOException {
+        SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
+        if (sonarLintEngine == null) {
+            return new DefaultAnalysisResult();
+        }
+
+        String sonarLintHome = System.getProperty("user.home") + File.separator + ".sonarlint4netbeans";
+        Collection<RuleDetails> allRuleDetails = sonarLintEngine.getAllRuleDetails();
+        List<RuleKey> excludedRules = new ArrayList<>();
+        List<RuleKey> includedRules = new ArrayList<>();
+        for (RuleDetails allRuleDetail : allRuleDetails) {
+            RuleKey ruleKey = RuleKey.parse(allRuleDetail.getKey());
+            if (sonarLintEngine.isExcluded(allRuleDetail)) {
+                excludedRules.add(ruleKey);
+            } else {
+                includedRules.add(ruleKey);
+            }
+        }
+        
+        List<String> fileSuffix = sonarLintEngine.getLoadedAnalyzers().stream().map(LoadedAnalyzer::key).collect(Collectors.toList());
+        List<FSClientInputFile> clientInputFiles = new ArrayList<>();
+        for (File file : files) {
+            // Skip file not analyzed by an analyzer
+            String[] absolutePathsplit = file.getAbsolutePath().split(".");
+            if (absolutePathsplit.length > 0 && !fileSuffix.contains(absolutePathsplit[absolutePathsplit.length - 1])) {
+                continue;
+            }
+            // Map file to implementation of ClientInputFile
+            Path path = file.toPath();
+            try {
+                Charset encoding = FileEncodingQuery.getEncoding(FileUtil.toFileObject(file));
+                FileObject fileObject = FileUtil.toFileObject(file);
+                clientInputFiles.add(new FSClientInputFile(
+                    new String(Files.readAllBytes(path)),
+                    path.toAbsolutePath(),
+                    path.toFile().getName(),
+                    fileObject != null && SonarLintUtils.isTest(fileObject),
+                    encoding
+                ));
+            } catch (IOException ex) {
+                LOG.warning("Error during getEncoding from \"" + file.getAbsolutePath() + "\": " + ex.getMessage());
+            }
+        }
+
+        StandaloneAnalysisConfiguration standaloneAnalysisConfiguration =
+            StandaloneAnalysisConfiguration.builder()
+            .setBaseDir(new File(sonarLintHome).toPath())
+            .addInputFiles(clientInputFiles)
+            .addExcludedRules(excludedRules)
+            .addIncludedRules(includedRules)
+            .build();
+
+        // Add listener only after configuration to prevent ClientInputFile.uri() call during configuration phase
+        clientInputFiles.forEach(file -> file.addListener(clientInputFileInputStreamEvent));
+        AnalysisResults analyze = sonarLintEngine.analyze(
+            standaloneAnalysisConfiguration,
+            listener,
+            null,
+            new ProgressMonitor() {
+                @Override
+                public boolean isCanceled() {
+                    return sonarLintAnalyzerCancelableTask != null && sonarLintAnalyzerCancelableTask.isCanceled();
+                }
+            }
+        );
+        return analyze;
+    }
+
+    
+    public static List<File> toFiles(Node[] nodes) {
+        List<File> files = new ArrayList<>();
+        for (Node node : nodes) {
+            DataObject dataObjectOfNode = node.getLookup().lookup(DataObject.class);
+            if (dataObjectOfNode != null) {
+                File file = FileUtil.toFile(dataObjectOfNode.getPrimaryFile());
+                try {
+                    Files.walkFileTree(file.toPath(), new FileVisitor<Path>() {
+                        @Override
+                        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                            return FileVisitResult.CONTINUE;
+                        }
+                        
+                        @Override
+                        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                            files.add(file.toFile());
+                            return FileVisitResult.CONTINUE;
+                        }
+                        
+                        @Override
+                        public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+                            return FileVisitResult.SKIP_SUBTREE;
+                        }
+                        
+                        @Override
+                        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+                            return FileVisitResult.CONTINUE;
+                        }
+                    });
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return files;
+    }
+    
+    /**
+     * Cut start URI too long
+     * @param uri
+     * @param maximalLength 
+     * @return 
+     */
+    public static final String toTruncateURI(URI uri, int maximalLength)
+    {
+        if (uri == null) {
+            return null;
+        }
+        String uriPath = uri.toString();
+        if (uriPath.length() <= maximalLength) {
+            return uriPath;
+        }
+        StringBuilder sb = new StringBuilder();
+        String[] split = uriPath.split("/");
+        for (int i = split.length - 1 ; i >= 1 ; i--) {
+            sb.insert(0, split[i]);
+            if ((sb.length() + 3) > maximalLength) {
+                sb.insert(0, ".../");
+                break;
+            } else {
+                sb.insert(0, "/");
+            }
+        }
+        return sb.toString();
     }
 }
