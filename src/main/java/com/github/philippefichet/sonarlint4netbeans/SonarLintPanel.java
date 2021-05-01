@@ -53,10 +53,9 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
+import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
-import org.sonarsource.sonarlint.core.client.api.connected.LoadedAnalyzer;
-import org.sonarsource.sonarlint.core.container.standalone.rule.StandaloneRule;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 
 public final class SonarLintPanel extends javax.swing.JPanel {
 
@@ -86,12 +85,14 @@ public final class SonarLintPanel extends javax.swing.JPanel {
             analyzerDefaultTableModel.addColumn("Key");
             analyzerDefaultTableModel.addColumn("Name");
             analyzerDefaultTableModel.addColumn("Version");
-            Collection<LoadedAnalyzer> loadedAnalyzers = engine.getLoadedAnalyzers();
-            for (LoadedAnalyzer loadedAnalyzer : loadedAnalyzers) {
+            analyzerDefaultTableModel.addColumn("Status");
+            Collection<PluginDetails> loadedAnalyzers = engine.getPluginDetails();
+            for (PluginDetails loadedAnalyzer : loadedAnalyzers) {
                 analyzerDefaultTableModel.addRow(new Object[]{
                     loadedAnalyzer.key(),
                     loadedAnalyzer.name(),
-                    loadedAnalyzer.version()
+                    loadedAnalyzer.version(),
+                    loadedAnalyzer.skipReason().map(reason -> "Disable: " + reason.toString()).orElse("Enable")
                 });
             }
 
@@ -180,7 +181,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         rulesFilter.setColumns(20);
         JComboBox<String> comboLanguageKey = new JComboBox<>();
         sonarLintEngine.getAllRuleDetails().stream()
-            .map(r -> r.getLanguageKey())
+            .map(r -> r.getLanguage().getLanguageKey())
             .distinct()
             .forEach(comboLanguageKey::addItem);
         rulesFilter.addKeyListener(new KeyAdapter() {
@@ -209,15 +210,12 @@ public final class SonarLintPanel extends javax.swing.JPanel {
             public void mouseClicked(MouseEvent e) {
                 if (rulesTable.columnAtPoint(e.getPoint()) == SonarLintRuleTableModel.SETTINGS_COLUMN_INDEX) {
                     String ruleKey = (String)rulesTable.getValueAt(rulesTable.getSelectedRow(), SonarLintRuleTableModel.KEY_COLUMN_INDEX);
-                    Optional<RuleDetails> ruleDetails = sonarLintEngine.getRuleDetails(ruleKey);
-                    ruleDetails.ifPresent(rule -> {
-                        if (rule instanceof StandaloneRule) {
-                            StandaloneRule standaloneRule = (StandaloneRule)rule;
-                            if (!standaloneRule.params().isEmpty()) {
-                                SonarLintOptions sonarlintOptions = Lookup.getDefault().lookup(SonarLintOptions.class);
-                                SonarLintRuleSettings sonarLintRuleParameters = new SonarLintRuleSettings(sonarlintOptions, sonarLintEngine, ruleKey);
-                                sonarLintRuleParameters.setVisible(true);
-                            }
+                    Optional<StandaloneRuleDetails> ruleDetails = sonarLintEngine.getRuleDetails(ruleKey);
+                    ruleDetails.ifPresent(standaloneRule -> {
+                        if (!standaloneRule.paramDetails().isEmpty()) {
+                            SonarLintOptions sonarlintOptions = Lookup.getDefault().lookup(SonarLintOptions.class);
+                            SonarLintRuleSettings sonarLintRuleParameters = new SonarLintRuleSettings(sonarlintOptions, sonarLintEngine, ruleKey);
+                            sonarLintRuleParameters.setVisible(true);
                         }
                     });
                 }

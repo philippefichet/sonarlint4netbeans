@@ -40,6 +40,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 
 /**
  * Top component which displays something.
@@ -186,7 +187,7 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
         SonarLintOptions sonarLintOptions = Lookup.getDefault().lookup(SonarLintOptions.class);
         SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
         sonarLintEngine.whenInitialized((SonarLintEngine engine) -> {
-            Optional<RuleDetails> optionalRuleDetails = engine.getRuleDetails(selectedValue);
+            Optional<StandaloneRuleDetails> optionalRuleDetails = engine.getRuleDetails(selectedValue);
             if (optionalRuleDetails.isPresent()) {
                 RuleDetails ruleDetails = optionalRuleDetails.get();
                 String customCss = SonarLintUtils.toRuleDetailsStyleSheet(sonarLintOptions);
@@ -211,7 +212,7 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
         SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
         sonarLintEngine.whenInitialized((SonarLintEngine engine) -> {
             DefaultListModel<String> model = new DefaultListModel<>();
-            Collection<RuleDetails> rules = engine.getAllRuleDetails();
+            Collection<StandaloneRuleDetails> rules = engine.getAllRuleDetails();
             rules.stream().sorted((r1, r2) -> r1.getKey().compareTo(r2.getKey()))
             .filter(SonarLintUtils.FilterBy.keyAndName(ruleKeyFilter))
             .forEach(rule -> model.addElement(rule.getKey()));

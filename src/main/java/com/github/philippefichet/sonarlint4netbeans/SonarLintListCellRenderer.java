@@ -33,9 +33,8 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
-import org.sonar.api.batch.rule.RuleParam;
-import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
-import org.sonarsource.sonarlint.core.container.standalone.rule.StandaloneRule;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
 
 /**
  *
@@ -69,11 +68,11 @@ public final class SonarLintListCellRenderer extends JPanel implements ListCellR
 
     @Override
     public Component getListCellRendererComponent(JList<? extends String> list, String value, int index, boolean isSelected, boolean cellHasFocus) {
-        Optional<RuleDetails> optionalRuleDetails = sonarLintEngine.getRuleDetails(value);
+        Optional<StandaloneRuleDetails> optionalRuleDetails = sonarLintEngine.getRuleDetails(value);
         defaultListCellRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         if (optionalRuleDetails.isPresent()) {
-            RuleDetails ruleDetails = optionalRuleDetails.get();
-            if (ruleDetails instanceof StandaloneRule && !((StandaloneRule)ruleDetails).params().isEmpty()) {
+            StandaloneRuleDetails standaloneRule = optionalRuleDetails.get();
+            if (standaloneRule.paramDetails().isEmpty()) {
                 modifyParameters.setIcon(iconModifyParameters);
             } else {
                 modifyParameters.setIcon(iconNoParameters);
@@ -83,27 +82,24 @@ public final class SonarLintListCellRenderer extends JPanel implements ListCellR
                 defaultListCellRenderer.setIcon(toImageIcon.get());
             }
             enableOrDisable.setSelected(!sonarLintEngine.isExcluded(optionalRuleDetails.get()));
-            if (ruleDetails instanceof StandaloneRule) {
-                StandaloneRule standaloneRule = (StandaloneRule)ruleDetails;
-                boolean hasCustomParamValue = false;
-                for (RuleParam param : standaloneRule.params()) {
-                    if (sonarLintEngine.getRuleParameter(standaloneRule.getKey(), param.key()).isPresent()) {
-                        hasCustomParamValue = true;
-                        break;
-                    }
+            boolean hasCustomParamValue = false;
+            for (StandaloneRuleParam param : standaloneRule.paramDetails()) {
+                if (sonarLintEngine.getRuleParameter(standaloneRule.getKey(), param.key()).isPresent()) {
+                    hasCustomParamValue = true;
+                    break;
                 }
-
-                Font font = defaultListCellRenderer.getFont();
-                Map attributes = font.getAttributes();
-                if (hasCustomParamValue) {
-                    attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
-                    attributes.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_BOLD);
-                } else {
-                    attributes.remove(TextAttribute.UNDERLINE);
-                    attributes.remove(TextAttribute.WEIGHT);
-                }
-                defaultListCellRenderer.setFont(font.deriveFont(attributes));
             }
+
+            Font font = defaultListCellRenderer.getFont();
+            Map attributes = font.getAttributes();
+            if (hasCustomParamValue) {
+                attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+                attributes.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_BOLD);
+            } else {
+                attributes.remove(TextAttribute.UNDERLINE);
+                attributes.remove(TextAttribute.WEIGHT);
+            }
+            defaultListCellRenderer.setFont(font.deriveFont(attributes));
         }
         setBackground(defaultListCellRenderer.getBackground());
         enableOrDisable.setBackground(defaultListCellRenderer.getBackground());

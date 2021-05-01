@@ -36,7 +36,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 import javax.swing.ImageIcon;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -54,8 +53,9 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
-import org.sonarsource.sonarlint.core.client.api.connected.LoadedAnalyzer;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
 import org.sonarsource.sonarlint.core.container.model.DefaultAnalysisResult;
 
 /**
@@ -80,7 +80,7 @@ public final class SonarLintUtils {
          * @return Predicat to filter rule detail by language key
          */
         public static Predicate<RuleDetails> languageKey(String languageKey) {
-            return ruleDetail -> ruleDetail.getLanguageKey().equals(languageKey);
+            return ruleDetail -> ruleDetail.getLanguage().getLanguageKey().equals(languageKey);
         }
 
         /**
@@ -122,7 +122,7 @@ public final class SonarLintUtils {
 
         String sonarLintHome = System.getProperty("user.home") + File.separator + ".sonarlint4netbeans";
         List<Issue> issues = new ArrayList<>();
-        Collection<RuleDetails> allRuleDetails = sonarLintEngine.getAllRuleDetails();
+        Collection<StandaloneRuleDetails> allRuleDetails = sonarLintEngine.getAllRuleDetails();
         List<RuleKey> excludedRules = new ArrayList<>();
         List<RuleKey> includedRules = new ArrayList<>();
         for (RuleDetails allRuleDetail : allRuleDetails) {
@@ -237,7 +237,7 @@ public final class SonarLintUtils {
         }
 
         String sonarLintHome = System.getProperty("user.home") + File.separator + ".sonarlint4netbeans";
-        Collection<RuleDetails> allRuleDetails = sonarLintEngine.getAllRuleDetails();
+        Collection<StandaloneRuleDetails> allRuleDetails = sonarLintEngine.getAllRuleDetails();
         List<RuleKey> excludedRules = new ArrayList<>();
         List<RuleKey> includedRules = new ArrayList<>();
         for (RuleDetails allRuleDetail : allRuleDetails) {
@@ -249,14 +249,8 @@ public final class SonarLintUtils {
             }
         }
         
-        List<String> fileSuffix = sonarLintEngine.getLoadedAnalyzers().stream().map(LoadedAnalyzer::key).collect(Collectors.toList());
         List<FSClientInputFile> clientInputFiles = new ArrayList<>();
         for (File file : files) {
-            // Skip file not analyzed by an analyzer
-            String[] absolutePathsplit = file.getAbsolutePath().split(".");
-            if (absolutePathsplit.length > 0 && !fileSuffix.contains(absolutePathsplit[absolutePathsplit.length - 1])) {
-                continue;
-            }
             // Map file to implementation of ClientInputFile
             Path path = file.toPath();
             try {
@@ -364,5 +358,20 @@ public final class SonarLintUtils {
             }
         }
         return sb.toString();
+    }
+
+    /**
+     * Search a rule parameter
+     * @param ruleDetail rule to search
+     * @param parameterName parameter name to search
+     * @return rule parameter if exist
+     */
+    public static Optional<StandaloneRuleParam> searchRuleParameter(StandaloneRuleDetails ruleDetail, String parameterName) {
+        for (StandaloneRuleParam paramDetail : ruleDetail.paramDetails()) {
+            if (paramDetail.name().equals(parameterName)) {
+                return Optional.of(paramDetail);
+            }
+        }
+        return Optional.empty();
     }
 }

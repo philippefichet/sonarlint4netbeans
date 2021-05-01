@@ -22,8 +22,7 @@ package com.github.philippefichet.sonarlint4netbeans;
 import java.util.Collection;
 import java.util.stream.Collectors;
 import javax.swing.table.DefaultTableModel;
-import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
-import org.sonarsource.sonarlint.core.container.standalone.rule.StandaloneRule;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 
 
 /**
@@ -53,7 +52,7 @@ public class SonarLintRuleTableModel extends DefaultTableModel {
         while(getRowCount() > 0) {
             removeRow(0);
         }
-        Collection<RuleDetails> allRuleDetails = engine.getAllRuleDetails();
+        Collection<StandaloneRuleDetails> allRuleDetails = engine.getAllRuleDetails();
         allRuleDetails.stream()
         .filter(
             SonarLintUtils.FilterBy.languageKey(languagekey)
@@ -70,16 +69,9 @@ public class SonarLintRuleTableModel extends DefaultTableModel {
         ).collect(Collectors.toList()).forEach(this::addRow);
     }
 
-    private boolean hasParams(RuleDetails ruleDetail) {
-        if (ruleDetail instanceof StandaloneRule) {
-            StandaloneRule standaloneRule = (StandaloneRule)ruleDetail;
-            if (!standaloneRule.params().isEmpty()) {
-                return true;
-            }
-        }
-        return false;
+    private boolean hasParams(StandaloneRuleDetails ruleDetail) {
+        return !ruleDetail.paramDetails().isEmpty();
     }
-
 
     @Override
     public boolean isCellEditable(int row, int column) {

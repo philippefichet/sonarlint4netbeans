@@ -26,14 +26,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.prefs.BackingStoreException;
 import java.util.stream.Collectors;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
@@ -146,8 +144,6 @@ public class SonarLintEngineImplTest {
         );
         String sonarLintHome = System.getProperty("user.home") + File.separator + ".sonarlint4netbeans";
         sonarLintEngine.waitingInitialization();
-        Optional<RuleDetails> ruleDetails = sonarLintEngine.getRuleDetails("javascript:S108");
-        Assertions.assertThat(ruleDetails).isPresent();
 
         StandaloneAnalysisConfiguration standaloneAnalysisConfiguration = 
             StandaloneAnalysisConfiguration.builder()

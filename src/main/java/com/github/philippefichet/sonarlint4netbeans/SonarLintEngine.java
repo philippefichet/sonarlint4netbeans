@@ -26,13 +26,14 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.prefs.Preferences;
 import org.sonarsource.sonarlint.core.client.api.common.LogOutput;
+import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
 import org.sonarsource.sonarlint.core.client.api.common.ProgressMonitor;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
-import org.sonarsource.sonarlint.core.client.api.connected.LoadedAnalyzer;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 
 /**
  *
@@ -60,14 +61,14 @@ public interface SonarLintEngine {
      *
      * @return all available rules.
      */
-    public Collection<RuleDetails> getAllRuleDetails();
+    public Collection<StandaloneRuleDetails> getAllRuleDetails();
 
     /**
      * Get information about the analyzers that are currently loaded.
      *
      * @return the analyzers that are currently loaded.
      */
-    public Collection<LoadedAnalyzer> getLoadedAnalyzers();
+    public Collection<PluginDetails> getPluginDetails();
 
     /**
      * Return rule details.
@@ -75,7 +76,7 @@ public interface SonarLintEngine {
      * @param ruleKey rule key (ex: java:S108)
      * @return rule details.
      */
-    public Optional<RuleDetails> getRuleDetails(String ruleKey);
+    public Optional<StandaloneRuleDetails> getRuleDetails(String ruleKey);
 
     /**
      * Retrieve preferences

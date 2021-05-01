@@ -32,8 +32,8 @@ import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
-import org.sonarsource.sonarlint.core.client.api.connected.LoadedAnalyzer;
 import org.sonarsource.sonarlint.core.client.api.exceptions.CanceledException;
 
 /**
@@ -80,7 +80,7 @@ public class SonarLintAnalyzerCancelableTask implements Runnable, Cancellable {
         List<File> files = SonarLintUtils.toFiles(nodes);
         // Exclude file supposed not analyzed by an analyzer
         SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
-        List<String> fileSuffix = sonarLintEngine.getLoadedAnalyzers().stream().map(LoadedAnalyzer::key).collect(Collectors.toList());
+        List<String> fileSuffix = sonarLintEngine.getPluginDetails().stream().map(PluginDetails::key).collect(Collectors.toList());
         List<String> uriFormFiles = files.stream()
             .filter(file -> {
                 String[] absolutePathsplit = file.getAbsolutePath().split("\\.");

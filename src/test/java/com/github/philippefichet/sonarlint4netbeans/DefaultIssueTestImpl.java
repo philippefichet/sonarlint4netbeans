@@ -21,6 +21,7 @@ package com.github.philippefichet.sonarlint4netbeans;
 
 import java.util.List;
 import org.assertj.core.groups.Tuple;
+import org.sonarsource.sonarlint.core.client.api.common.TextRange;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 
@@ -125,7 +126,12 @@ public class DefaultIssueTestImpl implements Issue {
             issue.getEndLineOffset()
         );
     };
-    
+
+    @Override
+    public TextRange getTextRange() {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     public static class Builder
     {
         private String severity;

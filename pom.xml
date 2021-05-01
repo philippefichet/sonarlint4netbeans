@@ -146,13 +146,8 @@
     <dependencies>
         <dependency>
             <groupId>org.sonarsource.sonarlint.core</groupId>
-            <artifactId>sonarlint-client-api</artifactId>
-            <version>4.11.0.18104</version>
-        </dependency>
-        <dependency>
-            <groupId>org.sonarsource.sonarlint.core</groupId>
             <artifactId>sonarlint-core</artifactId>
-            <version>4.11.0.18104</version>
+            <version>5.2.0.28259</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>

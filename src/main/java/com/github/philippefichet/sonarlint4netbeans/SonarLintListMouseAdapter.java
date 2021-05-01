@@ -23,9 +23,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Optional;
 import javax.swing.JList;
-import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
-import org.sonarsource.sonarlint.core.container.standalone.rule.StandaloneRule;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 
 /**
  *
@@ -50,7 +49,7 @@ public class SonarLintListMouseAdapter extends MouseAdapter {
         ) {
             SonarLintListCellRenderer cellRenderer = (SonarLintListCellRenderer)sonarLintAllRules.getCellRenderer();
             if (cellRenderer.clickOnCkeckBox(e.getPoint())) {
-                Optional<RuleDetails> ruleDetails = sonarLintEngine.getRuleDetails(sonarLintAllRules.getSelectedValue());
+                Optional<StandaloneRuleDetails> ruleDetails = sonarLintEngine.getRuleDetails(sonarLintAllRules.getSelectedValue());
                 ruleDetails.ifPresent(rule -> {
                     RuleKey ruleKey = RuleKey.parse(rule.getKey());
                     if (sonarLintEngine.isExcluded(rule)) {
@@ -62,14 +61,11 @@ public class SonarLintListMouseAdapter extends MouseAdapter {
                 });
             }
             if (cellRenderer.clickOnSettings(e.getPoint())) {
-                Optional<RuleDetails> ruleDetails = sonarLintEngine.getRuleDetails(sonarLintAllRules.getSelectedValue());
-                ruleDetails.ifPresent(rule -> {
-                    if (rule instanceof StandaloneRule) {
-                        StandaloneRule standaloneRule = (StandaloneRule)rule;
-                        if (!standaloneRule.params().isEmpty()) {
-                            SonarLintRuleSettings sonarLintRuleParameters = new SonarLintRuleSettings(sonarLintOptions, sonarLintEngine, sonarLintAllRules.getSelectedValue());
-                            sonarLintRuleParameters.setVisible(true);
-                        }
+                Optional<StandaloneRuleDetails> ruleDetails = sonarLintEngine.getRuleDetails(sonarLintAllRules.getSelectedValue());
+                ruleDetails.ifPresent(standaloneRule -> {
+                    if (!standaloneRule.paramDetails().isEmpty()) {
+                        SonarLintRuleSettings sonarLintRuleParameters = new SonarLintRuleSettings(sonarLintOptions, sonarLintEngine, sonarLintAllRules.getSelectedValue());
+                        sonarLintRuleParameters.setVisible(true);
                     }
                 });
             }

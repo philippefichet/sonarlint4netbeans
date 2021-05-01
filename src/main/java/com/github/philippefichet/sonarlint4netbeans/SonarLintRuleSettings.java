@@ -34,10 +34,8 @@ import javax.swing.table.DefaultTableModel;
 import org.netbeans.modules.editor.NbEditorUI;
 import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
-import org.sonar.api.batch.rule.RuleParam;
-import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
-import org.sonarsource.sonarlint.core.container.standalone.rule.StandaloneRule;
-import org.sonarsource.sonarlint.core.container.standalone.rule.StandaloneRuleParam;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
 
 /**
  *
@@ -55,14 +53,10 @@ public class SonarLintRuleSettings extends javax.swing.JDialog {
     ) {
         super((Frame)null, true);
         initComponents();
-        Optional<RuleDetails> ruleDetailsOptional = sonarLintEngine.getRuleDetails(ruleKey);
+        Optional<StandaloneRuleDetails> ruleDetailsOptional = sonarLintEngine.getRuleDetails(ruleKey);
         if (ruleDetailsOptional.isPresent()) {
-            RuleDetails ruleDetails = ruleDetailsOptional.get();
-            if (ruleDetails instanceof StandaloneRule) {
-                initComponents(sonarLintOptions, sonarLintEngine, (StandaloneRule)ruleDetails);
-            } else {
-                mainTitle.setText("Cannot found parameters on rule \"" + ruleKey + "\"");
-            }
+            StandaloneRuleDetails ruleDetails = ruleDetailsOptional.get();
+            initComponents(sonarLintOptions, sonarLintEngine, ruleDetails);
         } else {
             mainTitle.setText("Rule \"" + ruleKey + "\" is not found");
         }
@@ -90,11 +84,10 @@ public class SonarLintRuleSettings extends javax.swing.JDialog {
         }
     }
 
-    private void initComponents(SonarLintOptions sonarLintOptions, SonarLintEngine sonarLintEngine, StandaloneRule ruleDetails) {
+    private void initComponents(SonarLintOptions sonarLintOptions, SonarLintEngine sonarLintEngine, StandaloneRuleDetails ruleDetails) {
         enableHyperlinkOnRuleDescription();
         String ruleKey = ruleDetails.getKey();
         // Set rule description and dialog
-        StandaloneRule rule = (StandaloneRule)ruleDetails;
         String customCss = SonarLintUtils.toRuleDetailsStyleSheet(sonarLintOptions);
         String html = SonarLintUtils.toHtmlDescription(ruleDetails);
         ruleDescription.setText(customCss + html);
@@ -109,17 +102,15 @@ public class SonarLintRuleSettings extends javax.swing.JDialog {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 JLabel tableCellRendererComponent = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                tableCellRendererComponent.setToolTipText(rule.param((String)value).description());
+                Optional<StandaloneRuleParam> ruleParameter = SonarLintUtils.searchRuleParameter(ruleDetails, (String)value);
+                if (ruleParameter.isPresent()) {
+                    tableCellRendererComponent.setToolTipText(ruleParameter.get().description());
+                }
                 return tableCellRendererComponent;
             }
         });
-        for (RuleParam param : rule.params()) {
-            String defaultValue;
-            if(param instanceof StandaloneRuleParam) {
-                defaultValue = ((StandaloneRuleParam)param).defaultValue();
-            } else {
-                defaultValue = "--- default value not found ---";
-            }
+        for (StandaloneRuleParam param : ruleDetails.paramDetails()) {
+            String defaultValue = param.defaultValue();
             Optional<String> ruleParameter = sonarLintEngine.getRuleParameter(ruleKey, param.key());
             tableModel.addRow(new Object[] {
                 param.key(),

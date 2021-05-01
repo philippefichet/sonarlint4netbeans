@@ -33,19 +33,19 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.openide.util.NbPreferences;
-import org.sonar.api.batch.rule.RuleParam;
 import org.sonarsource.sonarlint.core.StandaloneSonarLintEngineImpl;
+import org.sonarsource.sonarlint.core.client.api.common.Language;
 import org.sonarsource.sonarlint.core.client.api.common.LogOutput;
+import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
 import org.sonarsource.sonarlint.core.client.api.common.ProgressMonitor;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
-import org.sonarsource.sonarlint.core.client.api.connected.LoadedAnalyzer;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneGlobalConfiguration;
-import org.sonarsource.sonarlint.core.container.standalone.rule.StandaloneRule;
-import org.sonarsource.sonarlint.core.container.standalone.rule.StandaloneRuleParam;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
 
 /**
  * Other scanner: https://docs.sonarqube.org/display/PLUG/Plugin+Library TODO:
@@ -73,6 +73,7 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
         pluginURLs.put("javascript", getClass().getResource("/com/github/philippefichet/sonarlint4netbeans/resources/sonar-javascript-plugin-" + SONAR_JAVASCRIPT_PLUGIN_VERSION + ".jar"));
         new Thread(() -> {
             StandaloneGlobalConfiguration config = StandaloneGlobalConfiguration.builder()
+                    .addEnabledLanguages(Language.values())
                     .addPlugins(pluginURLs.values().toArray(new URL[pluginURLs.values().size()]))
                     .build();
             standaloneSonarLintEngineImpl = new StandaloneSonarLintEngineImpl(config);
@@ -84,8 +85,8 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
         List<Map<String, String>> fromJson = gson.fromJson(getPreferences().get(PREFIX_EXCLUDE_RULE, null), List.class);
         if (fromJson == null) {
             whenInitialized(engine -> {
-                Collection<RuleDetails> allRuleDetails = engine.getAllRuleDetails();
-                for (RuleDetails allRuleDetail : allRuleDetails) {
+                Collection<StandaloneRuleDetails> allRuleDetails = engine.getAllRuleDetails();
+                for (StandaloneRuleDetails allRuleDetail : allRuleDetails) {
                     if (!allRuleDetail.isActiveByDefault()) {
                         excludedRules.add(RuleKey.parse(allRuleDetail.getKey()));
                     }
@@ -156,19 +157,19 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
     }
 
     @Override
-    public Collection<RuleDetails> getAllRuleDetails() {
+    public Collection<StandaloneRuleDetails> getAllRuleDetails() {
         waitingInitialization();
         return standaloneSonarLintEngineImpl.getAllRuleDetails();
     }
 
     @Override
-    public Collection<LoadedAnalyzer> getLoadedAnalyzers() {
+    public Collection<PluginDetails> getPluginDetails() {
         waitingInitialization();
-        return standaloneSonarLintEngineImpl.getLoadedAnalyzers();
+        return standaloneSonarLintEngineImpl.getPluginDetails();
     }
 
     @Override
-    public Optional<RuleDetails> getRuleDetails(String ruleKey) {
+    public Optional<StandaloneRuleDetails> getRuleDetails(String ruleKey) {
         waitingInitialization();
         return standaloneSonarLintEngineImpl.getRuleDetails(ruleKey);
     }
@@ -211,23 +212,20 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
     public Map<RuleKey, Map<String, String>> getRuleParameters()
     {
         Map<RuleKey, Map<String, String>> ruleParameters = new HashMap<>();
-        for (RuleDetails ruleDetail : getAllRuleDetails()) {
-            if (ruleDetail instanceof StandaloneRule) {
-                StandaloneRule standaloneRule = (StandaloneRule)ruleDetail;
-                String ruleKey = ruleDetail.getKey();
-                for (RuleParam param : standaloneRule.params()) {
-                    if (param instanceof StandaloneRuleParam) {
-                        StandaloneRuleParam ruleParam = (StandaloneRuleParam)param;
-                        String parameterValue = getPreferences().get(PREFIX_PREFERENCE_RULE_PARAMETER + ruleKey.replace(":", ".") + "." + ruleParam.name(), ruleParam.defaultValue());
-                        if (parameterValue != null && !parameterValue.equals(ruleParam.defaultValue())) {
-                            RuleKey key = RuleKey.parse(standaloneRule.getKey());
-                            Map<String, String> params = ruleParameters.get(key);
-                            if (params == null) {
-                                params = new HashMap<>();
-                                ruleParameters.put(key, params);
-                            }
-                            params.put(ruleParam.name(), parameterValue);
+        for (StandaloneRuleDetails standaloneRule : getAllRuleDetails()) {
+            String ruleKey = standaloneRule.getKey();
+            for (StandaloneRuleParam param : standaloneRule.paramDetails()) {
+                if (param instanceof StandaloneRuleParam) {
+                    StandaloneRuleParam ruleParam = (StandaloneRuleParam)param;
+                    String parameterValue = getPreferences().get(PREFIX_PREFERENCE_RULE_PARAMETER + ruleKey.replace(":", ".") + "." + ruleParam.name(), ruleParam.defaultValue());
+                    if (parameterValue != null && !parameterValue.equals(ruleParam.defaultValue())) {
+                        RuleKey key = RuleKey.parse(standaloneRule.getKey());
+                        Map<String, String> params = ruleParameters.get(key);
+                        if (params == null) {
+                            params = new HashMap<>();
+                            ruleParameters.put(key, params);
                         }
+                        params.put(ruleParam.name(), parameterValue);
                     }
                 }
             }
@@ -243,22 +241,16 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
 
     @Override
     public Optional<String> getRuleParameter(String ruleKey, String parameterName) {
-        Optional<RuleDetails> ruleDetails = getRuleDetails(ruleKey);
-        if (ruleDetails.isPresent()) {
-            RuleDetails ruleDetail = ruleDetails.get();
-            if (ruleDetail instanceof StandaloneRule) {
-                StandaloneRule standaloneRule = (StandaloneRule)ruleDetail;
-                StandaloneRuleParam param = standaloneRule.param(parameterName);
-                if (param != null) {
+        return getRuleDetails(ruleKey).flatMap(ruleDetail -> 
+            SonarLintUtils.searchRuleParameter(ruleDetail, parameterName)
+                .flatMap(param -> {
                     String parameterValue = getPreferences().get(PREFIX_PREFERENCE_RULE_PARAMETER + ruleKey.replace(":", ".") + "." + parameterName, param.defaultValue());
                     if (parameterValue != null && !parameterValue.equals(param.defaultValue())) {
                         return Optional.of(parameterValue);
                     } else {
                         return Optional.empty();
                     }
-                }
-            }
-        }
-        return Optional.empty();
+                })
+        );
     }
 }

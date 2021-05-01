@@ -28,9 +28,8 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
-import org.sonar.api.batch.rule.RuleParam;
-import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
-import org.sonarsource.sonarlint.core.container.standalone.rule.StandaloneRule;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
 
 /**
  *
@@ -47,30 +46,27 @@ public class SonarLintRuleKeyTableCellRenderer implements TableCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         JLabel cell = (JLabel)defaultTableCellRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-        Optional<RuleDetails> optionalRuleDetails = sonarLintEngine.getRuleDetails((String)value);
+        Optional<StandaloneRuleDetails> optionalRuleDetails = sonarLintEngine.getRuleDetails((String)value);
         if (optionalRuleDetails.isPresent()) {
-            RuleDetails ruleDetails = optionalRuleDetails.get();
-            if (ruleDetails instanceof StandaloneRule) {
-                StandaloneRule standaloneRule = (StandaloneRule)ruleDetails;
-                boolean hasCustomParamValue = false;
-                for (RuleParam param : standaloneRule.params()) {
-                    if (sonarLintEngine.getRuleParameter(standaloneRule.getKey(), param.key()).isPresent()) {
-                        hasCustomParamValue = true;
-                        break;
-                    }
+            StandaloneRuleDetails standaloneRule = optionalRuleDetails.get();
+            boolean hasCustomParamValue = false;
+            for (StandaloneRuleParam param : standaloneRule.paramDetails()) {
+                if (sonarLintEngine.getRuleParameter(standaloneRule.getKey(), param.key()).isPresent()) {
+                    hasCustomParamValue = true;
+                    break;
                 }
-
-                Font font = cell.getFont();
-                Map attributes = font.getAttributes();
-                if (hasCustomParamValue) {
-                    attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
-                    attributes.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_BOLD);
-                } else {
-                    attributes.remove(TextAttribute.UNDERLINE);
-                    attributes.remove(TextAttribute.WEIGHT);
-                }
-                cell.setFont(font.deriveFont(attributes));
             }
+
+            Font font = cell.getFont();
+            Map attributes = font.getAttributes();
+            if (hasCustomParamValue) {
+                attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+                attributes.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_BOLD);
+            } else {
+                attributes.remove(TextAttribute.UNDERLINE);
+                attributes.remove(TextAttribute.WEIGHT);
+            }
+            cell.setFont(font.deriveFont(attributes));
         }
         return cell;
     }
