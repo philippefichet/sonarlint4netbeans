@@ -21,6 +21,7 @@ package com.github.philippefichet.sonarlint4netbeans;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -49,6 +50,7 @@ import org.openide.util.Lookup;
 import org.sonarsource.sonarlint.core.client.api.common.ProgressMonitor;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
+import org.sonarsource.sonarlint.core.client.api.common.Version;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
@@ -371,6 +373,30 @@ public final class SonarLintUtils {
             if (paramDetail.name().equals(parameterName)) {
                 return Optional.of(paramDetail);
             }
+        }
+        return Optional.empty();
+    }
+
+    public static Optional<Version> detectNodeJSVersion(String nodeJSPath)
+    {
+        ProcessBuilder processBuilder = new ProcessBuilder(nodeJSPath, "--version");
+        try {
+            Process start = processBuilder.start();
+            InputStream inputStream = start.getInputStream();
+            int executionStatus = start.waitFor();
+            if (executionStatus == 0) {
+                // NodeJS version is like vxx.xx.xx, no need read more and no need loop
+                byte[] buffer = new byte[32];
+                inputStream.read(buffer);
+                return Optional.of(Version.create(new String(buffer).substring(1)));
+            } else {
+                LOG.warning("Cannot detect NodeJS version");
+            }
+        } catch (IOException ex) {
+            LOG.warning("Cannot detect NodeJS version: " + ex.getMessage());
+        } catch (InterruptedException ex) {
+            LOG.warning("Cannot detect NodeJS version: " + ex.getMessage());
+            Thread.currentThread().interrupt();
         }
         return Optional.empty();
     }

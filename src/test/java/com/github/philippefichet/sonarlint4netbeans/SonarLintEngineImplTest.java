@@ -32,6 +32,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.sonarsource.sonarlint.core.client.api.common.Version;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
@@ -137,12 +138,17 @@ public class SonarLintEngineImplTest {
     public void analyze(SonarLintEngineTestConfiguration testConfiguration, List<Issue> expectedIssue) throws MalformedURLException, BackingStoreException, IOException
     {
         SonarLintEngineImpl sonarLintEngine = new SonarLintEngineImpl();
-        sonarLintEngine.getPreferences().removeNode();
         sonarLintEngine.waitingInitialization();
+        sonarLintEngine.getPreferences().removeNode();
         testConfiguration.getRuleParameters().forEach(
             ruleParameter -> sonarLintEngine.setRuleParameter(ruleParameter.getRuleKey(), ruleParameter.getName(), ruleParameter.getValue())
         );
         String sonarLintHome = System.getProperty("user.home") + File.separator + ".sonarlint4netbeans";
+        SonarLintTestUtils.installNodeJS();
+        sonarLintEngine.setNodeJSPathAndVersion(
+            SonarLintTestUtils.getNodeJS().getAbsolutePath(),
+            Version.create(SonarLintTestUtils.getNodeJSVersion())
+        );
         sonarLintEngine.waitingInitialization();
 
         StandaloneAnalysisConfiguration standaloneAnalysisConfiguration = 

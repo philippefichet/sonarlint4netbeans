@@ -21,11 +21,17 @@ package com.github.philippefichet.sonarlint4netbeans;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.prefs.BackingStoreException;
 import java.util.stream.Collectors;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -34,6 +40,9 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
+import org.sonarsource.sonarlint.core.client.api.common.Version;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 
 /**
@@ -158,6 +167,89 @@ public class SonarLintUtilsTest {
             .isEqualTo("java:S100 : Method names should comply with a naming convention (1)");
     }
 
+    @Test
+    public void analyzeWithParameter() throws BackingStoreException, IOException {
+        SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
+        sonarLintEngine.getPreferences().removeNode();
+        sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey())));
+        sonarLintEngine.includeRuleKey( RuleKey.parse("java:S100"));
+        sonarLintEngine.includeRuleKey( RuleKey.parse("java:S1186"));
+        sonarLintEngine.setRuleParameter("java:S100", "format", "^.+$");
+
+        // first step, check all issue in file
+        List<Issue> actualIssues = new ArrayList<>();
+        List<Issue> expectedIssues = Arrays.asList(
+            new DefaultIssueTestImpl.Builder()
+            .severity("CRITICAL")
+            .type("CODE_SMELL")
+            .ruleKey("java:S1186")
+            .ruleName("Methods should not be empty")
+            .startLine(17)
+            .startLineOffset(16)
+            .endLine(17)
+            .endLineOffset(32)
+            .build(),
+            new DefaultIssueTestImpl.Builder()
+            .severity("CRITICAL")
+            .type("CODE_SMELL")
+            .ruleKey("java:S1186")
+            .ruleName("Methods should not be empty")
+            .startLine(19)
+            .startLineOffset(16)
+            .endLine(19)
+            .endLineOffset(47)
+            .build()
+        );
+        SonarLintUtils.analyze(
+           Arrays.asList(FileUtil.normalizeFile(new File("./src/test/resources/NewClass.java"))),
+            actualIssues::add,
+            null,
+            null
+        );
+        Assertions.assertThat(actualIssues)
+            .extracting(DefaultIssueTestImpl::toTuple)
+            .containsExactlyElementsOf(
+                expectedIssues.stream()
+                .map(DefaultIssueTestImpl::toTuple)
+                .collect(Collectors.toList())
+            );
+        
+        // second step, check tree
+        SonarLintAnalyzerRootNode sonarLintAnalyzerRootNode = new SonarLintAnalyzerRootNode();
+        SonarLintUtils.analyze(
+           Arrays.asList(FileUtil.normalizeFile(new File("./src/test/resources/NewClass.java"))),
+            sonarLintAnalyzerRootNode,
+            null,
+            null
+        );
+        Node[] severityNodes = sonarLintAnalyzerRootNode.getChildren().getNodes();
+        Assertions.assertThat(severityNodes)
+            .extracting(node -> node.getDisplayName())
+            .containsExactlyElementsOf(Arrays.asList(
+                "critical (2 issues)"
+            ));
+
+        // Critial
+        Node[] issueCriticalRuleKeyNodes = severityNodes[0].getChildren().getNodes();
+        Assertions.assertThat(issueCriticalRuleKeyNodes)
+            .hasSize(1);
+        Assertions.assertThat(issueCriticalRuleKeyNodes[0])
+            .extracting(Node::getDisplayName)
+            .describedAs("java:S1186 -> critical display name")
+            .isEqualTo("java:S1186 : Methods should not be empty (2)");
+        Node[] critialS1186FileNodes = issueCriticalRuleKeyNodes[0].getChildren().getNodes();
+        Assertions.assertThat(critialS1186FileNodes)
+            .hasSize(2);
+        Assertions.assertThat(critialS1186FileNodes[0])
+            .extracting(Node::getDisplayName)
+            .describedAs("critial S1186 first file display name")
+            .isEqualTo("17:16: NewClass.java");
+        Assertions.assertThat(critialS1186FileNodes[1])
+            .extracting(Node::getDisplayName)
+            .describedAs("critial S1186 second file display name")
+            .isEqualTo("19:16: NewClass.java");
+    }
+    
     public static Arguments[] parametersForToTruncateURI() throws URISyntaxException
     {
         return new Arguments[] {
@@ -277,5 +369,32 @@ public class SonarLintUtilsTest {
             .endLineOffset(24)
             .build()
         );
+    }
+
+    @Test
+    public void ruleParameterChanged() throws MalformedURLException, IOException, BackingStoreException {
+        SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
+        sonarLintEngine.getPreferences().removeNode();
+        String ruleKeyString = "java:S115";
+        sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey())));
+        sonarLintEngine.includeRuleKey( RuleKey.parse(ruleKeyString));
+        File sonarlintFileDemo = FileUtil.normalizeFile(new File("./src/test/resources/SonarLintFileDemo.java").getAbsoluteFile());
+        Path sonarlintFileDemoPath = sonarlintFileDemo.toPath();
+        sonarLintEngine.setRuleParameter(ruleKeyString, "format", "^.+$");
+        List<Issue> issues = SonarLintUtils.analyze(
+            FileUtil.toFileObject(sonarlintFileDemo),
+            new String(Files.readAllBytes(sonarlintFileDemoPath))
+        );
+        Assertions.assertThat(issues).isEqualTo(Collections.emptyList());
+    }
+
+    @Test
+    public void detectNodeJSVersion() throws IOException
+    {
+        SonarLintTestUtils.installNodeJS();
+        File nodeJSDirectory = SonarLintTestUtils.getNodeJSDirectory();
+        String node = SonarLintTestUtils.isWindowsOS() ? "node.exe" : "bin/node";
+        Optional<Version> detectNodeJSVersion = SonarLintUtils.detectNodeJSVersion(nodeJSDirectory.getAbsolutePath() + File.separator + node);
+        Assertions.assertThat(detectNodeJSVersion).isPresent().get().isEqualTo(Version.create(SonarLintTestUtils.getNodeJSVersion()));
     }
 }

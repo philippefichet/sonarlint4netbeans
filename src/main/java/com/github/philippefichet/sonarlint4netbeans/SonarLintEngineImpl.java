@@ -22,6 +22,8 @@ package com.github.philippefichet.sonarlint4netbeans;
 import com.google.gson.Gson;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -40,6 +42,7 @@ import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
 import org.sonarsource.sonarlint.core.client.api.common.ProgressMonitor;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
+import org.sonarsource.sonarlint.core.client.api.common.Version;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
@@ -61,6 +64,9 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
     public static final String SONAR_JAVASCRIPT_PLUGIN_VERSION = "6.2.1.12157";
     private static final String PREFIX_PREFERENCE_RULE_PARAMETER = "rules.parameters.";
     private static final String PREFIX_EXCLUDE_RULE = "excludedRules";
+    private static final String PREFIX_RUNTIME_PREFERENCE= "runtime.";
+    private static final String RUNTIME_NODE_JS_PATH_PREFERENCE= "nodejs.path";
+    private static final String RUNTIME_NODE_JS_VERSION_PREFERENCE= "nodejs.version";
     private final Gson gson = new Gson();
     private StandaloneSonarLintEngineImpl standaloneSonarLintEngineImpl;
     private final List<RuleKey> excludedRules = new ArrayList<>();
@@ -71,16 +77,7 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
     public SonarLintEngineImpl() throws MalformedURLException {
         pluginURLs.put("java", getClass().getResource("/com/github/philippefichet/sonarlint4netbeans/resources/sonar-java-plugin-" + SONAR_JAVA_PLUGIN_VERSION + ".jar"));
         pluginURLs.put("javascript", getClass().getResource("/com/github/philippefichet/sonarlint4netbeans/resources/sonar-javascript-plugin-" + SONAR_JAVASCRIPT_PLUGIN_VERSION + ".jar"));
-        new Thread(() -> {
-            StandaloneGlobalConfiguration config = StandaloneGlobalConfiguration.builder()
-                    .addEnabledLanguages(Language.values())
-                    .addPlugins(pluginURLs.values().toArray(new URL[pluginURLs.values().size()]))
-                    .build();
-            standaloneSonarLintEngineImpl = new StandaloneSonarLintEngineImpl(config);
-            consumerWaitingInitialization.forEach(consumer -> consumer.accept(this));
-            consumerWaitingInitialization.clear();
-        }).start();
-
+        createInternalEngine();
         @SuppressWarnings("unchecked")
         List<Map<String, String>> fromJson = gson.fromJson(getPreferences().get(PREFIX_EXCLUDE_RULE, null), List.class);
         if (fromJson == null) {
@@ -98,6 +95,44 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
                 excludedRules.add(RuleKey.parse(ruleKey.get("repository") + ":" + ruleKey.get("rule")));
             }
         }
+    }
+
+    private void createInternalEngine() {
+        standaloneSonarLintEngineImpl = null;
+        new Thread(() -> {
+            StandaloneGlobalConfiguration.Builder configBuilder = StandaloneGlobalConfiguration.builder()
+                .addEnabledLanguages(Language.values())
+                .addPlugins(pluginURLs.values().toArray(new URL[pluginURLs.values().size()]));
+            getNodeJSPath().ifPresent(nodeJSPath -> {
+                getNodeJSVersion().ifPresent(nodeJSVersion -> {
+                    Path nodeJS = Paths.get(nodeJSPath);
+                    configBuilder.setNodeJs(nodeJS, nodeJSVersion);
+                });
+            });
+            standaloneSonarLintEngineImpl = new StandaloneSonarLintEngineImpl(configBuilder.build());
+            consumerWaitingInitialization.forEach(consumer -> consumer.accept(this));
+            consumerWaitingInitialization.clear();
+        }).start();
+    }
+
+    @Override
+    public Optional<String> getNodeJSPath() {
+        return Optional.ofNullable(getPreferences().get(PREFIX_RUNTIME_PREFERENCE + RUNTIME_NODE_JS_PATH_PREFERENCE, null));
+    }
+
+    @Override
+    public Optional<Version> getNodeJSVersion() {
+        return Optional.ofNullable(
+            getPreferences().get(PREFIX_RUNTIME_PREFERENCE + RUNTIME_NODE_JS_VERSION_PREFERENCE, null)
+        ).map(Version::create);
+    }
+
+    @Override
+    public void setNodeJSPathAndVersion(String nodeJSPath, Version nodeJSversion) {
+        getPreferences().put(PREFIX_RUNTIME_PREFERENCE + RUNTIME_NODE_JS_PATH_PREFERENCE, nodeJSPath);
+        getPreferences().put(PREFIX_RUNTIME_PREFERENCE + RUNTIME_NODE_JS_VERSION_PREFERENCE, nodeJSversion.toString());
+        // Re-create SonarLint Engine
+        createInternalEngine();
     }
 
     @Override

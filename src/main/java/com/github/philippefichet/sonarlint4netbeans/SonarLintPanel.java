@@ -21,12 +21,10 @@ package com.github.philippefichet.sonarlint4netbeans;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
-import java.awt.event.ItemEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -34,9 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.swing.BoxLayout;
-import static javax.swing.BoxLayout.Y_AXIS;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -47,14 +42,10 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.OpenCookie;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
+import org.sonarsource.sonarlint.core.client.api.common.Version;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 
 public final class SonarLintPanel extends javax.swing.JPanel {
@@ -62,6 +53,8 @@ public final class SonarLintPanel extends javax.swing.JPanel {
     private final SonarLintOptionsPanelController controller;
 
     private final Map<RuleKey, Boolean> ruleKeyChanged = new HashMap<>();
+    private String nodeJSPathToSave;
+    private Version nodeJSVersionToSave;
     private Boolean applyDifferentRulesOnTestFiles = null;
     private DefaultTableModel analyzerDefaultTableModel = new DefaultTableModel();
 
@@ -118,7 +111,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
                     initAnalyzersPanel();
                 }
                 if ("Options".equals(categoriesList.getSelectedValue())) {
-                    initOptionsPanel();
+                    initOptionsPanel(engine);
                 }
                 optionPanel.revalidate();
                 optionPanel.repaint();
@@ -139,39 +132,24 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         optionPanel.add(analyzersTable, BorderLayout.CENTER);
     }
 
-    private void initOptionsPanel()
-    {
+    private void initOptionsPanel(SonarLintEngine engine) {
         optionPanel.removeAll();
-        JPanel container = new JPanel();
-        BoxLayout layout = new BoxLayout(container, Y_AXIS);
-        container.setLayout(layout);
-        SonarLintOptions sonarlintOptions = Lookup.getDefault().lookup(SonarLintOptions.class);
-        JButton open = new JButton("Edit stylesheet for sonar rule detail window");
-        open.addActionListener((l) -> {
-            DataObject d;
-            try {
-                d = DataObject.find(sonarlintOptions.getSonarLintDetailsStyle());
-                EditorCookie ec = (EditorCookie)d.getLookup().lookup(EditorCookie.class);
-                if (ec == null) {
-                    OpenCookie oc = (OpenCookie)d.getLookup().lookup(OpenCookie.class);
-                    oc.open();
-                } else {
-                    ec.open();
-                }
-            } catch (DataObjectNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+        SonarLintOptionsPanelOptions container = new SonarLintOptionsPanelOptions(engine, new SonarLintOptionsPanelOptionsListener() {
+            @Override
+            public void nodeJSOptionsChanged(String nodeJSPath, Version nodeJSVersion) {
+                nodeJSPathToSave = nodeJSPath;
+                nodeJSVersionToSave = nodeJSVersion;
+                controller.changed();
+            }
+
+            @Override
+            public void testRulesOptionsChanged(Boolean apply) {
+                applyDifferentRulesOnTestFiles = apply;
             }
         });
-        container.add(open);
-        JCheckBox applyTestRules = new JCheckBox("Use other rules on test files", sonarlintOptions.applyDifferentRulesOnTestFiles());
-        applyTestRules.addItemListener(e -> {
-            controller.changed();
-            applyDifferentRulesOnTestFiles = e.getStateChange() == ItemEvent.SELECTED;
-        });
-        container.add(applyTestRules);
-        optionPanel.add(container);
+        optionPanel.add(container, BorderLayout.NORTH);
+        optionPanel.revalidate();
+        optionPanel.repaint();
     }
     
     private void initRulesPanel(SonarLintEngine sonarLintEngine) {
@@ -308,6 +286,9 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         }
         sonarLintEngine.excludeRuleKeys(ruleKeysDisable);
         sonarLintEngine.includeRuleKeys(ruleKeysEnable);
+        if (nodeJSPathToSave == null && nodeJSVersionToSave != null) {
+            sonarLintEngine.setNodeJSPathAndVersion(nodeJSPathToSave, nodeJSVersionToSave);
+        }
     }
 
     boolean valid() {

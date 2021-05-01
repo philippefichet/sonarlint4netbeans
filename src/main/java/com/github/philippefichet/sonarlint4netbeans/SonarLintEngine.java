@@ -30,6 +30,7 @@ import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
 import org.sonarsource.sonarlint.core.client.api.common.ProgressMonitor;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
+import org.sonarsource.sonarlint.core.client.api.common.Version;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
@@ -55,6 +56,25 @@ public interface SonarLintEngine {
      * Block current Thread while engine is not ready
      */
     public void waitingInitialization();
+
+    /**
+     * Retrieve NodeJS path if customized
+     * @return NodeJS path
+     */
+    public Optional<String> getNodeJSPath();
+
+    /**
+     * Retrieve NodeJS path if customized
+     * @return NodeJS path
+     */
+    public Optional<Version> getNodeJSVersion();
+
+    /**
+     * Custom NodeJS Path
+     * @param nodeJSPath new NodeJS path
+     * @param nodeJSversion Version of NodeJS used
+     */
+    public void setNodeJSPathAndVersion(String nodeJSPath, Version nodeJSversion);
 
     /**
      * Return rule details of all available rules.
