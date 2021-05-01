@@ -167,5 +167,8 @@ public final class SonarLintTestUtils {
                  tarIn.close();
             }
         }
+        if (!isWindowsOS()) {
+            getNodeJS().setExecutable(true);
+        }
     }
 }
