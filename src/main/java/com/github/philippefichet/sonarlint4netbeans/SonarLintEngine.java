@@ -21,6 +21,7 @@ package com.github.philippefichet.sonarlint4netbeans;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.prefs.Preferences;
@@ -149,6 +150,12 @@ public interface SonarLintEngine {
      */
     public void setRuleParameter(String ruleKey, String parameterName, String parameterValue);
 
+    /**
+     * Retrieve all rules with customized parameter value
+     * @return All rules with customized parameter value
+     */
+    public Map<RuleKey, Map<String, String>> getRuleParameters();
+    
     /**
      * Remove parameter value on rule by parameter name
      * @param ruleKey rule key (ex: java:S108)

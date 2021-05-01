@@ -155,6 +155,7 @@ public final class SonarLintUtils {
             .addInputFiles(files)
             .addExcludedRules(excludedRules)
             .addIncludedRules(includedRules)
+            .addRuleParameters(sonarLintEngine.getRuleParameters())
             .build();
 
 
@@ -279,6 +280,7 @@ public final class SonarLintUtils {
             .addInputFiles(clientInputFiles)
             .addExcludedRules(excludedRules)
             .addIncludedRules(includedRules)
+            .addRuleParameters(sonarLintEngine.getRuleParameters())
             .build();
 
         // Add listener only after configuration to prevent ClientInputFile.uri() call during configuration phase

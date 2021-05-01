@@ -22,9 +22,6 @@ package com.github.philippefichet.sonarlint4netbeans;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,19 +30,13 @@ import java.util.Optional;
 import java.util.prefs.BackingStoreException;
 import java.util.stream.Collectors;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.sonar.api.batch.rule.RuleParam;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
-import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
-import org.sonarsource.sonarlint.core.container.standalone.rule.StandaloneRule;
-import org.sonarsource.sonarlint.core.container.standalone.rule.StandaloneRuleParam;
 
 /**
  *
@@ -94,23 +85,77 @@ public class SonarLintEngineImplTest {
                     .build()
                 )
             ),
+            Arguments.of(
+                SonarLintEngineTestConfiguration.builder()
+                .includeRules("java:S115")
+                .excludeRules("java:S1220", "java:S1118")
+                .addClientInputFile(new File("./src/test/resources/SonarLintFileDemo.java"))
+                .build(),
+                Arrays.asList(
+                    new DefaultIssueTestImpl.Builder()
+                    .severity("CRITICAL")
+                    .type("CODE_SMELL")
+                    .ruleKey("java:S115")
+                    .ruleName("Constant names should comply with a naming convention")
+                    .startLine(25)
+                    .startLineOffset(31)
+                    .endLine(25)
+                    .endLineOffset(56)
+                    .build()
+                )
+            ),
+            Arguments.of(
+                SonarLintEngineTestConfiguration.builder()
+                .includeRules("java:S115")
+                .excludeRules("java:S1220", "java:S1118")
+                .addClientInputFile(new File("./src/test/resources/SonarLintFileDemo.java"))
+                .addRuleParameter("java:S115", "format", "^.+$")
+                .build(),
+                Collections.emptyList()
+            ),
+            Arguments.of(
+                SonarLintEngineTestConfiguration.builder()
+                .includeRules("javascript:S108")
+                .addClientInputFile(new File("./src/test/resources/sonarlint-example.js"))
+                .build(),
+                Arrays.asList(
+                    new DefaultIssueTestImpl.Builder()
+                    .severity("MAJOR")
+                    .type("CODE_SMELL")
+                    .ruleKey("javascript:S108")
+                    .ruleName("Nested blocks of code should not be left empty")
+                    .startLine(1)
+                    .startLineOffset(33)
+                    .endLine(1)
+                    .endLineOffset(35)
+                    .build()
+                )
+            ),
         };
     }
 
     @ParameterizedTest(name = "[{index}}] check analyze")
     @MethodSource("parametersForAnalyze")
-    public void analyze(SonarLintEngineTestConfiguration testConfiguration, List<Issue> expectedIssue) throws MalformedURLException, BackingStoreException
+    public void analyze(SonarLintEngineTestConfiguration testConfiguration, List<Issue> expectedIssue) throws MalformedURLException, BackingStoreException, IOException
     {
         SonarLintEngineImpl sonarLintEngine = new SonarLintEngineImpl();
         sonarLintEngine.getPreferences().removeNode();
+        sonarLintEngine.waitingInitialization();
+        testConfiguration.getRuleParameters().forEach(
+            ruleParameter -> sonarLintEngine.setRuleParameter(ruleParameter.getRuleKey(), ruleParameter.getName(), ruleParameter.getValue())
+        );
         String sonarLintHome = System.getProperty("user.home") + File.separator + ".sonarlint4netbeans";
+        sonarLintEngine.waitingInitialization();
+        Optional<RuleDetails> ruleDetails = sonarLintEngine.getRuleDetails("javascript:S108");
+        Assertions.assertThat(ruleDetails).isPresent();
 
-        StandaloneAnalysisConfiguration standaloneAnalysisConfiguration =
+        StandaloneAnalysisConfiguration standaloneAnalysisConfiguration = 
             StandaloneAnalysisConfiguration.builder()
             .setBaseDir(new File(sonarLintHome).toPath())
             .addInputFiles(testConfiguration.getClientInputFiles())
             .addExcludedRules(testConfiguration.getExcludedRules())
             .addIncludedRules(testConfiguration.getIncludedRules())
+            .addRuleParameters(sonarLintEngine.getRuleParameters())
             .build();
 
         List<Issue> actualIssues = new ArrayList<>();
@@ -122,63 +167,13 @@ public class SonarLintEngineImplTest {
         );
 
         Assertions.assertThat(actualIssues)
+            .hasSameSizeAs(expectedIssue);
+        Assertions.assertThat(actualIssues)
             .extracting(DefaultIssueTestImpl::toTuple)
             .containsExactlyElementsOf(
                 expectedIssue.stream()
                 .map(DefaultIssueTestImpl::toTuple)
                 .collect(Collectors.toList())
             );
-    }
-
-    @Test
-    public void ruleParameterChanged() throws MalformedURLException, IOException, BackingStoreException {
-        SonarLintEngineImpl sonarLintEngine = new SonarLintEngineImpl();
-        sonarLintEngine.getPreferences().removeNode();
-        File sonarlintFileDemo = new File("./src/test/resources/SonarLintFileDemo.java").getAbsoluteFile();
-        String sonarLintHome = System.getProperty("user.home") + File.separator + ".sonarlint4netbeans";
-        List<Issue> issues = new ArrayList<>();
-        String rileKeyString = "java:S115";
-        Optional<RuleDetails> ruleDetails = sonarLintEngine.getRuleDetails(rileKeyString);
-        RuleKey ruleKey = RuleKey.parse(rileKeyString);
-        List<RuleKey> excludedRules = new ArrayList<>();
-        List<RuleKey> includedRules = new ArrayList<>();
-        includedRules.add(ruleKey);
-        excludedRules.add(RuleKey.parse("java:S1220"));
-        excludedRules.add(RuleKey.parse("java:S1118"));
-        
-        Path sonarlintFileDemoPath = sonarlintFileDemo.toPath();
-        List<ClientInputFile> files = new ArrayList<>();
-        files.add(new FSClientInputFile(
-            new String(Files.readAllBytes(sonarlintFileDemoPath)),
-            sonarlintFileDemoPath.toAbsolutePath(),
-            sonarlintFileDemo.getName(),
-            false,
-            StandardCharsets.UTF_8
-        )
-        );
-        
-        StandaloneRule rule = (StandaloneRule)ruleDetails.get();
-        for (RuleParam param : rule.params()) {
-            System.out.println("ruleDetails = " + param.key() + " / " + param.description());
-            System.out.println("ruleDetails = " + param.key() + " / " + ((StandaloneRuleParam)param).defaultValue());
-        }
-
-        StandaloneAnalysisConfiguration standaloneAnalysisConfiguration =
-            StandaloneAnalysisConfiguration.builder()
-            .setBaseDir(new File(sonarLintHome).toPath())
-            .addInputFiles(files)
-            .addExcludedRules(excludedRules)
-            .addIncludedRules(includedRules)
-            .build();
-
-        sonarLintEngine.setRuleParameter("java:S115", "format", "^.+$");
-        AnalysisResults analyze = sonarLintEngine.analyze(
-            standaloneAnalysisConfiguration,
-            issues::add,
-            null,
-            null
-        );
-
-        Assertions.assertThat(issues).isEqualTo(Collections.emptyList());
     }
 }

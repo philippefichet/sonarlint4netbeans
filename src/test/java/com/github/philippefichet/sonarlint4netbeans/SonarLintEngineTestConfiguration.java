@@ -37,11 +37,13 @@ public final class SonarLintEngineTestConfiguration {
     private final List<RuleKey> excludedRules;
     private final List<RuleKey> includedRules;
     private final List<ClientInputFile> clientInputFiles;
+    private final List<RuleParameter> ruleParameters;
 
     private SonarLintEngineTestConfiguration(Builder builder) {
         this.excludedRules = builder.excludedRules;
         this.includedRules = builder.includedRules;
         this.clientInputFiles = builder.clientInputFiles;
+        this.ruleParameters = builder.ruleParameters;
     }
 
     public List<RuleKey> getExcludedRules() {
@@ -56,14 +58,43 @@ public final class SonarLintEngineTestConfiguration {
         return clientInputFiles;
     }
 
+    public List<RuleParameter> getRuleParameters() {
+        return ruleParameters;
+    }
+
     public static Builder builder() {
         return new Builder();
+    }
+    
+    public static final class RuleParameter {
+        private final String ruleKey;
+        private final String name;
+        private final String value;
+
+        public RuleParameter(String ruleKey, String name, String value) {
+            this.ruleKey = ruleKey;
+            this.name = name;
+            this.value = value;
+        }
+
+        public String getRuleKey() {
+            return ruleKey;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getValue() {
+            return value;
+        }
     }
 
     public static final class Builder {
         private final List<RuleKey> excludedRules = new ArrayList<>();
         private final List<RuleKey> includedRules = new ArrayList<>();
         private final List<ClientInputFile> clientInputFiles = new ArrayList<>();
+        private final List<RuleParameter> ruleParameters = new ArrayList<>();
 
         public Builder addClientInputFile(File file) throws IOException {
             Path path = file.toPath();
@@ -74,6 +105,12 @@ public final class SonarLintEngineTestConfiguration {
                 false,
                 StandardCharsets.UTF_8
             ));
+            return this;
+        }
+        
+        public Builder addRuleParameter(String ruleKey, String name, String value)
+        {
+            ruleParameters.add(new RuleParameter(ruleKey, name, value));
             return this;
         }
 

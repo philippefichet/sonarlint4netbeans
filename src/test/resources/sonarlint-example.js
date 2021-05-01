@@ -1,0 +1,1 @@
+for (var i = 0; i < length; i++) {}  // Empty on purpose or missing piece of code ?
