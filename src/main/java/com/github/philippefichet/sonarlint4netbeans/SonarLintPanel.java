@@ -286,7 +286,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         }
         sonarLintEngine.excludeRuleKeys(ruleKeysDisable);
         sonarLintEngine.includeRuleKeys(ruleKeysEnable);
-        if (nodeJSPathToSave == null && nodeJSVersionToSave != null) {
+        if (nodeJSPathToSave != null && nodeJSVersionToSave != null) {
             sonarLintEngine.setNodeJSPathAndVersion(nodeJSPathToSave, nodeJSVersionToSave);
         }
     }

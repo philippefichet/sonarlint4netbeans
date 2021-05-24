@@ -184,11 +184,11 @@ public class SonarLintOptionsPanelOptions extends javax.swing.JPanel {
                         } else {
                             nodeJSStatusLabel.setText("Unable to detect NodeJS version");
                         }
+                        if (listener != null) {
+                            listener.nodeJSOptionsChanged(nodeJSPathToSave, nodeJSVersionToSave);
+                        }
                     });
                 }).start();
-            }
-            if (listener != null) {
-                listener.nodeJSOptionsChanged(nodeJSPathToSave, nodeJSVersionToSave);
             }
         };
 
