@@ -73,9 +73,9 @@ public final class SonarLintListCellRenderer extends JPanel implements ListCellR
         if (optionalRuleDetails.isPresent()) {
             StandaloneRuleDetails standaloneRule = optionalRuleDetails.get();
             if (standaloneRule.paramDetails().isEmpty()) {
-                modifyParameters.setIcon(iconModifyParameters);
-            } else {
                 modifyParameters.setIcon(iconNoParameters);
+            } else {
+                modifyParameters.setIcon(iconModifyParameters);
             }
             Optional<ImageIcon> toImageIcon = SonarLintUtils.toImageIcon(optionalRuleDetails.get().getSeverity());
             if (toImageIcon.isPresent()) {
