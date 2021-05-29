@@ -48,6 +48,7 @@ public class SonarLintEngineImplTest {
         return new Arguments[] {
             Arguments.of(
                 SonarLintEngineTestConfiguration.builder()
+                .description("SonarLintFileDemo.java with rule java:S115 but without java:S122 and java:S1118 to check CODE_SMELL CRITICAL")
                 .includeRules("java:S115")
                 .excludeRules("java:S1220", "java:S1118")
                 .addClientInputFile(new File("./src/test/resources/SonarLintFileDemo.java"))
@@ -67,6 +68,7 @@ public class SonarLintEngineImplTest {
             ),
             Arguments.of(
                 SonarLintEngineTestConfiguration.builder()
+                .description("NewClass.java with rule java:S1133 but without java:S1186, java:S1598, java:S100, java:S1134, java:S2168 and java:S115  to check CODE_SMELL INFO")
                 .includeRules("java:S1133")
                 .excludeRules("java:S1186", "java:S1598", "java:S100", "java:S1134", "java:S2168", "java:S115")
                 .addClientInputFile(new File("./src/test/resources/NewClass.java"))
@@ -86,6 +88,7 @@ public class SonarLintEngineImplTest {
             ),
             Arguments.of(
                 SonarLintEngineTestConfiguration.builder()
+                .description("SonarLintFileDemo.java with rule java:S115 but without java:S1220 and S1118 rule with default parameters")
                 .includeRules("java:S115")
                 .excludeRules("java:S1220", "java:S1118")
                 .addClientInputFile(new File("./src/test/resources/SonarLintFileDemo.java"))
@@ -105,6 +108,7 @@ public class SonarLintEngineImplTest {
             ),
             Arguments.of(
                 SonarLintEngineTestConfiguration.builder()
+                .description("SonarLintFileDemo.java with rule java:S115 but without java:S1220 and S1118 rule with custom parameters")
                 .includeRules("java:S115")
                 .excludeRules("java:S1220", "java:S1118")
                 .addClientInputFile(new File("./src/test/resources/SonarLintFileDemo.java"))
@@ -114,6 +118,7 @@ public class SonarLintEngineImplTest {
             ),
             Arguments.of(
                 SonarLintEngineTestConfiguration.builder()
+                .description("sonarlint-example.js with rule javascript:S108 to check javascript plugin that require nodejs")
                 .includeRules("javascript:S108")
                 .addClientInputFile(new File("./src/test/resources/sonarlint-example.js"))
                 .build(),
@@ -130,10 +135,30 @@ public class SonarLintEngineImplTest {
                     .build()
                 )
             ),
+            Arguments.of(
+                SonarLintEngineTestConfiguration.builder()
+                .description("sonarlin-example.php with rule php:S101 but without php:S1105 to check php plugin")
+                .includeRules("php:S101")
+                .excludeRules("php:S1105")
+                .addClientInputFile(new File("./src/test/resources/sonarlin-example.php"))
+                .build(),
+                Arrays.asList(
+                    new DefaultIssueTestImpl.Builder()
+                    .severity("MINOR")
+                    .type("CODE_SMELL")
+                    .ruleKey("php:S101")
+                    .ruleName("Class names should comply with a naming convention")
+                    .startLine(2)
+                    .startLineOffset(10)
+                    .endLine(2)
+                    .endLineOffset(18)
+                    .build()
+                )
+            ),
         };
     }
 
-    @ParameterizedTest(name = "[{index}}] check analyze")
+    @ParameterizedTest(name = "[{index}}] analyze({0})")
     @MethodSource("parametersForAnalyze")
     public void analyze(SonarLintEngineTestConfiguration testConfiguration, List<Issue> expectedIssue) throws MalformedURLException, BackingStoreException, IOException
     {
