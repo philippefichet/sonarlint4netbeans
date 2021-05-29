@@ -34,12 +34,14 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
 public final class SonarLintEngineTestConfiguration {
+    private final String description;
     private final List<RuleKey> excludedRules;
     private final List<RuleKey> includedRules;
     private final List<ClientInputFile> clientInputFiles;
     private final List<RuleParameter> ruleParameters;
 
     private SonarLintEngineTestConfiguration(Builder builder) {
+        this.description = builder.description;
         this.excludedRules = builder.excludedRules;
         this.includedRules = builder.includedRules;
         this.clientInputFiles = builder.clientInputFiles;
@@ -60,6 +62,11 @@ public final class SonarLintEngineTestConfiguration {
 
     public List<RuleParameter> getRuleParameters() {
         return ruleParameters;
+    }
+
+    @Override
+    public String toString() {
+        return description;
     }
 
     public static Builder builder() {
@@ -91,11 +98,17 @@ public final class SonarLintEngineTestConfiguration {
     }
 
     public static final class Builder {
+        private String description;
         private final List<RuleKey> excludedRules = new ArrayList<>();
         private final List<RuleKey> includedRules = new ArrayList<>();
         private final List<ClientInputFile> clientInputFiles = new ArrayList<>();
         private final List<RuleParameter> ruleParameters = new ArrayList<>();
 
+        public Builder description(String description) {
+            this.description = description;
+            return this;
+        }
+        
         public Builder addClientInputFile(File file) throws IOException {
             Path path = file.toPath();
             clientInputFiles.add(new FSClientInputFile(
