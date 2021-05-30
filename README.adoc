@@ -14,6 +14,7 @@ Features:
 - Enable/Disable Rules in Tools/Options/Miscellaneous/SonarLint
 - Filter Rules in Tools/Options/Miscellaneous/SonarLint option panel and "Sonar Rule Details" window
 - Change rule settings in Tools/Options/Miscellaneous/SonarLint or in "Sonar Rule Details" window
+- Restore selected rule from activated by default
 - Custom "Sonar Rule Details" window with CSS
 - Enable or disabled test rules on test files
 - Severity icons
@@ -86,6 +87,12 @@ image::docs/OptionsSonarLintRulesWithKeyFilter.jpg[]
 
 .SonarLint rules enabled or disabled with name filter
 image::docs/OptionsSonarLintRulesWithNameFilter.jpg[]
+
+.Restore selected rule from activated by default (before)
+image::docs/OptionsSonarLintRulesRestoreToDefaultBefore.jpg[]
+
+.Restore selected rule from activated by default (after)
+image::docs/OptionsSonarLintRulesRestoreToDefaultAfter.jpg[]
 
 .SonarLint Options
 image::docs/OptionsSonarLintOptions

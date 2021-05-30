@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.swing.BoxLayout;
+import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -155,6 +156,8 @@ public final class SonarLintPanel extends javax.swing.JPanel {
     private void initRulesPanel(SonarLintEngine sonarLintEngine) {
         optionPanel.removeAll();
         JPanel languageKeyContainer = new JPanel(new FlowLayout());
+        JButton resetSelectedRule = new JButton("Restore to default");
+        resetSelectedRule.setToolTipText("Selected only rule activated by default");
         JTextField rulesFilter = new JTextField();
         rulesFilter.setColumns(20);
         JComboBox<String> comboLanguageKey = new JComboBox<>();
@@ -172,11 +175,26 @@ public final class SonarLintPanel extends javax.swing.JPanel {
             e ->
             rulesDefaultTableModel.setRules(sonarLintEngine, (String)comboLanguageKey.getSelectedItem(), rulesFilter.getText())
         );
+        resetSelectedRule.addActionListener(
+            e -> {
+            sonarLintEngine.getAllRuleDetails().stream()
+            .filter(rule -> rule.getLanguage().getLanguageKey().equals((String)comboLanguageKey.getSelectedItem()))
+            .forEach(rule -> {
+                RuleKey ruleKey = RuleKey.parse(rule.getKey());
+                if (rule.isActiveByDefault()) {
+                    sonarLintEngine.includeRuleKey(ruleKey);
+                } else {
+                    sonarLintEngine.excludeRuleKey(ruleKey);
+                }
+            });
+            rulesDefaultTableModel.setRules(sonarLintEngine, (String)comboLanguageKey.getSelectedItem(), rulesFilter.getText());
+        });
         languageKeyContainer.add(new JLabel("language key: "));
         languageKeyContainer.add(comboLanguageKey);
         languageKeyContainer.add(new JSeparator());
         languageKeyContainer.add(new JLabel("filter: "));
         languageKeyContainer.add(rulesFilter);
+        languageKeyContainer.add(resetSelectedRule);
         
         JPanel northContainer = new JPanel();
         northContainer.setLayout(new BoxLayout(northContainer, BoxLayout.Y_AXIS));
