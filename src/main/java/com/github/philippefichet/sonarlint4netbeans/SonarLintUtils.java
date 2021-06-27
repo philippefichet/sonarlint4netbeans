@@ -256,13 +256,18 @@ public final class SonarLintUtils {
             // Map file to implementation of ClientInputFile
             Path path = file.toPath();
             try {
-                Charset encoding = FileEncodingQuery.getEncoding(FileUtil.toFileObject(file));
                 FileObject fileObject = FileUtil.toFileObject(file);
+                // ignore null FileObject (e.g. .nbattr) as getEncoding throws IllegalArgumentException
+                if (fileObject == null)
+                {
+                    continue;
+                }
+                Charset encoding = FileEncodingQuery.getEncoding(fileObject);
                 clientInputFiles.add(new FSClientInputFile(
                     new String(Files.readAllBytes(path)),
                     path.toAbsolutePath(),
                     path.toFile().getName(),
-                    fileObject != null && SonarLintUtils.isTest(fileObject),
+                    SonarLintUtils.isTest(fileObject),
                     encoding
                 ));
             } catch (IOException ex) {
