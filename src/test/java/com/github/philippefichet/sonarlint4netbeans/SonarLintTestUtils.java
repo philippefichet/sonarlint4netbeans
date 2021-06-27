@@ -34,6 +34,7 @@ import java.nio.file.StandardCopyOption;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
+import org.openide.util.Utilities;
 import org.sonar.api.utils.ZipUtils;
 
 /*
@@ -69,15 +70,9 @@ public final class SonarLintTestUtils {
         return NODEJS_VERSION;
     }
     
-    public static boolean isWindowsOS()
-    {
-        String osName = System.getProperty("os.name");
-        return osName.startsWith("Windows");
-    }
-
     public static File getNodeJS()
     {
-        if (isWindowsOS()) {
+        if (Utilities.isWindows()) {
             return new File(getNodeJSDirectory(), "node.exe");
         } else {
             return new File(getNodeJSDirectory(), "bin/node");
@@ -86,40 +81,17 @@ public final class SonarLintTestUtils {
 
     public static File getNodeJSDirectory()
     {
-        String osArch = System.getProperty("os.arch");
-        if (osArch.equals("amd64")) {
-            String osName = System.getProperty("os.name");
-            if (osName.startsWith("Windows")) {
-                return new File("target/node-v" + NODEJS_VERSION + "-win-x64/node-v" + NODEJS_VERSION + "-win-x64");
-            } else if (osName.startsWith("Linux")) {
-                return new File("target/node-v" + NODEJS_VERSION + "-linux-x64/node-v" + NODEJS_VERSION + "-linux-x64");
-            } else {
-                throw new IllegalStateException("OS Name \"" + osName + "\" is not supported");
-            }
-        } else {
-            throw new IllegalStateException("Arch \"" + osArch + "\" is not supported");
-        }
+        String nodeVerDir = "node-v" + NODEJS_VERSION + getOsNameArch();
+        return new File("target/" + nodeVerDir + "/" + nodeVerDir);
     }
 
     public static void installNodeJS() throws MalformedURLException, IOException
     {
         String nodejsFileName;
         String nodejsFileExtension;
-        String osArch = System.getProperty("os.arch");
-        if (osArch.equals("amd64")) {
-            String osName = System.getProperty("os.name");
-            if (osName.startsWith("Windows")) {
-                nodejsFileName = "node-v" + NODEJS_VERSION + "-win-x64";
-                nodejsFileExtension = "zip";
-            } else if (osName.startsWith("Linux")) {
-                nodejsFileName = "node-v" + NODEJS_VERSION + "-linux-x64";
-                nodejsFileExtension = "tar.gz";
-            } else {
-                throw new IllegalStateException("OS Name \"" + osName + "\" is not supported");
-            }
-        } else {
-            throw new IllegalStateException("Arch \"" + osArch + "\" is not supported");
-        }
+        String osNameArch = getOsNameArch();
+        nodejsFileName = "node-v" + NODEJS_VERSION + osNameArch;
+        nodejsFileExtension = Utilities.isWindows() ? "zip" : "tar.gz";
         // Download
         Path targetNodeJSZip = Paths.get("./target/" + nodejsFileName + "." + nodejsFileExtension);
         if (!targetNodeJSZip.toFile().exists()) {
@@ -167,8 +139,27 @@ public final class SonarLintTestUtils {
                  tarIn.close();
             }
         }
-        if (!isWindowsOS()) {
+        if (!Utilities.isWindows()) {
             getNodeJS().setExecutable(true);
+        }
+    }
+    
+    private static String getOsNameArch()
+    {
+        String osArch = System.getProperty("os.arch");
+        if (osArch.equals("amd64") || osArch.equals("x86_64")) {
+            String osName = System.getProperty("os.name").toLowerCase();
+            if (osName.startsWith("windows")) {
+                return "-win-x64";
+            } else if (osName.startsWith("linux")) {
+                return "-linux-x64";
+            } else if (osName.contains("mac")) {
+                return "-darwin-x64";
+            } else {
+                throw new IllegalStateException("OS Name \"" + osName + "\" is not supported");
+            }  
+        } else {
+            throw new IllegalStateException("Arch \"" + osArch + "\" is not supported");
         }
     }
 }
