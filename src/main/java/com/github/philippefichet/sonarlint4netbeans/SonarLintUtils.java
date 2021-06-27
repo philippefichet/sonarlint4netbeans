@@ -306,7 +306,7 @@ public final class SonarLintUtils {
                     Files.walkFileTree(file.toPath(), new FileVisitor<Path>() {
                         @Override
                         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                            return FileVisitResult.CONTINUE;
+                            return dir.endsWith("generated-sources") ? FileVisitResult.SKIP_SUBTREE : FileVisitResult.CONTINUE;
                         }
                         
                         @Override
