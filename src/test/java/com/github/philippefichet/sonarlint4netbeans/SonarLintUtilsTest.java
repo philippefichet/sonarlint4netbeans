@@ -41,6 +41,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.common.Version;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
@@ -393,7 +394,7 @@ public class SonarLintUtilsTest {
     {
         SonarLintTestUtils.installNodeJS();
         File nodeJSDirectory = SonarLintTestUtils.getNodeJSDirectory();
-        String node = SonarLintTestUtils.isWindowsOS() ? "node.exe" : "bin/node";
+        String node = Utilities.isWindows() ? "node.exe" : "bin/node";
         Optional<Version> detectNodeJSVersion = SonarLintUtils.detectNodeJSVersion(nodeJSDirectory.getAbsolutePath() + File.separator + node);
         Assertions.assertThat(detectNodeJSVersion).isPresent().get().isEqualTo(Version.create(SonarLintTestUtils.getNodeJSVersion()));
     }
