@@ -20,6 +20,10 @@
                 <file name="com-github-philippefichet-sonarlint4netbeans-SonarLintParserResultTaskFactory.instance">
                 </file>
             </folder>
+            <folder name="x-html">
+                <file name="com-github-philippefichet-sonarlint4netbeans-SonarLintParserResultTaskFactory.instance">
+                </file>
+            </folder>
         </folder>
         <folder name="AnnotationTypes">
             <file name="SonarLint"
