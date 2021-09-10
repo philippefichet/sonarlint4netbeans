@@ -59,11 +59,13 @@ import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
 public final class SonarLintEngineImpl implements SonarLintEngine {
 
     // https://search.maven.org/artifact/org.sonarsource.java/sonar-java-plugin/
-    public static final String SONAR_JAVA_PLUGIN_VERSION = "6.15.0.25849";
+    public static final String SONAR_JAVA_PLUGIN_VERSION = "7.3.0.27589";
     // https://search.maven.org/artifact/org.sonarsource.javascript/sonar-javascript-plugin/
-    public static final String SONAR_JAVASCRIPT_PLUGIN_VERSION = "7.3.0.15071";
+    public static final String SONAR_JAVASCRIPT_PLUGIN_VERSION = "8.3.0.16208";
     // https://search.maven.org/artifact/org.sonarsource.php/sonar-php-plugin/
-    private static String SONAR_PHP_PLUGIN_VERSION = "3.17.0.7439";
+    private static String SONAR_PHP_PLUGIN_VERSION = "3.19.0.7847";
+    // https://mvnrepository.com/artifact/org.sonarsource.html/sonar-html-plugin
+    private static String SONAR_HTML_PLUGIN_VERSION = "3.4.0.2754";
     private static final String PREFIX_PREFERENCE_RULE_PARAMETER = "rules.parameters.";
     private static final String PREFIX_EXCLUDE_RULE = "excludedRules";
     private static final String PREFIX_RUNTIME_PREFERENCE= "runtime.";
@@ -80,6 +82,7 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
         pluginURLs.put("java", getClass().getResource("/com/github/philippefichet/sonarlint4netbeans/resources/sonar-java-plugin-" + SONAR_JAVA_PLUGIN_VERSION + ".jar"));
         pluginURLs.put("javascript", getClass().getResource("/com/github/philippefichet/sonarlint4netbeans/resources/sonar-javascript-plugin-" + SONAR_JAVASCRIPT_PLUGIN_VERSION + ".jar"));
         pluginURLs.put("php", getClass().getResource("/com/github/philippefichet/sonarlint4netbeans/resources/sonar-php-plugin-" + SONAR_PHP_PLUGIN_VERSION + ".jar"));
+        pluginURLs.put("web", getClass().getResource("/com/github/philippefichet/sonarlint4netbeans/resources/sonar-html-plugin-" + SONAR_HTML_PLUGIN_VERSION + ".jar"));
         createInternalEngine();
         @SuppressWarnings("unchecked")
         List<Map<String, String>> fromJson = gson.fromJson(getPreferences().get(PREFIX_EXCLUDE_RULE, null), List.class);
