@@ -33,7 +33,9 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
@@ -210,14 +212,73 @@ public final class SonarLintUtils {
     /**
      * Retrieve HTML detail description of rule
      * @param ruleDetails Detail of rule
+     * @param ruleParams rule parameter values
      * @return HTML detail description of rule
      */
-    public static String toHtmlDescription(RuleDetails ruleDetails)
+    public static String toHtmlDescription(RuleDetails ruleDetails, Map<StandaloneRuleParam, String> ruleParams)
     {
-        return "<div id=\"" + ruleDetails.getKey().replaceAll(":", "-") + "\">"
-            + "<h1><a href=\"" + SonarLintUtils.toURL(ruleDetails) + "\">" + StringEscapeUtils.escapeHtml4(ruleDetails.getName()) + "</a></h1>"
-            + ruleDetails.getHtmlDescription()
-            + "</div>";
+        StringBuilder sb = new StringBuilder();
+        sb.append("<div id=\"")
+            .append(ruleDetails.getKey().replaceAll(":", "-"))
+            .append("\">\n")
+            .append("<h1><a href=\"")
+            .append(SonarLintUtils.toURL(ruleDetails))
+            .append("\">")
+            .append(StringEscapeUtils.escapeHtml4(ruleDetails.getName()))
+            .append("</a></h1>\n")
+        ;
+        sb.append(ruleDetails.getHtmlDescription())
+            .append("\n</div>")
+        ;
+        if (!ruleParams.isEmpty()) {
+            sb.append("<div class=\"rule-parameters-container\">\n");
+            sb.append("<h2>Parameters</h2>\n");
+            for (Map.Entry<StandaloneRuleParam, String> entry : ruleParams.entrySet()) {
+                StandaloneRuleParam standaloneRuleParam = entry.getKey();
+                sb.append("<div class=\"rule-parameters-param\">\n<strong class=\"rule-parameters-param-name\">")
+                    .append(standaloneRuleParam.name())
+                    .append("</strong>: <span class=\"rule-parameters-description\">")
+                    .append(standaloneRuleParam.description())
+                    .append("</span>. (<span>value</span>: <span class=\"rule-parameters-value\">")
+                    .append(entry.getValue())
+                    .append("</span>, <span>default</span>: <span class=\"rule-parameters-default\">")
+                    .append(standaloneRuleParam.defaultValue())
+                    .append("</span>)</div>\n");
+            }
+            sb.append("</div>\n");
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Extract all parameters of rule with customized or defaut value
+     * @param sonarLintEngine
+     * @param ruleKey rule key ("java:S115", ...)
+     * @return 
+     */
+    public static Map<StandaloneRuleParam, String> extractRuleParameters(SonarLintEngine sonarLintEngine, String ruleKey)
+    {
+        Optional<StandaloneRuleDetails> ruleDetailsOptional = sonarLintEngine.getRuleDetails(ruleKey);
+        if (ruleDetailsOptional.isPresent())
+        {
+            StandaloneRuleDetails ruleDetails = ruleDetailsOptional.get();
+            Map<StandaloneRuleParam, String> ruleParameters = new HashMap<>();
+            Collection<StandaloneRuleParam> paramDetails = ruleDetails.paramDetails();
+            if(paramDetails.isEmpty()) {
+                return Collections.emptyMap();
+            }
+            for (StandaloneRuleParam paramDetail : paramDetails) {
+                ruleParameters.put(
+                    paramDetail,
+                    sonarLintEngine.getRuleParameter(ruleKey, paramDetail.name()).orElseGet(paramDetail::defaultValue)
+                );
+            }
+            return ruleParameters;
+        }
+        else
+        {
+            return Collections.emptyMap();
+        }
     }
 
     /**

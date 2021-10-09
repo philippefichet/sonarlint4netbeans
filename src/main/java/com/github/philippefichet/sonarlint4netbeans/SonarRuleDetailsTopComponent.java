@@ -191,7 +191,10 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
             if (optionalRuleDetails.isPresent()) {
                 RuleDetails ruleDetails = optionalRuleDetails.get();
                 String customCss = SonarLintUtils.toRuleDetailsStyleSheet(sonarLintOptions);
-                String html = SonarLintUtils.toHtmlDescription(ruleDetails);
+                String html = SonarLintUtils.toHtmlDescription(
+                    ruleDetails,
+                    SonarLintUtils.extractRuleParameters(sonarLintEngine, ruleDetails.getKey())
+                );
                 sonarLintRuleDetailsEditor.setText(customCss + html);
                 sonarLintRuleDetailsEditorHtmlSource.setText(html);
                 sonarLintRuleDetailsEditor.getCaret().moveDot(0);

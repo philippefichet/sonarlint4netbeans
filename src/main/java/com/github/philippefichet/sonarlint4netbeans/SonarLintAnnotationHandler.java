@@ -68,9 +68,9 @@ public final class SonarLintAnnotationHandler {
         return Optional.empty();
     }
 
-    public static void analyze(SonarLintEngine standaloneSonarLintEngineImpl, FileObject fileObject, String textToAnalyze) throws DataObjectNotFoundException, IOException {
+    public static void analyze(SonarLintEngine standaloneSonarLintEngine, FileObject fileObject, String textToAnalyze) throws DataObjectNotFoundException, IOException {
         // Sonarlint not ready
-        if (standaloneSonarLintEngineImpl == null) {
+        if (standaloneSonarLintEngine == null) {
             return;
         }
         final EditorCookie editorCookie = DataObject.find(fileObject).getCookie(EditorCookie.class);
@@ -120,6 +120,7 @@ public final class SonarLintAnnotationHandler {
                 new SonarLintAnnotation(
                     sue.getRuleKey(),
                     sue.getRuleName(),
+                    SonarLintUtils.extractRuleParameters(standaloneSonarLintEngine, sue.getRuleKey()),
                     sue.getSeverity(),
                     startOffset,
                     length

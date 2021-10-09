@@ -89,7 +89,7 @@ public class SonarLintRuleSettings extends javax.swing.JDialog {
         String ruleKey = ruleDetails.getKey();
         // Set rule description and dialog
         String customCss = SonarLintUtils.toRuleDetailsStyleSheet(sonarLintOptions);
-        String html = SonarLintUtils.toHtmlDescription(ruleDetails);
+        String html = SonarLintUtils.toHtmlDescription(ruleDetails, SonarLintUtils.extractRuleParameters(sonarLintEngine, ruleDetails.getKey()));
         ruleDescription.setText(customCss + html);
         setTitle(ruleKey + ": " + ruleDetails.getName());
         DefaultTableModel tableModel = (DefaultTableModel)ruleParametersTable.getModel();

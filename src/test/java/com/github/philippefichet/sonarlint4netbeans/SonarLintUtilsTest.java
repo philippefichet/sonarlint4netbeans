@@ -30,21 +30,23 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.prefs.BackingStoreException;
 import java.util.stream.Collectors;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
-import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.common.Version;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
 
 /**
  *
@@ -52,10 +54,13 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
  */
 public class SonarLintUtilsTest {
     @Test
-    public void analyze() throws IOException {
+    @DisplayName("Analyze hierarchical tree used in \"Analyze with Sonarlint\"")
+    public void likeAnalyzeWithSonarlint() throws IOException, BackingStoreException {
         // first step, check all issue in file
         List<Issue> actualIssues = new ArrayList<>();
         List<Issue> expectedIssues = getExpectedIssueForNewClassFile();
+        // Clean engine before use
+        SonarLintTestUtils.cleanSonarLintEngine();
         SonarLintUtils.analyze(
            Arrays.asList(FileUtil.normalizeFile(new File("./src/test/resources/NewClass.java"))),
             actualIssues::add,
@@ -169,9 +174,9 @@ public class SonarLintUtilsTest {
     }
 
     @Test
-    public void analyzeWithParameter() throws BackingStoreException, IOException {
-        SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
-        sonarLintEngine.getPreferences().removeNode();
+    @DisplayName("Analyze hierarchical tree used in \"Analyze with Sonarlint\" with a custom rule parameter value")
+    public void likeAnalyzeWithSonarlintWithParameter() throws BackingStoreException, IOException {
+        SonarLintEngine sonarLintEngine = SonarLintTestUtils.getCleanSonarLintEngine();
         sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey())));
         sonarLintEngine.includeRuleKey( RuleKey.parse("java:S100"));
         sonarLintEngine.includeRuleKey( RuleKey.parse("java:S1186"));
@@ -373,9 +378,9 @@ public class SonarLintUtilsTest {
     }
 
     @Test
+    @DisplayName("Analyze with custom rule parameter value")
     public void ruleParameterChanged() throws MalformedURLException, IOException, BackingStoreException {
-        SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
-        sonarLintEngine.getPreferences().removeNode();
+        SonarLintEngine sonarLintEngine = SonarLintTestUtils.getCleanSonarLintEngine();
         String ruleKeyString = "java:S115";
         sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey())));
         sonarLintEngine.includeRuleKey( RuleKey.parse(ruleKeyString));
@@ -390,6 +395,7 @@ public class SonarLintUtilsTest {
     }
 
     @Test
+    @DisplayName("Detect nodejs version")
     public void detectNodeJSVersion() throws IOException
     {
         SonarLintTestUtils.installNodeJS();
@@ -397,5 +403,34 @@ public class SonarLintUtilsTest {
         String node = Utilities.isWindows() ? "node.exe" : "bin/node";
         Optional<Version> detectNodeJSVersion = SonarLintUtils.detectNodeJSVersion(nodeJSDirectory.getAbsolutePath() + File.separator + node);
         Assertions.assertThat(detectNodeJSVersion).isPresent().get().isEqualTo(Version.create(SonarLintTestUtils.getNodeJSVersion()));
+    }
+
+    @Test
+    @DisplayName("Check default rule parameter value from extractRuleParameters")
+    public void extractRuleParametersWithDefaultValue() throws BackingStoreException
+    {
+        SonarLintEngine sonarLintEngine = SonarLintTestUtils.getCleanSonarLintEngine();
+        String ruleKeyString = "java:S115";
+        sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey())));
+        sonarLintEngine.includeRuleKey( RuleKey.parse(ruleKeyString));
+        Map<StandaloneRuleParam, String> extractRuleParameters = SonarLintUtils.extractRuleParameters(sonarLintEngine, ruleKeyString);
+        Assertions.assertThat(extractRuleParameters)
+            .hasSize(1)
+            .containsValue("^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$");
+    }
+    
+    @Test
+    @DisplayName("Check custom rule parameter value from extractRuleParameters")
+    public void extractRuleParametersWithCustomValue() throws BackingStoreException
+    {
+        SonarLintEngine sonarLintEngine = SonarLintTestUtils.getCleanSonarLintEngine();
+        String ruleKeyString = "java:S115";
+        sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey())));
+        sonarLintEngine.includeRuleKey( RuleKey.parse(ruleKeyString));
+        sonarLintEngine.setRuleParameter(ruleKeyString, "format", "^[A-Z]*$");
+        Map<StandaloneRuleParam, String> extractRuleParameters = SonarLintUtils.extractRuleParameters(sonarLintEngine, ruleKeyString);
+        Assertions.assertThat(extractRuleParameters)
+            .hasSize(1)
+            .containsValue("^[A-Z]*$");
     }
 }
