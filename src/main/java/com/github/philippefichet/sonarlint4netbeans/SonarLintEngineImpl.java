@@ -20,6 +20,7 @@
 package com.github.philippefichet.sonarlint4netbeans;
 
 import com.google.gson.Gson;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
@@ -35,6 +36,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.openide.util.NbPreferences;
+import org.sonarsource.nodejs.NodeCommand;
+import org.sonarsource.nodejs.NodeCommandBuilderImpl;
+import org.sonarsource.nodejs.NodeCommandException;
 import org.sonarsource.sonarlint.core.StandaloneSonarLintEngineImpl;
 import org.sonarsource.sonarlint.core.client.api.common.Language;
 import org.sonarsource.sonarlint.core.client.api.common.LogOutput;
@@ -109,17 +113,40 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
             StandaloneGlobalConfiguration.Builder configBuilder = StandaloneGlobalConfiguration.builder()
                 .addEnabledLanguages(Language.values())
                 .addPlugins(pluginURLs.values().toArray(new URL[pluginURLs.values().size()]));
-            getNodeJSPath().ifPresent(nodeJSPath -> {
-                getNodeJSVersion().ifPresent(nodeJSVersion -> {
-                    Path nodeJS = Paths.get(nodeJSPath);
-                    configBuilder.setNodeJs(nodeJS, nodeJSVersion);
-                });
-            });
+            if (getNodeJSPath().isPresent() && getNodeJSVersion().isPresent()) {
+                String nodeJSPath = getNodeJSPath().get();
+                Version nodeJSVersion = getNodeJSVersion().get();
+                Path nodeJS = Paths.get(nodeJSPath);
+                configBuilder.setNodeJs(nodeJS, nodeJSVersion);
+            } else {
+                tryToSetDefaultNodeJS(configBuilder);
+            }
             standaloneSonarLintEngineImpl = new StandaloneSonarLintEngineImpl(configBuilder.build());
             consumerWaitingInitialization.forEach(consumer -> consumer.accept(this));
             consumerWaitingInitialization.clear();
         }).start();
     }
+    
+    private void tryToSetDefaultNodeJS(StandaloneGlobalConfiguration.Builder configBuilder) {
+        try {
+            NodeProcessWrapper nodeProcessWrapper = new NodeProcessWrapper();
+            NodeCommand nodeCommandVersion = new NodeCommandBuilderImpl(nodeProcessWrapper)
+                .nodeJsArgs("--version")
+                .build();
+            nodeCommandVersion.start();
+            if (nodeCommandVersion.waitFor() == 0 && nodeProcessWrapper.getCommandLineUsed().isPresent()) {
+                String nodeJSPath = nodeProcessWrapper.getCommandLineUsed().get().get(0);
+                Optional<Version> detectNodeJSVersion = SonarLintUtils.detectNodeJSVersion(nodeJSPath);
+                if (detectNodeJSVersion.isPresent()) {
+                    configBuilder.setNodeJs(Paths.get(nodeJSPath), detectNodeJSVersion.get());
+                    Logger.getLogger(SonarLintEngineImpl.class.getName()).log(Level.SEVERE, "Use default nodejs path");
+                }
+            }
+        } catch (NodeCommandException | IOException ex) {
+            Logger.getLogger(SonarLintEngineImpl.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+        
 
     @Override
     public Optional<String> getNodeJSPath() {
