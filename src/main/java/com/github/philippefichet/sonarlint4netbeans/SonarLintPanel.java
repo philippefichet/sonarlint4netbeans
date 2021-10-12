@@ -41,7 +41,6 @@ import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
 import org.openide.util.Lookup;
 import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
@@ -57,7 +56,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
     private String nodeJSPathToSave;
     private Version nodeJSVersionToSave;
     private Boolean applyDifferentRulesOnTestFiles = null;
-    private DefaultTableModel analyzerDefaultTableModel = new DefaultTableModel();
+    private SonarLintAnalyzersTableModel analyzerDefaultTableModel = new SonarLintAnalyzersTableModel();
 
     private SonarLintRuleTableModel rulesDefaultTableModel = new SonarLintRuleTableModel();
 
@@ -76,20 +75,8 @@ public final class SonarLintPanel extends javax.swing.JPanel {
 
         SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
         sonarLintEngine.whenInitialized(engine -> {
-            analyzerDefaultTableModel.addColumn("Key");
-            analyzerDefaultTableModel.addColumn("Name");
-            analyzerDefaultTableModel.addColumn("Version");
-            analyzerDefaultTableModel.addColumn("Status");
             Collection<PluginDetails> loadedAnalyzers = engine.getPluginDetails();
-            for (PluginDetails loadedAnalyzer : loadedAnalyzers) {
-                analyzerDefaultTableModel.addRow(new Object[]{
-                    loadedAnalyzer.key(),
-                    loadedAnalyzer.name(),
-                    loadedAnalyzer.version(),
-                    loadedAnalyzer.skipReason().map(reason -> "Disable: " + reason.toString()).orElse("Enable")
-                });
-            }
-
+            loadedAnalyzers.forEach(analyzerDefaultTableModel::addPluginDetails);
             rulesDefaultTableModel.addTableModelListener(e -> {
                 controller.changed();
                 int column = e.getColumn();
