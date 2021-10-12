@@ -36,7 +36,7 @@ public class SonarLintSeverityTableCellRenderer implements TableCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         String severity = String.valueOf(value);
-        Optional<ImageIcon> toImageIcon = SonarLintUtils.toImageIcon(severity);
+        Optional<ImageIcon> toImageIcon = SonarLintUtils.ruleSeverityToImageIcon(severity);
         if (toImageIcon.isPresent()) {
             defaultTableCellRenderer.setIcon(toImageIcon.get());
         }
