@@ -229,19 +229,18 @@ public final class SonarLintPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        leftPanel = new javax.swing.JPanel();
         categoriesPanel = new javax.swing.JPanel();
-        categoriesLabel = new javax.swing.JLabel();
         categoriesScrollPanel = new javax.swing.JScrollPane();
         categoriesList = new javax.swing.JList<>();
+        categoriesLabel = new javax.swing.JLabel();
+        rightPanel = new javax.swing.JPanel();
         optionScrollPane = new javax.swing.JScrollPane();
         optionPanel = new javax.swing.JPanel();
 
-        setLayout(new java.awt.BorderLayout(10, 0));
+        leftPanel.setPreferredSize(new java.awt.Dimension(100, 100));
 
-        categoriesPanel.setLayout(new javax.swing.BoxLayout(categoriesPanel, javax.swing.BoxLayout.PAGE_AXIS));
-
-        org.openide.awt.Mnemonics.setLocalizedText(categoriesLabel, org.openide.util.NbBundle.getMessage(SonarLintPanel.class, "SonarLintPanel.categoriesLabel.text")); // NOI18N
-        categoriesPanel.add(categoriesLabel);
+        categoriesPanel.setPreferredSize(new java.awt.Dimension(100, 100));
 
         categoriesList.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "Options", "Rules", "Analyzers" };
@@ -251,9 +250,44 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         categoriesList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         categoriesScrollPanel.setViewportView(categoriesList);
 
-        categoriesPanel.add(categoriesScrollPanel);
+        org.openide.awt.Mnemonics.setLocalizedText(categoriesLabel, org.openide.util.NbBundle.getMessage(SonarLintPanel.class, "SonarLintPanel.categoriesLabel.text")); // NOI18N
 
-        add(categoriesPanel, java.awt.BorderLayout.WEST);
+        javax.swing.GroupLayout categoriesPanelLayout = new javax.swing.GroupLayout(categoriesPanel);
+        categoriesPanel.setLayout(categoriesPanelLayout);
+        categoriesPanelLayout.setHorizontalGroup(
+            categoriesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(categoriesPanelLayout.createSequentialGroup()
+                .addGroup(categoriesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(categoriesLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(categoriesScrollPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE))
+                .addGap(0, 0, 0))
+        );
+        categoriesPanelLayout.setVerticalGroup(
+            categoriesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(categoriesPanelLayout.createSequentialGroup()
+                .addComponent(categoriesLabel)
+                .addGap(0, 0, 0)
+                .addComponent(categoriesScrollPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 84, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout leftPanelLayout = new javax.swing.GroupLayout(leftPanel);
+        leftPanel.setLayout(leftPanelLayout);
+        leftPanelLayout.setHorizontalGroup(
+            leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(leftPanelLayout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addComponent(categoriesPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        leftPanelLayout.setVerticalGroup(
+            leftPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(leftPanelLayout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addComponent(categoriesPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(0, 0, 0))
+        );
+
+        rightPanel.setPreferredSize(new java.awt.Dimension(100, 100));
 
         optionScrollPane.setViewportView(null);
 
@@ -261,7 +295,43 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         optionPanel.setLayout(new java.awt.BorderLayout());
         optionScrollPane.setViewportView(optionPanel);
 
-        add(optionScrollPane, java.awt.BorderLayout.CENTER);
+        javax.swing.GroupLayout rightPanelLayout = new javax.swing.GroupLayout(rightPanel);
+        rightPanel.setLayout(rightPanelLayout);
+        rightPanelLayout.setHorizontalGroup(
+            rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(rightPanelLayout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addComponent(optionScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
+                .addGap(0, 0, 0))
+        );
+        rightPanelLayout.setVerticalGroup(
+            rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(rightPanelLayout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addComponent(optionScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
+                .addGap(0, 0, 0))
+        );
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addComponent(leftPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
+                .addComponent(rightPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(0, 0, 0))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(0, 0, 0)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(leftPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(rightPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(0, 0, 0))
+        );
     }// </editor-fold>//GEN-END:initComponents
 
     void load() {
@@ -306,7 +376,9 @@ public final class SonarLintPanel extends javax.swing.JPanel {
     javax.swing.JList<String> categoriesList;
     javax.swing.JPanel categoriesPanel;
     javax.swing.JScrollPane categoriesScrollPanel;
+    javax.swing.JPanel leftPanel;
     javax.swing.JPanel optionPanel;
     javax.swing.JScrollPane optionScrollPane;
+    javax.swing.JPanel rightPanel;
     // End of variables declaration//GEN-END:variables
 }
