@@ -38,6 +38,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import org.apache.commons.text.StringEscapeUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -214,7 +215,7 @@ public final class SonarLintUtils {
     public static String toHtmlDescription(RuleDetails ruleDetails)
     {
         return "<div id=\"" + ruleDetails.getKey().replaceAll(":", "-") + "\">"
-            + "<h1><a href=\"" + SonarLintUtils.toURL(ruleDetails) + "\">" + ruleDetails.getName() + "</a></h1>"
+            + "<h1><a href=\"" + SonarLintUtils.toURL(ruleDetails) + "\">" + StringEscapeUtils.escapeHtml4(ruleDetails.getName()) + "</a></h1>"
             + ruleDetails.getHtmlDescription()
             + "</div>";
     }
