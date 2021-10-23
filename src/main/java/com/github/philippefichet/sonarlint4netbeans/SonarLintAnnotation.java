@@ -19,7 +19,10 @@
  */
 package com.github.philippefichet.sonarlint4netbeans;
 
+import java.util.Map;
+import org.apache.commons.text.StringEscapeUtils;
 import org.openide.text.Annotation;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
 /**
  *
  * @author FICHET Philippe
@@ -39,14 +42,37 @@ public class SonarLintAnnotation extends Annotation {
     private final String ruleName;
     private final String severity;
 
-    public SonarLintAnnotation(String ruleKey, String ruleName, String severity, long startOffest, int length) {
+    public SonarLintAnnotation(String ruleKey, String ruleName, Map<StandaloneRuleParam, String> ruleParams, String severity, long startOffest, int length) {
         super();
         this.startOffest = startOffest;
         this.length = length;
         this.ruleKey = ruleKey;
         this.ruleName = ruleName;
         this.severity = severity;
-        this.shortDescription = ruleKey + "\n" + ruleName + "\nClick to show details";
+        StringBuilder sb = new StringBuilder("<html>");
+        sb.append("<strong>");
+        sb.append(ruleKey);
+        sb.append(": ")
+            .append(StringEscapeUtils.escapeHtml4(ruleName))
+            .append("</strong>")
+            .append("<br/>Click to show details");
+        if (!ruleParams.isEmpty()) {
+            sb.append("<br/><br/><strong>Parameters:</strong><br/>");
+            for (Map.Entry<StandaloneRuleParam, String> ruleParam : ruleParams.entrySet()) {
+                StandaloneRuleParam standaloneRuleParam = ruleParam.getKey();
+                sb.append("<div>")
+                    .append(standaloneRuleParam.name())
+                    .append(": ")
+                    .append(standaloneRuleParam.description())
+                    .append(". (value: ")
+                    .append(ruleParam.getValue())
+                    .append(", default: ")
+                    .append(standaloneRuleParam.defaultValue())
+                    .append(")</div>");
+            }
+        }
+        this.shortDescription = sb.append("</html>")
+            .toString();
     }
 
     public long getStartOffest() {

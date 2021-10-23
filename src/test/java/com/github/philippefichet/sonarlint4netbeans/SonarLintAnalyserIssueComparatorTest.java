@@ -73,7 +73,7 @@ public class SonarLintAnalyserIssueComparatorTest {
         };
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "[{index}] Compare issue {1} and {2} with order {3}")
     @MethodSource("parametersForCompare")
     public void compare(Issue o1, Issue o2, CompareOrder compareOrder)
     {
@@ -97,7 +97,7 @@ public class SonarLintAnalyserIssueComparatorTest {
         }
     }
 
-    @ParameterizedTest
+    @ParameterizedTest(name = "[{index}] Sorting issue {1} and {2} with order {3}")
     @MethodSource("parametersForCompare")
     public void sort(Issue o1, Issue o2, CompareOrder compareOrder)
     {

@@ -3,3 +3,5 @@
 /target/
 /nbproject/private/
 /nbproject/
+/.allure/
+/allure-results/

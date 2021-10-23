@@ -31,11 +31,16 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.prefs.BackingStoreException;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
+import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.sonar.api.utils.ZipUtils;
+import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
 /*
  * Copyright (C) 2021 Philippe FICHET.
@@ -161,5 +166,40 @@ public final class SonarLintTestUtils {
         } else {
             throw new IllegalStateException("Arch \"" + osArch + "\" is not supported");
         }
+    }
+
+    /**
+     * Retrieve SonarLintEngine from Lookup but clean all configuration
+     * @return clean SonarLintEngine
+     * @throws BackingStoreException 
+     */
+    public static SonarLintEngine getCleanSonarLintEngine() throws BackingStoreException
+    {
+        SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
+        cleanSonarLintEngine(sonarLintEngine);
+        return sonarLintEngine;
+    }
+
+    /**
+     * Clean all configuration of SonarLintEngine
+     * @param sonarLintEngine engine to clean
+     * @throws BackingStoreException 
+     */
+    public static void cleanSonarLintEngine(SonarLintEngine sonarLintEngine) throws BackingStoreException
+    {
+        List<RuleKey> arrayList = new ArrayList<>(sonarLintEngine.getExcludedRules());
+        for (RuleKey ruleKey : arrayList) {
+            sonarLintEngine.includeRuleKey(ruleKey);
+        }
+        sonarLintEngine.getPreferences().removeNode();
+    }
+    
+    /**
+     * Clean all configuration of SonarLintEngine from Lookup
+     * @throws BackingStoreException 
+     */
+    public static void cleanSonarLintEngine() throws BackingStoreException
+    {
+        cleanSonarLintEngine(Lookup.getDefault().lookup(SonarLintEngine.class));
     }
 }
