@@ -39,7 +39,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
-import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 
 /**
@@ -189,7 +188,7 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
         sonarLintEngine.whenInitialized((SonarLintEngine engine) -> {
             Optional<StandaloneRuleDetails> optionalRuleDetails = engine.getRuleDetails(selectedValue);
             if (optionalRuleDetails.isPresent()) {
-                RuleDetails ruleDetails = optionalRuleDetails.get();
+                StandaloneRuleDetails ruleDetails = optionalRuleDetails.get();
                 String customCss = SonarLintUtils.toRuleDetailsStyleSheet(sonarLintOptions);
                 String html = SonarLintUtils.toHtmlDescription(
                     ruleDetails,

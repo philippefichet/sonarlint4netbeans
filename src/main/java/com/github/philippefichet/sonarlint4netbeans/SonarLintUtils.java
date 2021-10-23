@@ -37,9 +37,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.StringJoiner;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import javax.swing.UIManager;
 import org.apache.commons.text.StringEscapeUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -101,13 +103,73 @@ public final class SonarLintUtils {
         }
     }
 
-    public static Optional<ImageIcon> toImageIcon(String severity)
+    /**
+     * Copied from org.openide.util.ImageUtilities#isDarkLaF()
+     * @return true if current LAF is a dark LAF, false otherwise
+     */
+    public static boolean isDarkLaF() {
+        return UIManager.getBoolean("nb.dark.theme"); //NOI18N 
+    }
+
+    /**
+     * Retrieve classpath path (like com/.../../xx.png) of rule type icon
+     * @param type
+     * @return URL of PNG image severity if exist
+     */
+    public static String getRuleTypePathIconInClasspath(String type, boolean useSuffixForDarkLAF)
     {
-        URL resource = SonarLintUtils.class.getClassLoader().getResource("com/github/philippefichet/sonarlint4netbeans/resources/sonarlint-" + severity.toLowerCase() + ".png");
-        if (resource == null) {
-            return Optional.empty();
+        if (useSuffixForDarkLAF && isDarkLaF()) {
+            return "com/github/philippefichet/sonarlint4netbeans/resources/sonarlint-type-" + type.toLowerCase() + "-16px_dark.png";
+        } else {
+            return "com/github/philippefichet/sonarlint4netbeans/resources/sonarlint-type-" + type.toLowerCase() + "-16px.png";
         }
-        return Optional.of(new ImageIcon(resource, severity));
+    }
+
+    /**
+     * Retrieve URL of PNG image type if exist
+     * @param type type of rule
+     * @param useSuffixForDarkLAF to use "_dark" prefix in dark LAF
+     * @return URL of PNG image type if exist
+     */
+    public static Optional<URL> ruleTypePathIconInClasspathToURL(String type, boolean useSuffixForDarkLAF)
+    {
+        return Optional.ofNullable(
+            SonarLintUtils.class.getClassLoader().getResource(getRuleTypePathIconInClasspath(type, useSuffixForDarkLAF))
+        );
+    }
+
+    /**
+     * Retrieve URL of PNG image tags
+     * @param useSuffixForDarkLAF to use "_dark" prefix in dark LAF
+     * @return URL of PNG image tags
+     */
+    public static URL tagsPathIconInClasspathToURL(boolean useSuffixForDarkLAF)
+    {
+        if (useSuffixForDarkLAF && isDarkLaF()) {
+            return SonarLintUtils.class.getClassLoader().getResource("com/github/philippefichet/sonarlint4netbeans/resources/sonarlint-tags-16px_dark.png");
+        } else {
+            return SonarLintUtils.class.getClassLoader().getResource("com/github/philippefichet/sonarlint4netbeans/resources/sonarlint-tags-16px.png");
+        }
+    }
+
+    /**
+     * Retrieve URL of PNG image severity if exist
+     * @param severity
+     * @return URL of PNG image severity if exist
+     */
+    public static Optional<URL> ruleSeverityToURL(String severity)
+    {
+        return Optional.ofNullable(SonarLintUtils.class.getClassLoader().getResource("com/github/philippefichet/sonarlint4netbeans/resources/sonarlint-" + severity.toLowerCase() + ".png"));
+    }
+
+    /**
+     * Retrieve ImageIcon of PNG image severity if exist
+     * @param severity
+     * @return ImageIcon of PNG image severity if exist
+     */
+    public static Optional<ImageIcon> ruleSeverityToImageIcon(String severity)
+    {
+        return ruleSeverityToURL(severity).map(resource -> new ImageIcon(resource, severity));
     }
 
     public static String toURL(RuleDetails ruleDetails)
@@ -210,12 +272,62 @@ public final class SonarLintUtils {
     }
 
     /**
+     * Add "header" rule description (key, type, severity and tags) in StringBuilder
+     * @param ruleDetails rule details
+     * @param sb StringBuilder to add header rule description
+     */
+    public static void addHtmlDescriptionHeader(StandaloneRuleDetails ruleDetails, StringBuilder sb)
+    {
+        sb.append("<table class=\"rule-type-severity-and-tags-container\">\n");
+        sb.append("<tr>\n");
+        sb.append("<td>")
+            .append(ruleDetails.getKey())
+            .append("</td>");
+
+        SonarLintUtils.ruleSeverityToURL(ruleDetails.getSeverity())
+            .ifPresent(
+                severityURL -> 
+                    sb.append("<td><img class=\"rule-type-severity-and-tags-container-severity\" src=\"")
+                        .append(severityURL.toString())
+                        .append("\"/></td><td>")
+                        .append(ruleDetails.getSeverity())
+                        .append("</td>")
+            );
+
+        SonarLintUtils.ruleTypePathIconInClasspathToURL(ruleDetails.getType(), true)
+            .ifPresent(
+                typeURL -> 
+                    sb.append("<td><img class=\"rule-type-severity-and-tags-container-type\" src=\"")
+                        .append(typeURL.toString())
+                        .append("\"/></td><td>")
+                        .append(ruleDetails.getType())
+                        .append("</td>")
+            );
+
+        String[] tags = ruleDetails.getTags();
+        if (tags != null && tags.length > 0) {
+            StringJoiner tagsJoiner = new StringJoiner(", ");
+            for (String tag : tags) {
+                
+                tagsJoiner.add("<a href=\"https://rules.sonarsource.com/java/tag/" + tag + "\"a>" + tag + "</a>");
+            }
+            sb.append("<td><img class=\"rule-type-severity-and-tags-container-tags\" src=\"")
+                .append(tagsPathIconInClasspathToURL(true))
+                .append("\"/></td><td>")
+                .append(tagsJoiner.toString())
+                .append("</td>");
+        }
+        sb.append("</tr>\n");
+        sb.append("</table>\n");
+    }
+
+    /**
      * Retrieve HTML detail description of rule
      * @param ruleDetails Detail of rule
      * @param ruleParams rule parameter values
      * @return HTML detail description of rule
      */
-    public static String toHtmlDescription(RuleDetails ruleDetails, Map<StandaloneRuleParam, String> ruleParams)
+    public static String toHtmlDescription(StandaloneRuleDetails ruleDetails, Map<StandaloneRuleParam, String> ruleParams)
     {
         StringBuilder sb = new StringBuilder();
         sb.append("<div id=\"")
@@ -227,6 +339,7 @@ public final class SonarLintUtils {
             .append(StringEscapeUtils.escapeHtml4(ruleDetails.getName()))
             .append("</a></h1>\n")
         ;
+        addHtmlDescriptionHeader(ruleDetails, sb);
         sb.append(ruleDetails.getHtmlDescription())
             .append("\n</div>")
         ;

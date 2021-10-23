@@ -64,7 +64,9 @@ public class SonarLintAnalyserIssueSeverityRuleKeyNode extends AbstractNode {
         severityPropertySet.setShortDescription("Severity");
         severityPropertySet.put(new SeverityProperty(issue.getSeverity()));
         updateDisplayName();
-        setIconBaseWithExtension("com/github/philippefichet/sonarlint4netbeans/resources/sonarlint-type-" + type.toLowerCase() + "-16px.png");
+        setIconBaseWithExtension(
+            SonarLintUtils.getRuleTypePathIconInClasspath(type, false)
+        );
     }
 
     private void updateDisplayName() {
