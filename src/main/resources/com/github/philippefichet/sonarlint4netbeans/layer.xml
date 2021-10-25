@@ -24,6 +24,11 @@
                 <file name="com-github-philippefichet-sonarlint4netbeans-SonarLintParserResultTaskFactory.instance">
                 </file>
             </folder>
+            <!-- https://www.iana.org/assignments/media-types/media-types.xhtml -->
+            <folder name="xml">
+                <file name="com-github-philippefichet-sonarlint4netbeans-SonarLintParserResultTaskFactory.instance">
+                </file>
+            </folder>
         </folder>
         <folder name="AnnotationTypes">
             <file name="SonarLint"

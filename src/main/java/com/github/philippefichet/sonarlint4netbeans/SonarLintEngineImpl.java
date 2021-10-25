@@ -63,13 +63,15 @@ import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
 public final class SonarLintEngineImpl implements SonarLintEngine {
 
     // https://search.maven.org/artifact/org.sonarsource.java/sonar-java-plugin/
-    public static final String SONAR_JAVA_PLUGIN_VERSION = "7.3.0.27589";
+    public static final String SONAR_JAVA_PLUGIN_VERSION = "7.4.0.27839";
     // https://search.maven.org/artifact/org.sonarsource.javascript/sonar-javascript-plugin/
     public static final String SONAR_JAVASCRIPT_PLUGIN_VERSION = "8.4.0.16431";
     // https://search.maven.org/artifact/org.sonarsource.php/sonar-php-plugin/
-    private static String SONAR_PHP_PLUGIN_VERSION = "3.19.0.7847";
-    // https://mvnrepository.com/artifact/org.sonarsource.html/sonar-html-plugin
+    private static String SONAR_PHP_PLUGIN_VERSION = "3.21.0.8193";
+    // https://mvnrepository.com/artifact/org.sonarsource.html/sonar-html-plugin/
     private static String SONAR_HTML_PLUGIN_VERSION = "3.4.0.2754";
+    // https://repo1.maven.org/maven2/org/sonarsource/xml/sonar-xml-plugin/
+    private static String SONAR_XML_PLUGIN_VERSION = "2.4.0.3273";
     private static final String PREFIX_PREFERENCE_RULE_PARAMETER = "rules.parameters.";
     private static final String PREFIX_EXCLUDE_RULE = "excludedRules";
     private static final String PREFIX_RUNTIME_PREFERENCE= "runtime.";
@@ -87,6 +89,7 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
         pluginURLs.put("javascript", getClass().getResource("/com/github/philippefichet/sonarlint4netbeans/resources/sonar-javascript-plugin-" + SONAR_JAVASCRIPT_PLUGIN_VERSION + ".jar"));
         pluginURLs.put("php", getClass().getResource("/com/github/philippefichet/sonarlint4netbeans/resources/sonar-php-plugin-" + SONAR_PHP_PLUGIN_VERSION + ".jar"));
         pluginURLs.put("web", getClass().getResource("/com/github/philippefichet/sonarlint4netbeans/resources/sonar-html-plugin-" + SONAR_HTML_PLUGIN_VERSION + ".jar"));
+        pluginURLs.put("xml", getClass().getResource("/com/github/philippefichet/sonarlint4netbeans/resources/sonar-xml-plugin-" + SONAR_XML_PLUGIN_VERSION + ".jar"));
         createInternalEngine();
         @SuppressWarnings("unchecked")
         List<Map<String, String>> fromJson = gson.fromJson(getPreferences().get(PREFIX_EXCLUDE_RULE, null), List.class);

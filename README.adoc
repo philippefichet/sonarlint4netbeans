@@ -7,7 +7,7 @@
 
 Features:
 
-- Support Java, Javascript, PHP and HTML
+- Support Java, Javascript, PHP, HTML and XML
 - Annotation in editor
 - Type SonarLint in Action Items
 - "Analyze with SonarLint" action on Project/package/files, Favorites tab, ...
