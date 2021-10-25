@@ -177,7 +177,7 @@
         <dependency>
             <groupId>org.sonarsource.sonarlint.core</groupId>
             <artifactId>sonarlint-core</artifactId>
-            <version>7.0.0.37656</version>
+            <version>6.5.0.37122</version>
         </dependency>
         <dependency>
             <groupId>org.sonarsource.javascript</groupId>
