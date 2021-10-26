@@ -145,7 +145,7 @@
             <Component class="javax.swing.JLabel" name="categoriesLabel">
               <Properties>
                 <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                  <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/Bundle.properties" key="SonarLintPanel.categoriesLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                  <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/ui/Bundle.properties" key="SonarLintPanel.categoriesLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
                 </Property>
               </Properties>
             </Component>

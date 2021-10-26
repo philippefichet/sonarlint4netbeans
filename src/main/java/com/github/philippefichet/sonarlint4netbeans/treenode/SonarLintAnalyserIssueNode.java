@@ -17,9 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package com.github.philippefichet.sonarlint4netbeans;
+package com.github.philippefichet.sonarlint4netbeans.treenode;
 
-import com.github.philippefichet.sonarlint4netbeans.node.SeverityProperty;
+import com.github.philippefichet.sonarlint4netbeans.SonarLintAnalyzerOpenIssueInFileAction;
 import java.awt.Image;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.Action;

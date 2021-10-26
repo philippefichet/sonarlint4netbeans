@@ -19,6 +19,7 @@
  */
 package com.github.philippefichet.sonarlint4netbeans;
 
+import com.github.philippefichet.sonarlint4netbeans.treenode.SonarLintAnalyzerRootNode;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;

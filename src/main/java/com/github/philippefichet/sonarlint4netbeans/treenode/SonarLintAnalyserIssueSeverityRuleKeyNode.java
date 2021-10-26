@@ -17,9 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package com.github.philippefichet.sonarlint4netbeans;
+package com.github.philippefichet.sonarlint4netbeans.treenode;
 
-import com.github.philippefichet.sonarlint4netbeans.node.SeverityProperty;
+import com.github.philippefichet.sonarlint4netbeans.SonarLintUtils;
 import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Sheet;

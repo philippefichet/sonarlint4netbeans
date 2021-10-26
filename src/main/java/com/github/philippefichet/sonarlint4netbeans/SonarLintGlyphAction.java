@@ -19,6 +19,9 @@
  */
 package com.github.philippefichet.sonarlint4netbeans;
 
+import com.github.philippefichet.sonarlint4netbeans.annotation.SonarLintAnnotation;
+import com.github.philippefichet.sonarlint4netbeans.annotation.SonarLintAnnotationHandler;
+import com.github.philippefichet.sonarlint4netbeans.ui.SonarRuleDetailsTopComponent;
 import java.awt.event.ActionEvent;
 import java.util.Optional;
 import java.util.logging.Logger;

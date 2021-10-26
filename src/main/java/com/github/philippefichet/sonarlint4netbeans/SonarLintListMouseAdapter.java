@@ -19,6 +19,8 @@
  */
 package com.github.philippefichet.sonarlint4netbeans;
 
+import com.github.philippefichet.sonarlint4netbeans.ui.renderer.SonarLintListCellRenderer;
+import com.github.philippefichet.sonarlint4netbeans.ui.SonarLintRuleSettings;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Optional;
