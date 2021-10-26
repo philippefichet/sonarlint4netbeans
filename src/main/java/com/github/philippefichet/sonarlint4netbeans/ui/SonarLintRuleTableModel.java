@@ -17,8 +17,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package com.github.philippefichet.sonarlint4netbeans;
+package com.github.philippefichet.sonarlint4netbeans.ui;
 
+import com.github.philippefichet.sonarlint4netbeans.SonarLintEngine;
+import com.github.philippefichet.sonarlint4netbeans.SonarLintUtils;
 import java.util.Collection;
 import java.util.stream.Collectors;
 import javax.swing.table.DefaultTableModel;

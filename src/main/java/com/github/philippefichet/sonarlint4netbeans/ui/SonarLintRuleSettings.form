@@ -35,7 +35,7 @@
         <Component class="javax.swing.JLabel" name="mainTitle">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/Bundle.properties" key="SonarLintRuleSettings.mainTitle.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+              <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/ui/Bundle.properties" key="SonarLintRuleSettings.mainTitle.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
         </Component>
@@ -114,14 +114,14 @@
           <TableColumnModel selectionModel="0">
             <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
               <Title editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/Bundle.properties" key="SonarLintRuleSettings.ruleParametersTable.columnModel.title0_1" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/ui/Bundle.properties" key="SonarLintRuleSettings.ruleParametersTable.columnModel.title0_1" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
               </Title>
               <Editor/>
               <Renderer/>
             </Column>
             <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
               <Title editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/Bundle.properties" key="SonarLintRuleSettings.ruleParametersTable.columnModel.title1_1" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/ui/Bundle.properties" key="SonarLintRuleSettings.ruleParametersTable.columnModel.title1_1" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
               </Title>
               <Editor/>
               <Renderer/>

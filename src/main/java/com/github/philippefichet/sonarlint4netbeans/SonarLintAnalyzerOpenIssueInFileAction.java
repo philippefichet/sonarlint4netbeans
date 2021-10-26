@@ -19,6 +19,7 @@
  */
 package com.github.philippefichet.sonarlint4netbeans;
 
+import com.github.philippefichet.sonarlint4netbeans.treenode.SonarLintAnalyserIssueNode;
 import java.io.File;
 import java.net.URI;
 import org.openide.filesystems.FileObject;

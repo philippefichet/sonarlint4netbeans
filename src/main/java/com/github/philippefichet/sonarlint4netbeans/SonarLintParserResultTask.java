@@ -19,6 +19,7 @@
  */
 package com.github.philippefichet.sonarlint4netbeans;
 
+import com.github.philippefichet.sonarlint4netbeans.annotation.SonarLintAnnotationHandler;
 import java.io.IOException;
 import java.util.logging.Logger;
 import org.netbeans.modules.parsing.spi.Parser;

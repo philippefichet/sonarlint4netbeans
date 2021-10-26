@@ -74,35 +74,35 @@
     <Component class="javax.swing.JLabel" name="nodeJSPathLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/Bundle.properties" key="SonarLintOptionsPanelOptions.nodeJSPathLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/ui/Bundle.properties" key="SonarLintOptionsPanelOptions.nodeJSPathLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="nodeJSVersionLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/Bundle.properties" key="SonarLintOptionsPanelOptions.nodeJSVersionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/ui/Bundle.properties" key="SonarLintOptionsPanelOptions.nodeJSVersionLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="nodeJSFeedbackLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/Bundle.properties" key="SonarLintOptionsPanelOptions.nodeJSFeedbackLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/ui/Bundle.properties" key="SonarLintOptionsPanelOptions.nodeJSFeedbackLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="nodeJSStatusLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/Bundle.properties" key="SonarLintOptionsPanelOptions.nodeJSStatusLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/ui/Bundle.properties" key="SonarLintOptionsPanelOptions.nodeJSStatusLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="nodeJSPathField">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/Bundle.properties" key="SonarLintOptionsPanelOptions.nodeJSPathField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/ui/Bundle.properties" key="SonarLintOptionsPanelOptions.nodeJSPathField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <AuxValues>
@@ -112,7 +112,7 @@
     <Component class="javax.swing.JTextField" name="nodeJSVersionField">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/Bundle.properties" key="SonarLintOptionsPanelOptions.nodeJSVersionField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/ui/Bundle.properties" key="SonarLintOptionsPanelOptions.nodeJSVersionField.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
@@ -123,21 +123,21 @@
     <Component class="javax.swing.JButton" name="openStyleSheet">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/Bundle.properties" key="SonarLintOptionsPanelOptions.openStyleSheet.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/ui/Bundle.properties" key="SonarLintOptionsPanelOptions.openStyleSheet.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="applyTestRules">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/Bundle.properties" key="SonarLintOptionsPanelOptions.applyTestRules.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/ui/Bundle.properties" key="SonarLintOptionsPanelOptions.applyTestRules.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="nodeJSPathChooser">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/Bundle.properties" key="SonarLintOptionsPanelOptions.nodeJSPathChooser.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+          <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/ui/Bundle.properties" key="SonarLintOptionsPanelOptions.nodeJSPathChooser.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>
