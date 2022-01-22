@@ -35,23 +35,26 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
+import org.netbeans.api.project.Project;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
 
 /**
- *
+ * Renderer checkbox to enable or disable rule in list
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
 public final class SonarLintListCellRenderer extends JPanel implements ListCellRenderer<String> {
     private final SonarLintEngine sonarLintEngine;
+    private final Project project;
     private final JCheckBox enableOrDisable;
     private final JLabel modifyParameters;
     private final ImageIcon iconModifyParameters;
     private final ImageIcon iconNoParameters;
     private final DefaultListCellRenderer defaultListCellRenderer = new DefaultListCellRenderer();
 
-    public SonarLintListCellRenderer(SonarLintEngine sonarLintEngine) {
+    public SonarLintListCellRenderer(SonarLintEngine sonarLintEngine, Project project) {
         this.sonarLintEngine = sonarLintEngine;
+        this.project = project;
         FlowLayout flowLayout = new FlowLayout();
         flowLayout.setAlignment(FlowLayout.LEFT);
         flowLayout.setHgap(0);
@@ -83,10 +86,10 @@ public final class SonarLintListCellRenderer extends JPanel implements ListCellR
             if (toImageIcon.isPresent()) {
                 defaultListCellRenderer.setIcon(toImageIcon.get());
             }
-            enableOrDisable.setSelected(!sonarLintEngine.isExcluded(optionalRuleDetails.get()));
+            enableOrDisable.setSelected(!sonarLintEngine.isExcluded(optionalRuleDetails.get(), project));
             boolean hasCustomParamValue = false;
             for (StandaloneRuleParam param : standaloneRule.paramDetails()) {
-                if (sonarLintEngine.getRuleParameter(standaloneRule.getKey(), param.key()).isPresent()) {
+                if (sonarLintEngine.getRuleParameter(standaloneRule.getKey(), param.key(), project).isPresent()) {
                     hasCustomParamValue = true;
                     break;
                 }

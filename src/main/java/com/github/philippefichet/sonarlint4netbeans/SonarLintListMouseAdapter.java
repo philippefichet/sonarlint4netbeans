@@ -19,12 +19,13 @@
  */
 package com.github.philippefichet.sonarlint4netbeans;
 
-import com.github.philippefichet.sonarlint4netbeans.ui.renderer.SonarLintListCellRenderer;
 import com.github.philippefichet.sonarlint4netbeans.ui.SonarLintRuleSettings;
+import com.github.philippefichet.sonarlint4netbeans.ui.renderer.SonarLintListCellRenderer;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Optional;
 import javax.swing.JList;
+import org.netbeans.api.project.Project;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 
@@ -36,11 +37,18 @@ public class SonarLintListMouseAdapter extends MouseAdapter {
     private final JList<String> sonarLintAllRules;
     private final SonarLintEngine sonarLintEngine;
     private final SonarLintOptions sonarLintOptions;
+    private final Project project;
 
-    public SonarLintListMouseAdapter(JList<String> sonarLintAllRules, SonarLintOptions sonarLintOptions, SonarLintEngine sonarLintEngine) {
+    public SonarLintListMouseAdapter(
+        JList<String> sonarLintAllRules,
+        SonarLintOptions sonarLintOptions,
+        SonarLintEngine sonarLintEngine,
+        Project project
+    ) {
         this.sonarLintAllRules = sonarLintAllRules;
         this.sonarLintEngine = sonarLintEngine;
         this.sonarLintOptions = sonarLintOptions;
+        this.project = project;
     }
     
     @Override
@@ -54,10 +62,10 @@ public class SonarLintListMouseAdapter extends MouseAdapter {
                 Optional<StandaloneRuleDetails> ruleDetails = sonarLintEngine.getRuleDetails(sonarLintAllRules.getSelectedValue());
                 ruleDetails.ifPresent(rule -> {
                     RuleKey ruleKey = RuleKey.parse(rule.getKey());
-                    if (sonarLintEngine.isExcluded(rule)) {
-                        sonarLintEngine.includeRuleKey(ruleKey);
+                    if (sonarLintEngine.isExcluded(rule, project)) {
+                        sonarLintEngine.includeRuleKey(ruleKey, project);
                     } else {
-                        sonarLintEngine.excludeRuleKey(ruleKey);
+                        sonarLintEngine.excludeRuleKey(ruleKey, project);
                     }
                     sonarLintAllRules.repaint();
                 });
@@ -66,7 +74,15 @@ public class SonarLintListMouseAdapter extends MouseAdapter {
                 Optional<StandaloneRuleDetails> ruleDetails = sonarLintEngine.getRuleDetails(sonarLintAllRules.getSelectedValue());
                 ruleDetails.ifPresent(standaloneRule -> {
                     if (!standaloneRule.paramDetails().isEmpty()) {
-                        SonarLintRuleSettings sonarLintRuleParameters = new SonarLintRuleSettings(sonarLintOptions, sonarLintEngine, sonarLintAllRules.getSelectedValue());
+                        SonarLintRuleSettings sonarLintRuleParameters = new SonarLintRuleSettings(
+                            sonarLintOptions,
+                            sonarLintEngine,
+                            sonarLintAllRules.getSelectedValue(),
+                            (String ruleKey, String parameterName, String parameterValue) -> {
+                                SonarLintUtils.changeRuleParameterValue(sonarLintEngine, project, ruleKey, parameterName, parameterValue);
+                            },
+                            project
+                        );
                         sonarLintRuleParameters.setVisible(true);
                     }
                 });

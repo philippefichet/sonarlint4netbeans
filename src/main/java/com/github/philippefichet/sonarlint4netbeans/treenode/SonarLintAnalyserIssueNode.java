@@ -20,18 +20,18 @@
 package com.github.philippefichet.sonarlint4netbeans.treenode;
 
 import com.github.philippefichet.sonarlint4netbeans.SonarLintAnalyzerOpenIssueInFileAction;
+import com.github.philippefichet.sonarlint4netbeans.SonarLintDataManager;
 import java.awt.Image;
+import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Optional;
 import javax.swing.Action;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
-import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.sonarsource.sonarlint.core.analyzer.issue.DefaultClientIssue;
@@ -53,11 +53,14 @@ public class SonarLintAnalyserIssueNode extends AbstractNode {
         severityPropertySet,
         ruleNamePropertySet
     };
+    private final File file;
     private DataObject dataObject = null;
+    private final SonarLintDataManager sonarLintDataManager;
 
     public SonarLintAnalyserIssueNode(DefaultClientIssue issue) {
         super(Children.LEAF);
         this.issue = issue;
+        sonarLintDataManager = Lookup.getDefault().lookup(SonarLintDataManager.class);
         ClientInputFile inputFile = issue.getInputFile();
         Integer startLine = issue.getStartLine();
         Integer startLineOffset = issue.getStartLineOffset();
@@ -67,16 +70,10 @@ public class SonarLintAnalyserIssueNode extends AbstractNode {
         }
         if (inputFile != null) {
             setDisplayName(prefixDisplayName + inputFile.relativePath());
-            FileObject fileObject = FileUtil.toFileObject(Utilities.toFile(inputFile.uri()));
-            if (fileObject != null) {
-                try {
-                    dataObject = DataObject.find(fileObject);
-                } catch (DataObjectNotFoundException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
+            file = Utilities.toFile(inputFile.uri());
         } else {
             setDisplayName(prefixDisplayName + "Unkown file");
+            file = null;
         }
         ruleNamePropertySet.setName("ruleName");
         ruleNamePropertySet.setDisplayName("Rule name");
@@ -160,8 +157,9 @@ public class SonarLintAnalyserIssueNode extends AbstractNode {
 
     @Override
     public Image getIcon(int type) {
-        if (dataObject != null) {
-            return dataObject.getNodeDelegate().getIcon(type);
+        Optional<Image> icon = sonarLintDataManager.getIcon(file, type);
+        if (icon.isPresent()) {
+            return icon.get();
         } else {
             return super.getIcon(type);
         }

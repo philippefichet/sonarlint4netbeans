@@ -19,6 +19,8 @@
  */
 package com.github.philippefichet.sonarlint4netbeans.annotation;
 
+import com.github.philippefichet.sonarlint4netbeans.SonarLintDataManager;
+import com.github.philippefichet.sonarlint4netbeans.SonarLintDataManagerUtils;
 import com.github.philippefichet.sonarlint4netbeans.SonarLintEngine;
 import com.github.philippefichet.sonarlint4netbeans.SonarLintUtils;
 import java.beans.PropertyChangeEvent;
@@ -31,11 +33,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import javax.swing.text.Position;
+import org.netbeans.api.project.Project;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.NbDocument;
+import org.openide.util.Lookup;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 
 /**
@@ -75,6 +79,8 @@ public final class SonarLintAnnotationHandler {
         if (standaloneSonarLintEngine == null) {
             return;
         }
+        SonarLintDataManager dataManager = Lookup.getDefault().lookup(SonarLintDataManager.class);
+        Project projectForAnalyse = SonarLintDataManagerUtils.getProjectForAnalyse(dataManager, fileObject);
         final EditorCookie editorCookie = DataObject.find(fileObject).getCookie(EditorCookie.class);
         List<SonarLintAnnotation> currentAnnocationOnFileObject = new ArrayList<>();
         List<SonarLintAnnotation> previousAnnotationOnFileObject = ANNOTATIONS_BY_FILEOBJECT.get(fileObject);
@@ -122,7 +128,7 @@ public final class SonarLintAnnotationHandler {
                 new SonarLintAnnotation(
                     sue.getRuleKey(),
                     sue.getRuleName(),
-                    SonarLintUtils.extractRuleParameters(standaloneSonarLintEngine, sue.getRuleKey()),
+                    SonarLintUtils.extractRuleParameters(standaloneSonarLintEngine, sue.getRuleKey(), projectForAnalyse),
                     sue.getSeverity(),
                     startOffset,
                     length

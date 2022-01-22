@@ -19,32 +19,28 @@
  */
 package com.github.philippefichet.sonarlint4netbeans.ui;
 
-import com.github.philippefichet.sonarlint4netbeans.ui.renderer.SonarLintListCellRenderer;
+import com.github.philippefichet.sonarlint4netbeans.SonarLintDataManager;
+import com.github.philippefichet.sonarlint4netbeans.SonarLintDataManagerUtils;
 import com.github.philippefichet.sonarlint4netbeans.SonarLintEngine;
-import com.github.philippefichet.sonarlint4netbeans.SonarLintListMouseAdapter;
-import com.github.philippefichet.sonarlint4netbeans.SonarLintOptions;
-import com.github.philippefichet.sonarlint4netbeans.SonarLintUtils;
-import java.awt.Desktop;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.Collection;
-import java.util.Optional;
-import javax.swing.DefaultListModel;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-import javax.swing.text.Document;
-import javax.swing.text.html.HTMLEditorKit;
+import com.github.philippefichet.sonarlint4netbeans.project.SonarLintProjectPreferenceScope;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.settings.ConvertAsProperties;
-import org.openide.ErrorManager;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
-import org.openide.util.Exceptions;
+import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.windows.TopComponent;
-import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 
 /**
  * Top component which displays something.
@@ -72,28 +68,38 @@ import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetail
     "HINT_SonarRuleDetailsTopComponent=This is a Sonar Rule Details window"
 })
 public final class SonarRuleDetailsTopComponent extends TopComponent {
-
+    private final SonarLintEngine sonarLintEngine;
+    private final SonarLintDataManager sonarLintDataManager;
+    private final JTabbedPane tabs;
+    private final JPanel globalSettingsPanel = null;
+    private final Map<Project, JPanel> projectPanel = Collections.synchronizedMap(new HashMap<>());
     public SonarRuleDetailsTopComponent() {
+        sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
+        sonarLintDataManager = Lookup.getDefault().lookup(SonarLintDataManager.class);
         initComponents();
-        SonarLintOptions sonarLintOptions = Lookup.getDefault().lookup(SonarLintOptions.class);
-        try {
-            sonarLintOptions.getSonarLintDetailsStyle().addFileChangeListener(new FileChangeAdapter() {
-                @Override
-                public void fileChanged(FileEvent fe) {
-                    // Reset previous stylesheet
-                    HTMLEditorKit htmlEditorKit = new HTMLEditorKit();
-                    Document createDefaultDocument = htmlEditorKit.createDefaultDocument();
-                    sonarLintRuleDetailsEditor.setDocument(createDefaultDocument);
-                    // Update editor
-                    sonarLintAllRulesValueChanged(null);
-                }
-            });
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
         setName(Bundle.CTL_SonarRuleDetailsTopComponent());
         setToolTipText(Bundle.HINT_SonarRuleDetailsTopComponent());
+        tabs = TabbedPaneFactory.createCloseButtonTabbedPane();
+        tabs.setMinimumSize(new Dimension(0, 0));
+        tabs.addPropertyChangeListener((java.beans.PropertyChangeEvent evt) -> {
+            if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName())) {
+                SonarRuleDetailsPanel container = (SonarRuleDetailsPanel) evt.getNewValue();
+                tabs.remove(container);
+            }
+        });
+        add(tabs, BorderLayout.CENTER);
+        getOrCreateAndAddSonarRuleDetailsPanelFromProject(SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
+    }
 
+    @Override
+    public void open() {
+        super.open();
+        getOrCreateAndAddSonarRuleDetailsPanelFromProject(SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
+    }
+
+    public void open(Project project) {
+        super.open();
+        getOrCreateAndAddSonarRuleDetailsPanelFromProject(project);
     }
 
     /**
@@ -104,140 +110,10 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        sonarRuleKeyFilter = new javax.swing.JTextField();
-        jTabbedPane1 = new javax.swing.JTabbedPane();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        sonarLintRuleDetailsEditor = new javax.swing.JEditorPane();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        sonarLintRuleDetailsEditorHtmlSource = new javax.swing.JEditorPane();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        sonarLintAllRules = new javax.swing.JList<>();
-
         setLayout(new java.awt.BorderLayout());
-
-        sonarRuleKeyFilter.setText(org.openide.util.NbBundle.getMessage(SonarRuleDetailsTopComponent.class, "SonarRuleDetailsTopComponent.sonarRuleKeyFilter.text")); // NOI18N
-        sonarRuleKeyFilter.setToolTipText(org.openide.util.NbBundle.getMessage(SonarRuleDetailsTopComponent.class, "SonarRuleDetailsTopComponent.sonarRuleKeyFilter.toolTipText")); // NOI18N
-        sonarRuleKeyFilter.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                sonarRuleKeyFilterKeyReleased(evt);
-            }
-        });
-        add(sonarRuleKeyFilter, java.awt.BorderLayout.PAGE_START);
-
-        sonarLintRuleDetailsEditor.setEditable(false);
-        sonarLintRuleDetailsEditor.setContentType("text/html");
-        jScrollPane1.setViewportView(sonarLintRuleDetailsEditor);
-        if (Desktop.isDesktopSupported()) {
-            sonarLintRuleDetailsEditor.addHyperlinkListener(new HyperlinkListener() {
-                @Override
-                public void hyperlinkUpdate(HyperlinkEvent e) {
-                    if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                        try {
-                            Desktop.getDesktop().browse(e.getURL().toURI());
-                        } catch (URISyntaxException | IOException ex) {
-                            ErrorManager.getDefault().log("Unable to open browser on URL: " + e.getURL());
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                }
-            });
-        }
-
-        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(SonarRuleDetailsTopComponent.class, "SonarRuleDetailsTopComponent.jScrollPane1.TabConstraints.tabTitle"), jScrollPane1); // NOI18N
-
-        sonarLintRuleDetailsEditorHtmlSource.setEditable(false);
-        sonarLintRuleDetailsEditorHtmlSource.setContentType("text/plain");
-        jScrollPane3.setViewportView(sonarLintRuleDetailsEditorHtmlSource);
-        if (Desktop.isDesktopSupported()) {
-            sonarLintRuleDetailsEditor.addHyperlinkListener(new HyperlinkListener() {
-                @Override
-                public void hyperlinkUpdate(HyperlinkEvent e) {
-                    if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                        try {
-                            Desktop.getDesktop().browse(e.getURL().toURI());
-                        } catch (URISyntaxException | IOException ex) {
-                            ErrorManager.getDefault().log("Unable to open browser on URL: " + e.getURL());
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                }
-            });
-        }
-
-        jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(SonarRuleDetailsTopComponent.class, "SonarRuleDetailsTopComponent.jScrollPane3.TabConstraints.tabTitle"), jScrollPane3); // NOI18N
-
-        add(jTabbedPane1, java.awt.BorderLayout.CENTER);
-
-        initListAllRuleDetailsRenderer();
-        initListAllRuleDetails();
-        sonarLintAllRules.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        sonarLintAllRules.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
-            public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-                sonarLintAllRulesValueChanged(evt);
-            }
-        });
-        jScrollPane2.setViewportView(sonarLintAllRules);
-
-        add(jScrollPane2, java.awt.BorderLayout.LINE_START);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void sonarRuleKeyFilterKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_sonarRuleKeyFilterKeyReleased
-        ruleKeyFilter = sonarRuleKeyFilter.getText().toLowerCase();
-        initListAllRuleDetails();
-    }//GEN-LAST:event_sonarRuleKeyFilterKeyReleased
-
-    private void sonarLintAllRulesValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_sonarLintAllRulesValueChanged
-        String selectedValue = sonarLintAllRules.getSelectedValue();
-        SonarLintOptions sonarLintOptions = Lookup.getDefault().lookup(SonarLintOptions.class);
-        SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
-        sonarLintEngine.whenInitialized((SonarLintEngine engine) -> {
-            Optional<StandaloneRuleDetails> optionalRuleDetails = engine.getRuleDetails(selectedValue);
-            if (optionalRuleDetails.isPresent()) {
-                StandaloneRuleDetails ruleDetails = optionalRuleDetails.get();
-                String customCss = SonarLintUtils.toRuleDetailsStyleSheet(sonarLintOptions);
-                String html = SonarLintUtils.toHtmlDescription(
-                    ruleDetails,
-                    SonarLintUtils.extractRuleParameters(sonarLintEngine, ruleDetails.getKey())
-                );
-                sonarLintRuleDetailsEditor.setText(customCss + html);
-                sonarLintRuleDetailsEditorHtmlSource.setText(html);
-                sonarLintRuleDetailsEditor.getCaret().moveDot(0);
-            }
-        });
-    }//GEN-LAST:event_sonarLintAllRulesValueChanged
-
-    private void initListAllRuleDetailsRenderer()
-    {
-        SonarLintOptions sonarLintOptions = Lookup.getDefault().lookup(SonarLintOptions.class);
-        SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
-        sonarLintEngine.whenConfigurationChanged(engine -> sonarLintAllRules.repaint());
-        sonarLintAllRules.setCellRenderer(new SonarLintListCellRenderer(sonarLintEngine));
-        sonarLintAllRules.addMouseListener(new SonarLintListMouseAdapter(sonarLintAllRules, sonarLintOptions, sonarLintEngine));
-    }
-    
-    private void initListAllRuleDetails() {
-        SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
-        sonarLintEngine.whenInitialized((SonarLintEngine engine) -> {
-            DefaultListModel<String> model = new DefaultListModel<>();
-            Collection<StandaloneRuleDetails> rules = engine.getAllRuleDetails();
-            rules.stream().sorted((r1, r2) -> r1.getKey().compareTo(r2.getKey()))
-            .filter(SonarLintUtils.FilterBy.keyAndName(ruleKeyFilter))
-            .forEach(rule -> model.addElement(rule.getKey()));
-            sonarLintAllRules.setModel(model);
-            sonarLintAllRules.updateUI();
-        });
-    }
-
-    private String ruleKeyFilter = "";
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JList<String> sonarLintAllRules;
-    private javax.swing.JEditorPane sonarLintRuleDetailsEditor;
-    private javax.swing.JEditorPane sonarLintRuleDetailsEditorHtmlSource;
-    private javax.swing.JTextField sonarRuleKeyFilter;
     // End of variables declaration//GEN-END:variables
     @Override
     public void componentOpened() {
@@ -249,6 +125,10 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
         // TODO add custom code on component closing
     }
 
+    /**
+     * Require by @ConvertAsProperties
+     * @param p 
+     */
     void writeProperties(java.util.Properties p) {
         // better to version settings since initial version as advocated at
         // http://wiki.apidesign.org/wiki/PropertyFiles
@@ -256,17 +136,42 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
         // TODO store your settings
     }
 
+    /**
+     * Require by @ConvertAsProperties
+     * @param p 
+     */
     void readProperties(java.util.Properties p) {
         String version = p.getProperty("version");
         // TODO read your settings according to their version
     }
-    
-    public void setSonarRuleKeyFilter(String sonarRuleKeyFilter)
+
+    public void setSonarRuleKeyFilter(String sonarRuleKeyFilter, Project project)
     {
-        this.sonarRuleKeyFilter.setText(sonarRuleKeyFilter);
-        ruleKeyFilter = this.sonarRuleKeyFilter.getText().toLowerCase();
-        initListAllRuleDetails();
-        sonarLintAllRules.setSelectedValue(sonarRuleKeyFilter, true);
-        updateUI();
+        SonarRuleDetailsPanel sonarRuleDetailsPanel = getOrCreateAndAddSonarRuleDetailsPanelFromProject(project);
+        sonarRuleDetailsPanel.setSonarRuleKeyFilter(sonarRuleKeyFilter);
+    }
+    
+    private SonarRuleDetailsPanel getOrCreateAndAddSonarRuleDetailsPanelFromProject(Project project)
+    {
+        Project searchedProject = SonarLintDataManagerUtils.getProjectForAnalyse(sonarLintDataManager, project);
+        for (Component component : tabs.getComponents()) {
+            if (component instanceof SonarRuleDetailsPanel) {
+                SonarRuleDetailsPanel sonarRuleDetailsPanel = (SonarRuleDetailsPanel) component;
+                if (Objects.equals(sonarRuleDetailsPanel.getProject(), searchedProject)) {
+                    tabs.setSelectedComponent(sonarRuleDetailsPanel);
+                    return sonarRuleDetailsPanel;
+                }
+            }
+        }
+        
+        SonarRuleDetailsPanel sonarRuleDetailsPanel = new SonarRuleDetailsPanel(sonarLintEngine, searchedProject);
+        
+        String title = 
+            sonarLintDataManager.getPreferencesScope(project) == SonarLintProjectPreferenceScope.PROJECT
+            ? ProjectUtils.getInformation(searchedProject).getDisplayName()
+            : org.openide.util.NbBundle.getMessage(SonarRuleDetailsTopComponent.class, "SonarRuleDetailsTopComponent.globalSettingsProject");
+
+        tabs.addTab(title, sonarRuleDetailsPanel);
+        return sonarRuleDetailsPanel;
     }
 }

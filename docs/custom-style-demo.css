@@ -1,0 +1,23 @@
+/**
+  Style for SonarLint Details window rule
+  See javax.swing.text.html.CSS for more available attributes
+ */
+h1, a, h2 {
+    text-decoration: none;
+    font-family: monospace;
+    color: green;
+}
+p {
+    font-family: inherit;
+    margin: 0;
+    padding: 0;
+}
+code {
+    font-weight: bold;
+}
+pre {
+    border: 2px solid black;
+    border-top-width: 5px;
+    border-bottom-width: 5px;
+    padding: 5px;
+}

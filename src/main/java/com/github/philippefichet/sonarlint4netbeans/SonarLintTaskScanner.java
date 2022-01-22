@@ -58,26 +58,26 @@ public class SonarLintTaskScanner extends FileTaskScanner implements PropertyCha
     }
 
     @Override
-    public List<? extends Task> scan(FileObject fo) {
+    public List<? extends Task> scan(FileObject fileObject) {
         SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
         if (sonarLintEngine == null) {
             return Collections.emptyList();
         }
         sonarLintEngine.waitingInitialization();
         try {
-            List<Issue> analyze = SonarLintUtils.analyze(fo, null);
+            List<Issue> analyze = SonarLintUtils.analyze(fileObject, null);
             return analyze.stream()
                 .map(issue -> {
                     Integer startLine = issue.getStartLine();
                     return Task.create(
-                        fo,
+                        fileObject,
                         "nb-sonarlint-" + issue.getSeverity().toLowerCase(),
                         issue.getRuleKey() + " = " + issue.getRuleName(), startLine == null ? 1 : startLine
                     );
                 })
                 .collect(Collectors.toList());
         } catch (IOException ex) {
-            LOG.log(Level.SEVERE, "Error during analyze {0}: {1}", new Object[]{fo.getName(), ex.getMessage()});
+            LOG.log(Level.SEVERE, "Error during analyze {0}: {1}", new Object[]{fileObject.getName(), ex.getMessage()});
             return Collections.emptyList();
         }
     }

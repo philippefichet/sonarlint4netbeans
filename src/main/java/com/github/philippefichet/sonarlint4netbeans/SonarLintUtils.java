@@ -19,6 +19,7 @@
  */
 package com.github.philippefichet.sonarlint4netbeans;
 
+import com.github.philippefichet.sonarlint4netbeans.project.SonarLintProjectPreferenceScope;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,7 +44,6 @@ import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
 import org.apache.commons.text.StringEscapeUtils;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.openide.filesystems.FileObject;
@@ -101,6 +101,45 @@ public final class SonarLintUtils {
                 || ruleDetail.getKey().toLowerCase().contains(ruleFilterLowerCase)
                 || ruleDetail.getName().toLowerCase().contains(ruleFilterLowerCase);
         }
+    }
+
+    /**
+     * Change or remove (if empty) a rule parameter value
+     * @param sonarLintEngine
+     * @param project
+     * @param ruleKeyChanged
+     * @param parameterName
+     * @param parameterValue 
+     */
+    public static void changeRuleParameterValue(SonarLintEngine sonarLintEngine, Project project, String ruleKeyChanged, String parameterName, String parameterValue) {
+        if (parameterValue != null) {
+            if (parameterValue.isEmpty()) {
+                sonarLintEngine.removeRuleParameter(ruleKeyChanged, parameterName, project);
+            } else {
+                sonarLintEngine.setRuleParameter(ruleKeyChanged, parameterName, parameterValue, project);
+            }
+        }
+    }
+
+    /**
+     * Enable or disable a rule
+     * @param sonarLintEngine
+     * @param project
+     * @param ruleKeyChanged 
+     */
+    public static void saveEnabledOrDisabledRules(SonarLintEngine sonarLintEngine, Project project, Map<RuleKey, Boolean> ruleKeyChanged)
+    {
+        List<RuleKey> ruleKeysEnable = new ArrayList<>();
+        List<RuleKey> ruleKeysDisable = new ArrayList<>();
+        ruleKeyChanged.forEach((ruleKey, enable) -> {
+            if (enable) {
+                ruleKeysEnable.add(ruleKey);
+            } else {
+                ruleKeysDisable.add(ruleKey);
+            }
+        });
+        sonarLintEngine.excludeRuleKeys(ruleKeysDisable, project);
+        sonarLintEngine.includeRuleKeys(ruleKeysEnable, project);
     }
 
     /**
@@ -183,7 +222,8 @@ public final class SonarLintUtils {
         if (sonarLintEngine == null) {
             return Collections.emptyList();
         }
-
+        SonarLintDataManager dataManager = Lookup.getDefault().lookup(SonarLintDataManager.class);
+        Project projectForAnalyse = SonarLintDataManagerUtils.getProjectForAnalyse(dataManager, fileObject);
         SonarLintOptions sonarlintOptions = Lookup.getDefault().lookup(SonarLintOptions.class);
         boolean useTestRules = sonarlintOptions == null || sonarlintOptions.applyDifferentRulesOnTestFiles();
 
@@ -194,7 +234,7 @@ public final class SonarLintUtils {
         List<RuleKey> includedRules = new ArrayList<>();
         for (RuleDetails allRuleDetail : allRuleDetails) {
             RuleKey ruleKey = RuleKey.parse(allRuleDetail.getKey());
-            if (sonarLintEngine.isExcluded(allRuleDetail)) {
+            if (sonarLintEngine.isExcluded(allRuleDetail, projectForAnalyse)) {
                 excludedRules.add(ruleKey);
             } else {
                 includedRules.add(ruleKey);
@@ -207,8 +247,8 @@ public final class SonarLintUtils {
         }
         Path path = toFile.toPath();
         List<ClientInputFile> files = new ArrayList<>();
-        boolean applyTestRules = useTestRules && SonarLintUtils.isTest(fileObject);
-       files.add(new FSClientInputFile(
+        boolean applyTestRules = useTestRules && dataManager.isTest(toFile);
+        files.add(new FSClientInputFile(
             contentToAnalyze == null ? new String(Files.readAllBytes(path)) : contentToAnalyze,
             path.toAbsolutePath(),
             path.toFile().getName(),
@@ -222,7 +262,7 @@ public final class SonarLintUtils {
             .addInputFiles(files)
             .addExcludedRules(excludedRules)
             .addIncludedRules(includedRules)
-            .addRuleParameters(sonarLintEngine.getRuleParameters())
+            .addRuleParameters(sonarLintEngine.getRuleParameters(projectForAnalyse))
             .build();
 
 
@@ -233,27 +273,6 @@ public final class SonarLintUtils {
             null
         );
         return issues;
-    }
-
-    /**
-     * Check if file is in test directory from project
-     *
-     * @param fileObject file object to check if is test
-     * @return true if file is in test directory from project
-     */
-    public static boolean isTest(FileObject fileObject) {
-        Project project = FileOwnerQuery.getOwner(fileObject);
-        if (project != null) {
-            File projectFile = FileUtil.toFile(project.getProjectDirectory());
-            File file = FileUtil.toFile(fileObject);
-            if (file.getAbsolutePath().startsWith(projectFile.getAbsolutePath())) {
-                String relativeProjectPath = file.getAbsolutePath().replace(projectFile.getAbsolutePath(), "");
-                if (relativeProjectPath.contains(File.separator + "test" + File.separator)) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     /**
@@ -367,9 +386,10 @@ public final class SonarLintUtils {
      * Extract all parameters of rule with customized or defaut value
      * @param sonarLintEngine
      * @param ruleKey rule key ("java:S115", ...)
+     * @param project project use to extract rule parameters
      * @return 
      */
-    public static Map<StandaloneRuleParam, String> extractRuleParameters(SonarLintEngine sonarLintEngine, String ruleKey)
+    public static Map<StandaloneRuleParam, String> extractRuleParameters(SonarLintEngine sonarLintEngine, String ruleKey, Project project)
     {
         Optional<StandaloneRuleDetails> ruleDetailsOptional = sonarLintEngine.getRuleDetails(ruleKey);
         if (ruleDetailsOptional.isPresent())
@@ -383,7 +403,7 @@ public final class SonarLintUtils {
             for (StandaloneRuleParam paramDetail : paramDetails) {
                 ruleParameters.put(
                     paramDetail,
-                    sonarLintEngine.getRuleParameter(ruleKey, paramDetail.name()).orElseGet(paramDetail::defaultValue)
+                    sonarLintEngine.getRuleParameter(ruleKey, paramDetail.name(), project).orElseGet(paramDetail::defaultValue)
                 );
             }
             return ruleParameters;
@@ -413,13 +433,43 @@ public final class SonarLintUtils {
             return new DefaultAnalysisResult();
         }
 
+        List<File> fileGlobalSettings = new ArrayList<>();
+        Map<Project, List<File>> fileByProject = new HashMap<>();
+        SonarLintDataManager dataManager = Lookup.getDefault().lookup(SonarLintDataManager.class);
+
+        // Split files by project
+        for (File file : files) {
+            Project projectForFile = dataManager.getProject(file).orElse(SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
+            if (dataManager.getPreferencesScope(projectForFile) == SonarLintProjectPreferenceScope.GLOBAL) {
+                fileGlobalSettings.add(file);
+            } else {
+                fileByProject.computeIfAbsent(projectForFile, (p) -> new ArrayList<>())
+                    .add(file);
+            }
+        }
+
+        // Separe analyze and merge results
+        if (!fileGlobalSettings.isEmpty() && !fileByProject.isEmpty()) {
+            AnalysisResultsMergerable analysisResults = new AnalysisResultsMergerable();
+            analysisResults.merge(analyze(fileGlobalSettings, listener, clientInputFileInputStreamEvent, sonarLintAnalyzerCancelableTask));
+            for (List<File> value : fileByProject.values()) {
+                analysisResults.merge(analyze(value, listener, clientInputFileInputStreamEvent, sonarLintAnalyzerCancelableTask));
+            }
+            return analysisResults;
+        }
+
+        Project projectForAnalyze = SonarLintEngine.GLOBAL_SETTINGS_PROJECT;
+        if (fileGlobalSettings.isEmpty() && fileByProject.size() == 1) {
+            projectForAnalyze = fileByProject.entrySet().iterator().next().getKey();
+        }
+
         String sonarLintHome = System.getProperty("user.home") + File.separator + ".sonarlint4netbeans";
         Collection<StandaloneRuleDetails> allRuleDetails = sonarLintEngine.getAllRuleDetails();
         List<RuleKey> excludedRules = new ArrayList<>();
         List<RuleKey> includedRules = new ArrayList<>();
         for (RuleDetails allRuleDetail : allRuleDetails) {
             RuleKey ruleKey = RuleKey.parse(allRuleDetail.getKey());
-            if (sonarLintEngine.isExcluded(allRuleDetail)) {
+            if (sonarLintEngine.isExcluded(allRuleDetail, projectForAnalyze)) {
                 excludedRules.add(ruleKey);
             } else {
                 includedRules.add(ruleKey);
@@ -431,20 +481,18 @@ public final class SonarLintUtils {
             // Map file to implementation of ClientInputFile
             Path path = file.toPath();
             try {
-                FileObject fileObject = FileUtil.toFileObject(file);
-                // ignore null FileObject (e.g. .nbattr) as getEncoding throws IllegalArgumentException
-                if (fileObject == null)
-                {
-                    continue;
+                Optional<Charset> encoding = dataManager.getEncoding(file);
+                if (encoding.isPresent()) {
+                    clientInputFiles.add(new FSClientInputFile(
+                        new String(Files.readAllBytes(path)),
+                        path.toAbsolutePath(),
+                        path.toFile().getName(),
+                        dataManager.isTest(file),
+                        encoding.get()
+                    ));
+                } else {
+                    LOG.warning("Unable to detect encoding from file \"" + file.getAbsolutePath() + "\"");
                 }
-                Charset encoding = FileEncodingQuery.getEncoding(fileObject);
-                clientInputFiles.add(new FSClientInputFile(
-                    new String(Files.readAllBytes(path)),
-                    path.toAbsolutePath(),
-                    path.toFile().getName(),
-                    SonarLintUtils.isTest(fileObject),
-                    encoding
-                ));
             } catch (IOException ex) {
                 LOG.warning("Error during getEncoding from \"" + file.getAbsolutePath() + "\": " + ex.getMessage());
             }
@@ -456,7 +504,7 @@ public final class SonarLintUtils {
             .addInputFiles(clientInputFiles)
             .addExcludedRules(excludedRules)
             .addIncludedRules(includedRules)
-            .addRuleParameters(sonarLintEngine.getRuleParameters())
+            .addRuleParameters(sonarLintEngine.getRuleParameters(projectForAnalyze))
             .build();
 
         // Add listener only after configuration to prevent ClientInputFile.uri() call during configuration phase
@@ -475,7 +523,6 @@ public final class SonarLintUtils {
         return analyze;
     }
 
-    
     public static List<File> toFiles(Node[] nodes) {
         List<File> files = new ArrayList<>();
         for (Node node : nodes) {

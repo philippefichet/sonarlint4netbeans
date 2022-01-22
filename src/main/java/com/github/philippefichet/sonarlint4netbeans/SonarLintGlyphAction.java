@@ -31,11 +31,14 @@ import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.document.LineDocumentUtils;
+import org.netbeans.api.project.Project;
 import org.netbeans.editor.AnnotationDesc;
 import org.netbeans.editor.Annotations;
 import org.netbeans.editor.BaseDocument;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -77,7 +80,10 @@ public class SonarLintGlyphAction extends AbstractAction
             if (od == null) {
                 return;
             }
-            
+            SonarLintDataManager dataManager = Lookup.getDefault().lookup(SonarLintDataManager.class);
+            FileObject primaryFile = od.getPrimaryFile();
+            final Project project = dataManager.getProject(primaryFile).orElse(SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
+
             doc.render(() -> {
                 try {
                     int line = LineDocumentUtils.getLineIndex((BaseDocument)doc, currentPosition);
@@ -92,10 +98,10 @@ public class SonarLintGlyphAction extends AbstractAction
                         TopComponent topComponent = WindowManager.getDefault().findTopComponent("SonarRuleDetailsTopComponent");
                         if (topComponent instanceof SonarRuleDetailsTopComponent) {
                             SonarRuleDetailsTopComponent sonarRuleDetailsTopComponent = (SonarRuleDetailsTopComponent)topComponent;
-                            sonarRuleDetailsTopComponent.open();
+                            sonarRuleDetailsTopComponent.open(project);
                             sonarRuleDetailsTopComponent.requestActive();
                             sonarRuleDetailsTopComponent.requestFocusInWindow();
-                            sonarRuleDetailsTopComponent.setSonarRuleKeyFilter(sla.getRuleKey());
+                            sonarRuleDetailsTopComponent.setSonarRuleKeyFilter(sla.getRuleKey(), project);
                         }
                     });
                 } catch (BadLocationException ex) {

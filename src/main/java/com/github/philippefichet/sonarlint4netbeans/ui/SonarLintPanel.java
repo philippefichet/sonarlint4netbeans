@@ -19,44 +19,29 @@
  */
 package com.github.philippefichet.sonarlint4netbeans.ui;
 
-import com.github.philippefichet.sonarlint4netbeans.ui.renderer.SonarLintSeverityTableCellRenderer;
-import com.github.philippefichet.sonarlint4netbeans.ui.renderer.SonarLintRuleKeyTableCellRenderer;
-import com.github.philippefichet.sonarlint4netbeans.ui.renderer.SonarLintSettingsTableCellRenderer;
 import com.github.philippefichet.sonarlint4netbeans.SonarLintAnalyzersTableModel;
 import com.github.philippefichet.sonarlint4netbeans.SonarLintEngine;
 import com.github.philippefichet.sonarlint4netbeans.SonarLintOptions;
+import com.github.philippefichet.sonarlint4netbeans.SonarLintUtils;
 import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.JSeparator;
 import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.table.TableColumnModel;
+import org.netbeans.api.project.Project;
 import org.openide.util.Lookup;
 import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.common.Version;
-import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 
 public final class SonarLintPanel extends javax.swing.JPanel {
 
-    private final SonarLintOptionsPanelController controller;
+    private final SonarLintPanelChangedListener changedListener;
+    private final Project project;
 
     private final Map<RuleKey, Boolean> ruleKeyChanged = new HashMap<>();
     private String nodeJSPathToSave;
@@ -66,8 +51,13 @@ public final class SonarLintPanel extends javax.swing.JPanel {
 
     private SonarLintRuleTableModel rulesDefaultTableModel = new SonarLintRuleTableModel();
 
-    public SonarLintPanel(SonarLintOptionsPanelController controller) {
-        this.controller = controller;
+    public SonarLintPanel(SonarLintPanelChangedListener changedListener) {
+        this(changedListener, SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
+    }
+
+    public SonarLintPanel(SonarLintPanelChangedListener changedListener, Project project) {
+        this.changedListener = changedListener;
+        this.project = project;
         initComponents();
 
         JPanel loadingPanel = new JPanel();
@@ -84,7 +74,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
             Collection<PluginDetails> loadedAnalyzers = engine.getPluginDetails();
             loadedAnalyzers.forEach(analyzerDefaultTableModel::addPluginDetails);
             rulesDefaultTableModel.addTableModelListener(e -> {
-                controller.changed();
+                this.changedListener.changed();
                 int column = e.getColumn();
 
                 if (column == 0) {
@@ -133,12 +123,13 @@ public final class SonarLintPanel extends javax.swing.JPanel {
             public void nodeJSOptionsChanged(String nodeJSPath, Version nodeJSVersion) {
                 nodeJSPathToSave = nodeJSPath;
                 nodeJSVersionToSave = nodeJSVersion;
-                controller.changed();
+                changedListener.changed();
             }
 
             @Override
             public void testRulesOptionsChanged(Boolean apply) {
                 applyDifferentRulesOnTestFiles = apply;
+                changedListener.changed();
             }
         });
         optionPanel.add(container, BorderLayout.NORTH);
@@ -148,83 +139,18 @@ public final class SonarLintPanel extends javax.swing.JPanel {
     
     private void initRulesPanel(SonarLintEngine sonarLintEngine) {
         optionPanel.removeAll();
-        JPanel languageKeyContainer = new JPanel(new FlowLayout());
-        JButton resetSelectedRule = new JButton("Restore to default");
-        resetSelectedRule.setToolTipText("Selected only rule activated by default");
-        JTextField rulesFilter = new JTextField();
-        rulesFilter.setColumns(20);
-        JComboBox<String> comboLanguageKey = new JComboBox<>();
-        sonarLintEngine.getAllRuleDetails().stream()
-            .map(r -> r.getLanguage().getLanguageKey())
-            .distinct()
-            .forEach(comboLanguageKey::addItem);
-        rulesFilter.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyReleased(KeyEvent e) {
-                rulesDefaultTableModel.setRules(sonarLintEngine, (String)comboLanguageKey.getSelectedItem(), rulesFilter.getText());
-            }
-        });
-        comboLanguageKey.addActionListener(
-            e ->
-            rulesDefaultTableModel.setRules(sonarLintEngine, (String)comboLanguageKey.getSelectedItem(), rulesFilter.getText())
+        SonarLintRuleListPanel sonarLintRuleListPanel = new SonarLintRuleListPanel(
+            (RuleKey ruleKey, boolean enabled) -> {
+                this.changedListener.changed();
+                ruleKeyChanged.put(ruleKey, enabled);
+            },
+            (String ruleKeyChanged, String parameterName, String parameterValue) -> {
+                SonarLintUtils.changeRuleParameterValue(sonarLintEngine, project, ruleKeyChanged, parameterName, parameterValue);
+            },
+            sonarLintEngine,
+            project
         );
-        resetSelectedRule.addActionListener(
-            e -> {
-            sonarLintEngine.getAllRuleDetails().stream()
-            .filter(rule -> rule.getLanguage().getLanguageKey().equals((String)comboLanguageKey.getSelectedItem()))
-            .forEach(rule -> {
-                RuleKey ruleKey = RuleKey.parse(rule.getKey());
-                if (rule.isActiveByDefault()) {
-                    sonarLintEngine.includeRuleKey(ruleKey);
-                } else {
-                    sonarLintEngine.excludeRuleKey(ruleKey);
-                }
-            });
-            rulesDefaultTableModel.setRules(sonarLintEngine, (String)comboLanguageKey.getSelectedItem(), rulesFilter.getText());
-        });
-        languageKeyContainer.add(new JLabel("language key: "));
-        languageKeyContainer.add(comboLanguageKey);
-        languageKeyContainer.add(new JSeparator());
-        languageKeyContainer.add(new JLabel("filter: "));
-        languageKeyContainer.add(rulesFilter);
-        languageKeyContainer.add(resetSelectedRule);
-        
-        JPanel northContainer = new JPanel();
-        northContainer.setLayout(new BoxLayout(northContainer, BoxLayout.Y_AXIS));
-        JTable rulesTable = new JTable(rulesDefaultTableModel);
-        rulesTable.setRowHeight(rulesTable.getRowHeight() + 2);
-        rulesTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        rulesTable.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (rulesTable.columnAtPoint(e.getPoint()) == SonarLintRuleTableModel.SETTINGS_COLUMN_INDEX) {
-                    String ruleKey = (String)rulesTable.getValueAt(rulesTable.getSelectedRow(), SonarLintRuleTableModel.KEY_COLUMN_INDEX);
-                    Optional<StandaloneRuleDetails> ruleDetails = sonarLintEngine.getRuleDetails(ruleKey);
-                    ruleDetails.ifPresent(standaloneRule -> {
-                        if (!standaloneRule.paramDetails().isEmpty()) {
-                            SonarLintOptions sonarlintOptions = Lookup.getDefault().lookup(SonarLintOptions.class);
-                            SonarLintRuleSettings sonarLintRuleParameters = new SonarLintRuleSettings(sonarlintOptions, sonarLintEngine, ruleKey);
-                            sonarLintRuleParameters.setVisible(true);
-                        }
-                    });
-                }
-            }
-        });
-        TableColumnModel columnModel = rulesTable.getColumnModel();
-        columnModel.getColumn(SonarLintRuleTableModel.ENABLE_COLUMN_INDEX).setWidth(50);
-        columnModel.getColumn(SonarLintRuleTableModel.SETTINGS_COLUMN_INDEX).setWidth(50);
-        columnModel.getColumn(SonarLintRuleTableModel.SETTINGS_COLUMN_INDEX).setCellRenderer(new SonarLintSettingsTableCellRenderer());
-        columnModel.getColumn(SonarLintRuleTableModel.SEVERITY_COLUMN_INDEX).setWidth(100);
-        columnModel.getColumn(SonarLintRuleTableModel.SEVERITY_COLUMN_INDEX).setCellRenderer(new SonarLintSeverityTableCellRenderer());
-        columnModel.getColumn(SonarLintRuleTableModel.KEY_COLUMN_INDEX).setWidth(100);
-        columnModel.getColumn(SonarLintRuleTableModel.KEY_COLUMN_INDEX).setCellRenderer(new SonarLintRuleKeyTableCellRenderer(sonarLintEngine));
-        columnModel.getColumn(SonarLintRuleTableModel.SEVERITY_COLUMN_INDEX).setCellRenderer(new SonarLintSeverityTableCellRenderer());
-
-        rulesDefaultTableModel.setRules(sonarLintEngine, (String)comboLanguageKey.getSelectedItem(), rulesFilter.getText());
-        northContainer.add(languageKeyContainer);
-        northContainer.add(rulesTable.getTableHeader());
-        optionPanel.add(northContainer, BorderLayout.NORTH);
-        optionPanel.add(rulesTable, BorderLayout.CENTER);
+        optionPanel.add(sonarLintRuleListPanel, BorderLayout.CENTER);
     }
 
     /**
@@ -353,21 +279,11 @@ public final class SonarLintPanel extends javax.swing.JPanel {
     void store() {
         SonarLintOptions sonarLintOptions = Lookup.getDefault().lookup(SonarLintOptions.class);
         SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
-        List<RuleKey> ruleKeysEnable = new ArrayList<>();
-        List<RuleKey> ruleKeysDisable = new ArrayList<>();
-        ruleKeyChanged.forEach((ruleKey, enable) -> {
-            if (enable) {
-                ruleKeysEnable.add(ruleKey);
-            } else {
-                ruleKeysDisable.add(ruleKey);
-            }
-        });
-        if (sonarLintOptions != null && applyDifferentRulesOnTestFiles != null) {
+        SonarLintUtils.saveEnabledOrDisabledRules(sonarLintEngine, project, ruleKeyChanged);
+        if (project == SonarLintEngine.GLOBAL_SETTINGS_PROJECT && sonarLintOptions != null && applyDifferentRulesOnTestFiles != null) {
             sonarLintOptions.useDifferentRulesOnTestFiles(applyDifferentRulesOnTestFiles);
         }
-        sonarLintEngine.excludeRuleKeys(ruleKeysDisable);
-        sonarLintEngine.includeRuleKeys(ruleKeysEnable);
-        if (nodeJSPathToSave != null && nodeJSVersionToSave != null) {
+        if (project == SonarLintEngine.GLOBAL_SETTINGS_PROJECT && nodeJSPathToSave != null && nodeJSVersionToSave != null) {
             sonarLintEngine.setNodeJSPathAndVersion(nodeJSPathToSave, nodeJSVersionToSave);
         }
     }

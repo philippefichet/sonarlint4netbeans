@@ -33,7 +33,9 @@ import org.openide.util.Lookup;
         keywordsCategory = "SonarLint"
 )
 @org.openide.util.NbBundle.Messages({"AdvancedOption_DisplayName_SonarLint=SonarLint", "AdvancedOption_Keywords_SonarLint=sonarlint"})
-public final class SonarLintOptionsPanelController extends OptionsPanelController {
+public final class SonarLintOptionsPanelController extends OptionsPanelController
+    implements SonarLintPanelChangedListener
+{
 
     private SonarLintPanel panel;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -89,7 +91,8 @@ public final class SonarLintOptionsPanelController extends OptionsPanelControlle
         return panel;
     }
 
-    void changed() {
+    @Override
+    public void changed() {
         if (!changed) {
             changed = true;
             pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);

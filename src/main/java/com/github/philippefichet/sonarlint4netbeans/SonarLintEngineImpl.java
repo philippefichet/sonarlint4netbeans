@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,7 +36,8 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
-import org.openide.util.NbPreferences;
+import org.netbeans.api.project.Project;
+import org.openide.util.Lookup;
 import org.sonarsource.nodejs.NodeCommand;
 import org.sonarsource.nodejs.NodeCommandBuilderImpl;
 import org.sonarsource.nodejs.NodeCommandException;
@@ -55,31 +57,30 @@ import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetail
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
 
 /**
- * Other scanner: https://docs.sonarqube.org/display/PLUG/Plugin+Library TODO:
- * RuleDetails::isActiveByDefault
  *
  * @author FICHET Philippe
  */
 public final class SonarLintEngineImpl implements SonarLintEngine {
 
+    private static final Logger LOG = Logger.getLogger(SonarLintEngineImpl.class.getName());
+    
     // https://search.maven.org/artifact/org.sonarsource.java/sonar-java-plugin/
-    public static final String SONAR_JAVA_PLUGIN_VERSION = "7.4.0.27839";
+    private static final String SONAR_JAVA_PLUGIN_VERSION = "7.4.0.27839";
     // https://search.maven.org/artifact/org.sonarsource.javascript/sonar-javascript-plugin/
-    public static final String SONAR_JAVASCRIPT_PLUGIN_VERSION = "8.4.0.16431";
+    private static final String SONAR_JAVASCRIPT_PLUGIN_VERSION = "8.4.0.16431";
     // https://search.maven.org/artifact/org.sonarsource.php/sonar-php-plugin/
-    private static String SONAR_PHP_PLUGIN_VERSION = "3.21.0.8193";
+    private static final String SONAR_PHP_PLUGIN_VERSION = "3.21.0.8193";
     // https://mvnrepository.com/artifact/org.sonarsource.html/sonar-html-plugin/
-    private static String SONAR_HTML_PLUGIN_VERSION = "3.4.0.2754";
+    private static final String SONAR_HTML_PLUGIN_VERSION = "3.4.0.2754";
     // https://repo1.maven.org/maven2/org/sonarsource/xml/sonar-xml-plugin/
-    private static String SONAR_XML_PLUGIN_VERSION = "2.4.0.3273";
+    private static final String SONAR_XML_PLUGIN_VERSION = "2.4.0.3273";
     private static final String PREFIX_PREFERENCE_RULE_PARAMETER = "rules.parameters.";
     private static final String PREFIX_EXCLUDE_RULE = "excludedRules";
-    private static final String PREFIX_RUNTIME_PREFERENCE= "runtime.";
-    private static final String RUNTIME_NODE_JS_PATH_PREFERENCE= "nodejs.path";
-    private static final String RUNTIME_NODE_JS_VERSION_PREFERENCE= "nodejs.version";
+    private static final String PREFIX_RUNTIME_PREFERENCE = "runtime.";
+    private static final String RUNTIME_NODE_JS_PATH_PREFERENCE = "nodejs.path";
+    private static final String RUNTIME_NODE_JS_VERSION_PREFERENCE = "nodejs.version";
     private final Gson gson = new Gson();
     private StandaloneSonarLintEngineImpl standaloneSonarLintEngineImpl;
-    private final List<RuleKey> excludedRules = new ArrayList<>();
     private final List<Consumer<SonarLintEngine>> consumerWaitingInitialization = new ArrayList<>();
     private final List<Consumer<SonarLintEngine>> configurationChanged = new ArrayList<>();
     private final Map<String, URL> pluginURLs = new HashMap<>();
@@ -91,28 +92,15 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
         pluginURLs.put("web", getClass().getResource("/com/github/philippefichet/sonarlint4netbeans/resources/sonar-html-plugin-" + SONAR_HTML_PLUGIN_VERSION + ".jar"));
         pluginURLs.put("xml", getClass().getResource("/com/github/philippefichet/sonarlint4netbeans/resources/sonar-xml-plugin-" + SONAR_XML_PLUGIN_VERSION + ".jar"));
         createInternalEngine();
-        @SuppressWarnings("unchecked")
-        List<Map<String, String>> fromJson = gson.fromJson(getPreferences().get(PREFIX_EXCLUDE_RULE, null), List.class);
-        if (fromJson == null) {
-            whenInitialized(engine -> {
-                Collection<StandaloneRuleDetails> allRuleDetails = engine.getAllRuleDetails();
-                for (StandaloneRuleDetails allRuleDetail : allRuleDetails) {
-                    if (!allRuleDetail.isActiveByDefault()) {
-                        excludedRules.add(RuleKey.parse(allRuleDetail.getKey()));
-                    }
-                }
-                getPreferences().put(PREFIX_EXCLUDE_RULE, gson.toJson(excludedRules));
-            });
-        } else {
-            for (Map<String, String> ruleKey : fromJson) {
-                excludedRules.add(RuleKey.parse(ruleKey.get("repository") + ":" + ruleKey.get("rule")));
-            }
-        }
     }
 
     private void createInternalEngine() {
+        StandaloneSonarLintEngineImpl oldStandaloneSonarLintEngineImpl = standaloneSonarLintEngineImpl;
         standaloneSonarLintEngineImpl = null;
         new Thread(() -> {
+            if (oldStandaloneSonarLintEngineImpl != null) {
+                oldStandaloneSonarLintEngineImpl.stop();
+            }
             StandaloneGlobalConfiguration.Builder configBuilder = StandaloneGlobalConfiguration.builder()
                 .addEnabledLanguages(Language.values())
                 .addPlugins(pluginURLs.values().toArray(new URL[pluginURLs.values().size()]));
@@ -153,45 +141,74 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
 
     @Override
     public Optional<String> getNodeJSPath() {
-        return Optional.ofNullable(getPreferences().get(PREFIX_RUNTIME_PREFERENCE + RUNTIME_NODE_JS_PATH_PREFERENCE, null));
+        return Optional.ofNullable(getPreferences(GLOBAL_SETTINGS_PROJECT).get(PREFIX_RUNTIME_PREFERENCE + RUNTIME_NODE_JS_PATH_PREFERENCE, null));
     }
 
     @Override
     public Optional<Version> getNodeJSVersion() {
         return Optional.ofNullable(
-            getPreferences().get(PREFIX_RUNTIME_PREFERENCE + RUNTIME_NODE_JS_VERSION_PREFERENCE, null)
+            getPreferences(GLOBAL_SETTINGS_PROJECT).get(PREFIX_RUNTIME_PREFERENCE + RUNTIME_NODE_JS_VERSION_PREFERENCE, null)
         ).map(Version::create);
     }
 
     @Override
     public void setNodeJSPathAndVersion(String nodeJSPath, Version nodeJSversion) {
-        getPreferences().put(PREFIX_RUNTIME_PREFERENCE + RUNTIME_NODE_JS_PATH_PREFERENCE, nodeJSPath);
-        getPreferences().put(PREFIX_RUNTIME_PREFERENCE + RUNTIME_NODE_JS_VERSION_PREFERENCE, nodeJSversion.toString());
+        getPreferences(GLOBAL_SETTINGS_PROJECT).put(PREFIX_RUNTIME_PREFERENCE + RUNTIME_NODE_JS_PATH_PREFERENCE, nodeJSPath);
+        getPreferences(GLOBAL_SETTINGS_PROJECT).put(PREFIX_RUNTIME_PREFERENCE + RUNTIME_NODE_JS_VERSION_PREFERENCE, nodeJSversion.toString());
         // Re-create SonarLint Engine
         createInternalEngine();
     }
 
     @Override
-    public Collection<RuleKey> getExcludedRules() {
-        return excludedRules;
+    public Collection<RuleKey> getExcludedRules(Project project) {
+        String excludedRulesJson = getPreferences(project).get(PREFIX_EXCLUDE_RULE, null);
+        List<Map<String, String>> fromJson = null;
+        if (excludedRulesJson != null) {
+            fromJson = gson.fromJson(excludedRulesJson, List.class);
+        }
+
+        if (fromJson == null) {
+            if (standaloneSonarLintEngineImpl != null) {
+                Collection<RuleKey> excludedRules = new ArrayList<>();
+                Collection<StandaloneRuleDetails> allRuleDetails = standaloneSonarLintEngineImpl.getAllRuleDetails();
+                for (StandaloneRuleDetails allRuleDetail : allRuleDetails) {
+                    if (!allRuleDetail.isActiveByDefault()) {
+                        excludedRules.add(RuleKey.parse(allRuleDetail.getKey()));
+                    }
+                }
+                getPreferences(project).put(PREFIX_EXCLUDE_RULE, gson.toJson(excludedRules));
+                return excludedRules;
+            } else {
+                return Collections.emptyList();
+            }
+        } else {
+            Collection<RuleKey> excludedRules = new ArrayList<>();
+            for (Map<String, String> ruleKey : fromJson) {
+                excludedRules.add(RuleKey.parse(ruleKey.get("repository") + ":" + ruleKey.get("rule")));
+            }
+            return excludedRules;
+        }
     }
 
     @Override
-    public void excludeRuleKeys(List<RuleKey> ruleKeys) {
+    public void excludeRuleKeys(List<RuleKey> ruleKeys, Project project) {
+        Collection<RuleKey> excludedRules = getExcludedRules(project);
         excludedRules.addAll(ruleKeys);
-        getPreferences().put(PREFIX_EXCLUDE_RULE, gson.toJson(excludedRules));
+        getPreferences(project).put(PREFIX_EXCLUDE_RULE, gson.toJson(excludedRules));
         fireConfigurationChange();
     }
 
     @Override
-    public void includeRuleKeys(List<RuleKey> ruleKeys) {
+    public void includeRuleKeys(List<RuleKey> ruleKeys, Project project) {
+        Collection<RuleKey> excludedRules = getExcludedRules(project);
         excludedRules.removeAll(ruleKeys);
-        getPreferences().put(PREFIX_EXCLUDE_RULE, gson.toJson(excludedRules));
+        getPreferences(project).put(PREFIX_EXCLUDE_RULE, gson.toJson(excludedRules));
         fireConfigurationChange();
     }
 
     @Override
-    public boolean isExcluded(RuleDetails ruleDetails) {
+    public boolean isExcluded(RuleDetails ruleDetails, Project project) {
+        Collection<RuleKey> excludedRules = getExcludedRules(project);
         for (RuleKey excludedRule : excludedRules) {
             if (ruleDetails.getKey().equals(excludedRule.toString())) {
                 return true;
@@ -246,8 +263,13 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
     }
 
     @Override
-    public Preferences getPreferences() {
-        return NbPreferences.forModule(SonarLintEngineImpl.class);
+    public Preferences getPreferences(Project project) {
+        SonarLintDataManager dataManager = getSonarLintDataManager();
+        if (project == SonarLintEngine.GLOBAL_SETTINGS_PROJECT) {
+            return dataManager.getGlobalSettingsPreferences();
+        } else {
+            return dataManager.getPreferences(project);
+        }
     }
 
     @Override
@@ -260,35 +282,36 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
     }
 
     @Override
-    public void includeRuleKey(RuleKey ruleKey) {
+    public void includeRuleKey(RuleKey ruleKey, Project project) {
+        Collection<RuleKey> excludedRules = getExcludedRules(project);
         excludedRules.remove(ruleKey);
-        getPreferences().put(PREFIX_EXCLUDE_RULE, gson.toJson(excludedRules));
+        getPreferences(project).put(PREFIX_EXCLUDE_RULE, gson.toJson(excludedRules));
         fireConfigurationChange();
     }
 
     @Override
-    public void excludeRuleKey(RuleKey ruleKey) {
+    public void excludeRuleKey(RuleKey ruleKey, Project project) {
+        Collection<RuleKey> excludedRules = getExcludedRules(project);
         excludedRules.add(ruleKey);
-        getPreferences().put(PREFIX_EXCLUDE_RULE, gson.toJson(excludedRules));
+        getPreferences(project).put(PREFIX_EXCLUDE_RULE, gson.toJson(excludedRules));
         fireConfigurationChange();
     }
 
     @Override
-    public void setRuleParameter(String ruleKey, String parameterName, String parameterValue) {
-        getPreferences().put(PREFIX_PREFERENCE_RULE_PARAMETER + ruleKey.replace(":", ".") + "." + parameterName, parameterValue);
+    public void setRuleParameter(String ruleKey, String parameterName, String parameterValue, Project project) {
+        getPreferences(project).put(PREFIX_PREFERENCE_RULE_PARAMETER + ruleKey.replace(":", ".") + "." + parameterName, parameterValue);
         fireConfigurationChange();
     }
 
     @Override
-    public Map<RuleKey, Map<String, String>> getRuleParameters()
-    {
+    public Map<RuleKey, Map<String, String>> getRuleParameters(Project project) {
         Map<RuleKey, Map<String, String>> ruleParameters = new HashMap<>();
         for (StandaloneRuleDetails standaloneRule : getAllRuleDetails()) {
             String ruleKey = standaloneRule.getKey();
             for (StandaloneRuleParam param : standaloneRule.paramDetails()) {
                 if (param instanceof StandaloneRuleParam) {
                     StandaloneRuleParam ruleParam = (StandaloneRuleParam)param;
-                    String parameterValue = getPreferences().get(PREFIX_PREFERENCE_RULE_PARAMETER + ruleKey.replace(":", ".") + "." + ruleParam.name(), ruleParam.defaultValue());
+                    String parameterValue = getPreferences(project).get(PREFIX_PREFERENCE_RULE_PARAMETER + ruleKey.replace(":", ".") + "." + ruleParam.name(), ruleParam.defaultValue());
                     if (parameterValue != null && !parameterValue.equals(ruleParam.defaultValue())) {
                         RuleKey key = RuleKey.parse(standaloneRule.getKey());
                         Map<String, String> params = ruleParameters.get(key);
@@ -305,17 +328,17 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
     }
 
     @Override
-    public void removeRuleParameter(String ruleKey, String parameterName) {
-        getPreferences().remove(PREFIX_PREFERENCE_RULE_PARAMETER+ ruleKey.replace(":", ".") + "." + parameterName);
+    public void removeRuleParameter(String ruleKey, String parameterName, Project project) {
+        getPreferences(project).remove(PREFIX_PREFERENCE_RULE_PARAMETER + ruleKey.replace(":", ".") + "." + parameterName);
         fireConfigurationChange();
     }
 
     @Override
-    public Optional<String> getRuleParameter(String ruleKey, String parameterName) {
+    public Optional<String> getRuleParameter(String ruleKey, String parameterName, Project project) {
         return getRuleDetails(ruleKey).flatMap(ruleDetail -> 
             SonarLintUtils.searchRuleParameter(ruleDetail, parameterName)
                 .flatMap(param -> {
-                    String parameterValue = getPreferences().get(PREFIX_PREFERENCE_RULE_PARAMETER + ruleKey.replace(":", ".") + "." + parameterName, param.defaultValue());
+                    String parameterValue = getPreferences(project).get(PREFIX_PREFERENCE_RULE_PARAMETER + ruleKey.replace(":", ".") + "." + parameterName, param.defaultValue());
                     if (parameterValue != null && !parameterValue.equals(param.defaultValue())) {
                         return Optional.of(parameterValue);
                     } else {
@@ -323,5 +346,10 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
                     }
                 })
         );
+    }
+
+    private SonarLintDataManager getSonarLintDataManager()
+    {
+        return Lookup.getDefault().lookup(SonarLintDataManager.class);
     }
 }
