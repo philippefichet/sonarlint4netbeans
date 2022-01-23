@@ -26,7 +26,6 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 import javax.swing.Action;
-import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.PropertySupport;
@@ -54,7 +53,6 @@ public class SonarLintAnalyserIssueNode extends AbstractNode {
         ruleNamePropertySet
     };
     private final File file;
-    private DataObject dataObject = null;
     private final SonarLintDataManager sonarLintDataManager;
 
     public SonarLintAnalyserIssueNode(DefaultClientIssue issue) {

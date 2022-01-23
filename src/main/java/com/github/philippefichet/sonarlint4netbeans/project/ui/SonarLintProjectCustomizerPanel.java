@@ -26,7 +26,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 
 /**
- *
+ * Panel to choose project scope for rule settings
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
 public class SonarLintProjectCustomizerPanel extends javax.swing.JPanel {

@@ -20,7 +20,7 @@
 package com.github.philippefichet.sonarlint4netbeans.ui;
 
 /**
- *
+ * Interface used to notifiy when a data changed in SonarLintPanel
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
 public interface SonarLintPanelChangedListener {

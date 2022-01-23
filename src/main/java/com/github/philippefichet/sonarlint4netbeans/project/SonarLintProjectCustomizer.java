@@ -30,7 +30,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
- *
+ * Class to register rule project settings on many project type
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
 public class SonarLintProjectCustomizer implements ProjectCustomizer.CompositeCategoryProvider {

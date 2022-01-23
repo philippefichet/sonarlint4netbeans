@@ -20,7 +20,7 @@
 package com.github.philippefichet.sonarlint4netbeans.project;
 
 /**
- *
+ * List of project scope types
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
 public enum SonarLintProjectPreferenceScope {

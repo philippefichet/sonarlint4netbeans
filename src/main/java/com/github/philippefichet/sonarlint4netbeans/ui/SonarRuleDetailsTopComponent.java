@@ -26,11 +26,7 @@ import com.github.philippefichet.sonarlint4netbeans.project.SonarLintProjectPref
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
-import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -71,8 +67,6 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
     private final SonarLintEngine sonarLintEngine;
     private final SonarLintDataManager sonarLintDataManager;
     private final JTabbedPane tabs;
-    private final JPanel globalSettingsPanel = null;
-    private final Map<Project, JPanel> projectPanel = Collections.synchronizedMap(new HashMap<>());
     public SonarRuleDetailsTopComponent() {
         sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
         sonarLintDataManager = Lookup.getDefault().lookup(SonarLintDataManager.class);
@@ -127,7 +121,7 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
 
     /**
      * Require by @ConvertAsProperties
-     * @param p 
+     * @param p properties instance used to add custom properties
      */
     void writeProperties(java.util.Properties p) {
         // better to version settings since initial version as advocated at
@@ -138,7 +132,7 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
 
     /**
      * Require by @ConvertAsProperties
-     * @param p 
+     * @param p properties instance used to read custom properties
      */
     void readProperties(java.util.Properties p) {
         String version = p.getProperty("version");

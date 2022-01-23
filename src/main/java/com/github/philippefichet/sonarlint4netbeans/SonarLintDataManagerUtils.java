@@ -24,7 +24,7 @@ import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 
 /**
- *
+ * Common behavior related of all implementation of SonarLintDataManager
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
 public final class SonarLintDataManagerUtils {

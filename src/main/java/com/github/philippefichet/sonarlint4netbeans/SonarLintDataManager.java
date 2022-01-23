@@ -30,7 +30,7 @@ import org.openide.filesystems.FileObject;
 
 
 /**
- *
+ * Interface to handle data related with Netbeans API/SPI
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
 public interface SonarLintDataManager {
@@ -43,15 +43,15 @@ public interface SonarLintDataManager {
 
     /**
      * Change scope preference of project
-     * @param project
-     * @param projectPreferenceScope 
+     * @param project project to change scope
+     * @param projectPreferenceScope scope to set project
      */
     public void setPreferencesScope(Project project, SonarLintProjectPreferenceScope projectPreferenceScope);
 
     /**
      * Retrieve scope preference of project
-     * @param project
-     * @return 
+     * @param project project to retrieve scope
+     * @return non-null scope of project
      */
     public SonarLintProjectPreferenceScope getPreferencesScope(Project project);
     
@@ -63,8 +63,8 @@ public interface SonarLintDataManager {
 
     /**
      * Retrieve project from fileObject
-     * @param fileObject
-     * @return 
+     * @param fileObject fileObject to search project
+     * @return project from fileObject
      */
     public Optional<Project> getProject(FileObject fileObject);
 
@@ -77,7 +77,7 @@ public interface SonarLintDataManager {
 
     /**
      * Retrieve encoding of file if can be detected
-     * @param file
+     * @param file file to detect encoding
      * @return encoding of file if can be detected
      */
     public Optional<Charset> getEncoding(File file);
@@ -92,9 +92,9 @@ public interface SonarLintDataManager {
     
     /**
      * Find an icon for this file.
-     * @param file
-     * @param type
-     * @return 
+     * @param file file to search icon
+     * @param type type constants from {@link java.beans.BeanInfo}
+     * @return icon for this file
      */
     public Optional<Image> getIcon(File file, int type);
 }

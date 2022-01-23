@@ -43,7 +43,7 @@ import org.openide.util.Lookup;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 
 /**
- *
+ * Panel used to show rules and details
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
 public class SonarRuleDetailsPanel extends javax.swing.JPanel {

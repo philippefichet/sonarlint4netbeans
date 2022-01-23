@@ -27,7 +27,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,13 +56,11 @@ import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetail
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
 
 /**
- *
+ * Main implemantation of SonarLintEngine
  * @author FICHET Philippe
  */
 public final class SonarLintEngineImpl implements SonarLintEngine {
 
-    private static final Logger LOG = Logger.getLogger(SonarLintEngineImpl.class.getName());
-    
     // https://search.maven.org/artifact/org.sonarsource.java/sonar-java-plugin/
     private static final String SONAR_JAVA_PLUGIN_VERSION = "7.4.0.27839";
     // https://search.maven.org/artifact/org.sonarsource.javascript/sonar-javascript-plugin/
@@ -179,7 +176,7 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
                 getPreferences(project).put(PREFIX_EXCLUDE_RULE, gson.toJson(excludedRules));
                 return excludedRules;
             } else {
-                return Collections.emptyList();
+                return new ArrayList<>(0);
             }
         } else {
             Collection<RuleKey> excludedRules = new ArrayList<>();

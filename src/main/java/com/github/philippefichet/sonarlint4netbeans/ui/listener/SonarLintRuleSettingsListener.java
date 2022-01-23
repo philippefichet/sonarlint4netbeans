@@ -20,7 +20,7 @@
 package com.github.philippefichet.sonarlint4netbeans.ui.listener;
 
 /**
- *
+ * Interface to notify when a rule parameter changed in SonarLintRuleSettings
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
 @FunctionalInterface

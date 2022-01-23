@@ -49,7 +49,7 @@ import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 
 /**
- *
+ * Panel to cnofigure sonarlint rules
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
 public class SonarLintRuleListPanel extends javax.swing.JPanel {

@@ -32,7 +32,7 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
 /**
- *
+ * Panel to configure all rule settings on project
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
 public class SonarLintProjectCustomizerRulesPanel extends javax.swing.JPanel implements SonarLintPanelChangedListener {

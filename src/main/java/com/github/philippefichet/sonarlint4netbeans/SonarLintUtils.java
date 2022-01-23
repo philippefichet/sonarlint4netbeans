@@ -105,11 +105,11 @@ public final class SonarLintUtils {
 
     /**
      * Change or remove (if empty) a rule parameter value
-     * @param sonarLintEngine
-     * @param project
-     * @param ruleKeyChanged
-     * @param parameterName
-     * @param parameterValue 
+     * @param sonarLintEngine sonarlint engine used to change rule parameter value
+     * @param project project concerned by change rule parameter value
+     * @param ruleKeyChanged rule key to change parameter value
+     * @param parameterName name of parameter
+     * @param parameterValue new value of parameter, if null then remove from project configuration
      */
     public static void changeRuleParameterValue(SonarLintEngine sonarLintEngine, Project project, String ruleKeyChanged, String parameterName, String parameterValue) {
         if (parameterValue != null) {
@@ -123,9 +123,9 @@ public final class SonarLintUtils {
 
     /**
      * Enable or disable a rule
-     * @param sonarLintEngine
-     * @param project
-     * @param ruleKeyChanged 
+     * @param sonarLintEngine sonarlint engine used to change rule status
+     * @param project project concerned by change rule status
+     * @param ruleKeyChanged rule key to change status
      */
     public static void saveEnabledOrDisabledRules(SonarLintEngine sonarLintEngine, Project project, Map<RuleKey, Boolean> ruleKeyChanged)
     {
@@ -395,11 +395,11 @@ public final class SonarLintUtils {
         if (ruleDetailsOptional.isPresent())
         {
             StandaloneRuleDetails ruleDetails = ruleDetailsOptional.get();
-            Map<StandaloneRuleParam, String> ruleParameters = new HashMap<>();
             Collection<StandaloneRuleParam> paramDetails = ruleDetails.paramDetails();
             if(paramDetails.isEmpty()) {
-                return Collections.emptyMap();
+                return new HashMap<>(0);
             }
+            Map<StandaloneRuleParam, String> ruleParameters = new HashMap<>();
             for (StandaloneRuleParam paramDetail : paramDetails) {
                 ruleParameters.put(
                     paramDetail,
@@ -484,7 +484,7 @@ public final class SonarLintUtils {
                 Optional<Charset> encoding = dataManager.getEncoding(file);
                 if (encoding.isPresent()) {
                     clientInputFiles.add(new FSClientInputFile(
-                        new String(Files.readAllBytes(path)),
+                        new String(Files.readAllBytes(path), encoding.get()),
                         path.toAbsolutePath(),
                         path.toFile().getName(),
                         dataManager.isTest(file),

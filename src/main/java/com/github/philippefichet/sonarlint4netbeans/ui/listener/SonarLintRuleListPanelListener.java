@@ -22,7 +22,7 @@ package com.github.philippefichet.sonarlint4netbeans.ui.listener;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 
 /**
- *
+ * Interface to notify when a rule is enable or disable in SonarLintRuleListPanel
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
 @FunctionalInterface
