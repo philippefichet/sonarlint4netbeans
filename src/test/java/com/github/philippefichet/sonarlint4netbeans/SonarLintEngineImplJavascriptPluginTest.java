@@ -61,6 +61,104 @@ public class SonarLintEngineImplJavascriptPluginTest {
                     .build()
                 )
             ),
+            Arguments.of(
+                SonarLintEngineTestConfiguration.builder()
+                .description("sonarlint-example-with-global-variables.js with rule javascript:S3827 to check 3 issues from global variable declaring without extra properties \"sonar.javascript.globals\"")
+                .requireNodeJS()
+                .includeRules("javascript:S3827")
+                .addClientInputFile(new File("./src/test/resources/sonarlint-example-with-global-variables.js"))
+                .build(),
+                Arrays.asList(
+                      // api variable
+                    new DefaultIssueTestImpl.Builder()
+                    .severity("BLOCKER")
+                    .type("BUG")
+                    .ruleKey("javascript:S3827")
+                    .ruleName("Variables should be defined before being used")
+                    .startLine(3)
+                    .startLineOffset(11)
+                    .endLine(3)
+                    .endLineOffset(14)
+                    .build(),
+                    // AapiI variable
+                    new DefaultIssueTestImpl.Builder()
+                    .severity("BLOCKER")
+                    .type("BUG")
+                    .ruleKey("javascript:S3827")
+                    .ruleName("Variables should be defined before being used")
+                    .startLine(4)
+                    .startLineOffset(11)
+                    .endLine(4)
+                    .endLineOffset(16)
+                    .build(),
+                    // globalVariables variable
+                    new DefaultIssueTestImpl.Builder()
+                    .severity("BLOCKER")
+                    .type("BUG")
+                    .ruleKey("javascript:S3827")
+                    .ruleName("Variables should be defined before being used")
+                    .startLine(5)
+                    .startLineOffset(11)
+                    .endLine(5)
+                    .endLineOffset(26)
+                    .build()
+                )
+            ),
+            Arguments.of(
+                SonarLintEngineTestConfiguration.builder()
+                .description("sonarlint-example-with-global-variables.js with rule javascript:S3827 to check one issue from global variable declaring in extra properties \"sonar.javascript.globals\" for \"globalVariables,api\"")
+                .requireNodeJS()
+                .includeRules("javascript:S3827")
+                .addClientInputFile(new File("./src/test/resources/sonarlint-example-with-global-variables.js"))
+                .addExtraProperty("sonar.javascript.globals", "globalVariables,api", SonarLintEngine.GLOBAL_SETTINGS_PROJECT)
+                .build(),
+                Arrays.asList(
+                    // AapiI variable
+                    new DefaultIssueTestImpl.Builder()
+                    .severity("BLOCKER")
+                    .type("BUG")
+                    .ruleKey("javascript:S3827")
+                    .ruleName("Variables should be defined before being used")
+                    .startLine(4)
+                    .startLineOffset(11)
+                    .endLine(4)
+                    .endLineOffset(16)
+                    .build()
+                )
+            ),
+            Arguments.of(
+                SonarLintEngineTestConfiguration.builder()
+                .description("sonarlint-example-with-global-variables.js with rule javascript:S3827 to check two issues from global variable declaring with extra properties \"sonar.javascript.globals\" for \"AapiI\"")
+                .requireNodeJS()
+                .includeRules("javascript:S3827")
+                .addClientInputFile(new File("./src/test/resources/sonarlint-example-with-global-variables.js"))
+                .addExtraProperty("sonar.javascript.globals", "AapiI", SonarLintEngine.GLOBAL_SETTINGS_PROJECT)
+                .build(),
+                Arrays.asList(
+                    // api variable
+                    new DefaultIssueTestImpl.Builder()
+                    .severity("BLOCKER")
+                    .type("BUG")
+                    .ruleKey("javascript:S3827")
+                    .ruleName("Variables should be defined before being used")
+                    .startLine(3)
+                    .startLineOffset(11)
+                    .endLine(3)
+                    .endLineOffset(14)
+                    .build(),
+                    // globalVariables variable
+                    new DefaultIssueTestImpl.Builder()
+                    .severity("BLOCKER")
+                    .type("BUG")
+                    .ruleKey("javascript:S3827")
+                    .ruleName("Variables should be defined before being used")
+                    .startLine(5)
+                    .startLineOffset(11)
+                    .endLine(5)
+                    .endLineOffset(26)
+                    .build()
+                )
+            ),
         };
     }
 

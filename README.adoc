@@ -15,6 +15,7 @@ Features:
 - Filter Rules in Tools/Options/Miscellaneous/SonarLint option panel and "Sonar Rule Details" window
 - Change rule settings in Tools/Options/Miscellaneous/SonarLint or in "Sonar Rule Details" window
 - Enable/Disable/Configure Rules by project
+- Add or remove analyse properties (global or by project)
 - Restore selected rule from activated by default
 - Custom "Sonar Rule Details" window with CSS
 - Enable or disabled test rules on test files
@@ -95,6 +96,9 @@ image::docs/OptionsSonarLintRulesRestoreToDefaultBefore.jpg[]
 .Restore selected rule from activated by default (after)
 image::docs/OptionsSonarLintRulesRestoreToDefaultAfter.jpg[]
 
+.Add or remove analyse properties
+image::docs/OptionsSonarLintProperties.jpg[]
+
 .SonarLint Options
 image::docs/OptionsSonarLintOptions
 
@@ -118,3 +122,6 @@ image::docs/SonarLintProjectOptions.jpg[]
 
 .SonarLint Enable/Disable/Configure Rules by project
 image::docs/SonarLintProjectRules.jpg[]
+
+.SonarLint Add or remove properties by project
+image::docs/SonarLintProjectProperties.jpg[]

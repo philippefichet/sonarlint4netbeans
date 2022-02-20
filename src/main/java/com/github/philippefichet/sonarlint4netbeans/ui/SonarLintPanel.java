@@ -19,22 +19,18 @@
  */
 package com.github.philippefichet.sonarlint4netbeans.ui;
 
-import com.github.philippefichet.sonarlint4netbeans.SonarLintAnalyzersTableModel;
 import com.github.philippefichet.sonarlint4netbeans.SonarLintEngine;
 import com.github.philippefichet.sonarlint4netbeans.SonarLintOptions;
 import com.github.philippefichet.sonarlint4netbeans.SonarLintUtils;
 import java.awt.BorderLayout;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.JTable;
 import org.netbeans.api.project.Project;
 import org.openide.util.Lookup;
-import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.common.Version;
 
@@ -44,10 +40,10 @@ public final class SonarLintPanel extends javax.swing.JPanel {
     private final Project project;
 
     private final Map<RuleKey, Boolean> ruleKeyChanged = new HashMap<>();
+    private final Map<String, String> extraProperties = new HashMap<>();
     private String nodeJSPathToSave;
     private Version nodeJSVersionToSave;
     private Boolean applyDifferentRulesOnTestFiles = null;
-    private SonarLintAnalyzersTableModel analyzerDefaultTableModel = new SonarLintAnalyzersTableModel();
 
     private SonarLintRuleTableModel rulesDefaultTableModel = new SonarLintRuleTableModel();
 
@@ -71,8 +67,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
 
         SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
         sonarLintEngine.whenInitialized(engine -> {
-            Collection<PluginDetails> loadedAnalyzers = engine.getPluginDetails();
-            loadedAnalyzers.forEach(analyzerDefaultTableModel::addPluginDetails);
+            extraProperties.putAll(engine.getAllExtraProperties(project));
             rulesDefaultTableModel.addTableModelListener(e -> {
                 this.changedListener.changed();
                 int column = e.getColumn();
@@ -92,10 +87,13 @@ public final class SonarLintPanel extends javax.swing.JPanel {
                     initRulesPanel(engine);
                 }
                 if ("Analyzers".equals(categoriesList.getSelectedValue())) {
-                    initAnalyzersPanel();
+                    initAnalyzersPanel(engine);
                 }
                 if ("Options".equals(categoriesList.getSelectedValue())) {
                     initOptionsPanel(engine);
+                }
+                if ("Properties".equals(categoriesList.getSelectedValue())) {
+                    initPropertiesPanel(engine);
                 }
                 optionPanel.revalidate();
                 optionPanel.repaint();
@@ -109,11 +107,9 @@ public final class SonarLintPanel extends javax.swing.JPanel {
 
     }
 
-    private void initAnalyzersPanel() {
+    private void initAnalyzersPanel(SonarLintEngine sonarLintEngine) {
         optionPanel.removeAll();
-        JTable analyzersTable = new JTable(analyzerDefaultTableModel);
-        optionPanel.add(analyzersTable.getTableHeader(), BorderLayout.NORTH);
-        optionPanel.add(analyzersTable, BorderLayout.CENTER);
+        optionPanel.add(new SonarLintOptionsPanelAnalyzers(sonarLintEngine), BorderLayout.CENTER);
     }
 
     private void initOptionsPanel(SonarLintEngine engine) {
@@ -152,6 +148,19 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         );
         optionPanel.add(sonarLintRuleListPanel, BorderLayout.CENTER);
     }
+    
+    private void initPropertiesPanel(SonarLintEngine sonarLintEngine) {
+        optionPanel.removeAll();
+        optionPanel.add(
+            new SonarLintOptionsPanelProperties(
+                sonarLintEngine.getAllExtraProperties(project),
+                (Map<String, String> extraProperties) -> {
+                    this.extraProperties.clear();
+                    this.extraProperties.putAll(extraProperties);
+                }
+            )
+        );
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -175,7 +184,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         categoriesPanel.setPreferredSize(new java.awt.Dimension(100, 100));
 
         categoriesList.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Options", "Rules", "Analyzers" };
+            String[] strings = { "Options", "Rules", "Analyzers", "Properties" };
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
@@ -286,6 +295,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         if (project == SonarLintEngine.GLOBAL_SETTINGS_PROJECT && nodeJSPathToSave != null && nodeJSVersionToSave != null) {
             sonarLintEngine.setNodeJSPathAndVersion(nodeJSPathToSave, nodeJSVersionToSave);
         }
+        sonarLintEngine.setAllExtraProperties(extraProperties, project);
     }
 
     boolean valid() {

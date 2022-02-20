@@ -23,6 +23,7 @@ import com.github.philippefichet.sonarlint4netbeans.SonarLintDataManager;
 import com.github.philippefichet.sonarlint4netbeans.SonarLintEngine;
 import com.github.philippefichet.sonarlint4netbeans.project.ui.SonarLintProjectCustomizerPanel;
 import com.github.philippefichet.sonarlint4netbeans.project.ui.SonarLintProjectCustomizerRulesPanel;
+import com.github.philippefichet.sonarlint4netbeans.project.ui.SonarLintProjectPropertiesPanel;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -37,6 +38,7 @@ public class SonarLintProjectCustomizer implements ProjectCustomizer.CompositeCa
 
     private static final String SONARLINT_CATEGORGY = "SonarLint"; // NOI18N
     private static final String SONARLINT_RULES_CATEGORGY = "Rules"; // NOI18N
+    private static final String SONARLINT_PROPERTIES_CATEGORGY = "Properties"; // NOI18N
     
     @ProjectCustomizer.CompositeCategoryProvider.Registrations({
         @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-ant-freeform", position = 5000),
@@ -58,18 +60,24 @@ public class SonarLintProjectCustomizer implements ProjectCustomizer.CompositeCa
     }
 
     @NbBundle.Messages(value = {
-        "LBL_sonarlint_project_caterogy=SonarLint",
-        "LBL_sonarlint_project_rule_caterogy=Rules",
+        "LBL_sonarlint_project_category=SonarLint",
+        "LBL_sonarlint_project_rule_category=Rules",
+        "LBL_sonarlint_project_properties_category=Properties",
     })
     @Override
     public ProjectCustomizer.Category createCategory(Lookup lkp) {
         return ProjectCustomizer.Category.create(
             SONARLINT_CATEGORGY,
-            Bundle.LBL_sonarlint_project_caterogy(),
+            Bundle.LBL_sonarlint_project_category(),
             null,
             ProjectCustomizer.Category.create(
                 SONARLINT_RULES_CATEGORGY,
-                Bundle.LBL_sonarlint_project_rule_caterogy(),
+                Bundle.LBL_sonarlint_project_rule_category(),
+                null
+            ),
+            ProjectCustomizer.Category.create(
+                SONARLINT_PROPERTIES_CATEGORGY,
+                Bundle.LBL_sonarlint_project_properties_category(),
                 null
             )
         );
@@ -86,6 +94,11 @@ public class SonarLintProjectCustomizer implements ProjectCustomizer.CompositeCa
         {
             SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
             return new SonarLintProjectCustomizerRulesPanel(sonarLintEngine, project, category);
+        }
+        if (category.getName().equals(SONARLINT_PROPERTIES_CATEGORGY))
+        {
+            SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
+            return new SonarLintProjectPropertiesPanel(sonarLintEngine, project, category);
         }
         return null;
     }
