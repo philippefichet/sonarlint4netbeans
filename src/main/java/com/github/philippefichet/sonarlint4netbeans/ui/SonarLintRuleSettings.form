@@ -128,7 +128,7 @@
             </Column>
             <Column maxWidth="-1" minWidth="-1" prefWidth="-1" resizable="true">
               <Title editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-                <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/Bundle.properties" key="SonarLintRuleParameters.parametersTable.columnModel.title3_1" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                <ResourceString bundle="com/github/philippefichet/sonarlint4netbeans/ui/Bundle.properties" key="SonarLintRuleSettings.ruleParametersTable.columnModel.title2_1" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
               </Title>
               <Editor/>
               <Renderer/>

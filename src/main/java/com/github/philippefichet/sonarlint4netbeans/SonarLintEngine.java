@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.prefs.Preferences;
+import org.netbeans.api.project.Project;
 import org.sonarsource.sonarlint.core.client.api.common.LogOutput;
 import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
 import org.sonarsource.sonarlint.core.client.api.common.ProgressMonitor;
@@ -41,7 +42,7 @@ import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetail
  * @author FICHET Philippe
  */
 public interface SonarLintEngine {
-
+    public static final Project GLOBAL_SETTINGS_PROJECT = null;
     /**
      *
      * @param configuration analysis configuration
@@ -103,42 +104,42 @@ public interface SonarLintEngine {
      *
      * @return preferences
      */
-    public Preferences getPreferences();
+    public Preferences getPreferences(Project project);
 
     /**
      * Retrieve excluded rules
      *
      * @return excluded rules
      */
-    public Collection<RuleKey> getExcludedRules();
+    public Collection<RuleKey> getExcludedRules(Project project);
 
     /**
      * Exclude one rule
      *
      * @param ruleKey rule to exclude
      */
-    public void excludeRuleKeys(List<RuleKey> ruleKey);
+    public void excludeRuleKeys(List<RuleKey> ruleKey, Project project);
 
     /**
      * set rules to include
      *
      * @param ruleKeys rules to include
      */
-    public void includeRuleKeys(List<RuleKey> ruleKeys);
+    public void includeRuleKeys(List<RuleKey> ruleKeys, Project project);
 
     /**
      * include one rule
      *
      * @param ruleKey rule to include
      */
-    public void includeRuleKey(RuleKey ruleKey);
+    public void includeRuleKey(RuleKey ruleKey, Project project);
 
     /**
      * exclude one rule
      *
      * @param ruleKey rule to exclude
      */
-    public void excludeRuleKey(RuleKey ruleKey);
+    public void excludeRuleKey(RuleKey ruleKey, Project project);
 
     /**
      * Check if rule must be exclude
@@ -146,7 +147,7 @@ public interface SonarLintEngine {
      * @param ruleDetails rule details
      * @return true if rule must be exclude, false otherwise
      */
-    public boolean isExcluded(RuleDetails ruleDetails);
+    public boolean isExcluded(RuleDetails ruleDetails, Project project);
 
     /**
      * Call consumer when engine is initialized. If already initialized,
@@ -169,25 +170,25 @@ public interface SonarLintEngine {
      * @param parameterName paramater name of rule
      * @param parameterValue paramater value
      */
-    public void setRuleParameter(String ruleKey, String parameterName, String parameterValue);
+    public void setRuleParameter(String ruleKey, String parameterName, String parameterValue, Project project);
 
     /**
      * Retrieve all rules with customized parameter value
      * @return All rules with customized parameter value
      */
-    public Map<RuleKey, Map<String, String>> getRuleParameters();
+    public Map<RuleKey, Map<String, String>> getRuleParameters(Project project);
     
     /**
      * Remove parameter value on rule by parameter name
      * @param ruleKey rule key (ex: java:S108)
      * @param parameterName paramater name of rule
      */
-    public void removeRuleParameter(String ruleKey, String parameterName);
+    public void removeRuleParameter(String ruleKey, String parameterName, Project project);
 
     /**
      * Retrieve parameter value on rule only if changed
      * @param ruleKey rule key (ex: java:S108)
      * @return value of rule parameter or empty if not value changed
      */
-    public Optional<String> getRuleParameter(String ruleKey, String parameterName);
+    public Optional<String> getRuleParameter(String ruleKey, String parameterName, Project project);
 }

@@ -22,6 +22,7 @@ package com.github.philippefichet.sonarlint4netbeans.ui;
 import com.github.philippefichet.sonarlint4netbeans.SonarLintEngine;
 import com.github.philippefichet.sonarlint4netbeans.SonarLintOptions;
 import com.github.philippefichet.sonarlint4netbeans.SonarLintUtils;
+import com.github.philippefichet.sonarlint4netbeans.ui.listener.SonarLintRuleSettingsListener;
 import java.awt.Component;
 import java.awt.Desktop;
 import java.awt.Frame;
@@ -34,6 +35,7 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUI;
 import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
@@ -46,20 +48,24 @@ import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
  */
 public class SonarLintRuleSettings extends javax.swing.JDialog {
 
+    private final SonarLintRuleSettingsListener sonarLintRuleSettingsListener;
     /**
      * Creates new form SonarLintRuleParameters
      */
     public SonarLintRuleSettings(
         SonarLintOptions sonarLintOptions,
         SonarLintEngine sonarLintEngine,
-        String ruleKey
+        String ruleKey,
+        SonarLintRuleSettingsListener sonarLintRuleSettingsListener,
+        Project project
     ) {
         super((Frame)null, true);
+        this.sonarLintRuleSettingsListener = sonarLintRuleSettingsListener;
         initComponents();
         Optional<StandaloneRuleDetails> ruleDetailsOptional = sonarLintEngine.getRuleDetails(ruleKey);
         if (ruleDetailsOptional.isPresent()) {
             StandaloneRuleDetails ruleDetails = ruleDetailsOptional.get();
-            initComponents(sonarLintOptions, sonarLintEngine, ruleDetails);
+            initComponents(sonarLintOptions, sonarLintEngine, ruleDetails, project);
         } else {
             mainTitle.setText("Rule \"" + ruleKey + "\" is not found");
         }
@@ -87,12 +93,17 @@ public class SonarLintRuleSettings extends javax.swing.JDialog {
         }
     }
 
-    private void initComponents(SonarLintOptions sonarLintOptions, SonarLintEngine sonarLintEngine, StandaloneRuleDetails ruleDetails) {
+    private void initComponents(
+        SonarLintOptions sonarLintOptions,
+        SonarLintEngine sonarLintEngine,
+        StandaloneRuleDetails ruleDetails,
+        Project project
+    ) {
         enableHyperlinkOnRuleDescription();
         String ruleKey = ruleDetails.getKey();
         // Set rule description and dialog
         String customCss = SonarLintUtils.toRuleDetailsStyleSheet(sonarLintOptions);
-        String html = SonarLintUtils.toHtmlDescription(ruleDetails, SonarLintUtils.extractRuleParameters(sonarLintEngine, ruleDetails.getKey()));
+        String html = SonarLintUtils.toHtmlDescription(ruleDetails, SonarLintUtils.extractRuleParameters(sonarLintEngine, ruleDetails.getKey(), project));
         ruleDescription.setText(customCss + html);
         setTitle(ruleKey + ": " + ruleDetails.getName());
         DefaultTableModel tableModel = (DefaultTableModel)ruleParametersTable.getModel();
@@ -114,7 +125,7 @@ public class SonarLintRuleSettings extends javax.swing.JDialog {
         });
         for (StandaloneRuleParam param : ruleDetails.paramDetails()) {
             String defaultValue = param.defaultValue();
-            Optional<String> ruleParameter = sonarLintEngine.getRuleParameter(ruleKey, param.key());
+            Optional<String> ruleParameter = sonarLintEngine.getRuleParameter(ruleKey, param.key(), project);
             tableModel.addRow(new Object[] {
                 param.key(),
                 ruleParameter.orElse(""),
@@ -126,13 +137,7 @@ public class SonarLintRuleSettings extends javax.swing.JDialog {
             tableModel.addTableModelListener(tableModelEvent -> {
                 String parameterName = (String)tableModel.getValueAt(tableModelEvent.getFirstRow(), 0);
                 String parameterValue = (String)tableModel.getValueAt(tableModelEvent.getFirstRow(), 1);
-                if (parameterValue != null) {
-                    if (parameterValue.isEmpty()) {
-                        sonarLintEngine.removeRuleParameter(ruleKey, parameterName);
-                    } else {
-                        sonarLintEngine.setRuleParameter(ruleKey, parameterName, parameterValue);
-                    }
-                }
+                sonarLintRuleSettingsListener.ruleParameterValueChange(ruleKey, parameterName, parameterValue);
             });
         }
     }
@@ -197,7 +202,7 @@ public class SonarLintRuleSettings extends javax.swing.JDialog {
         if (ruleParametersTable.getColumnModel().getColumnCount() > 0) {
             ruleParametersTable.getColumnModel().getColumn(0).setHeaderValue(org.openide.util.NbBundle.getMessage(SonarLintRuleSettings.class, "SonarLintRuleSettings.ruleParametersTable.columnModel.title0_1")); // NOI18N
             ruleParametersTable.getColumnModel().getColumn(1).setHeaderValue(org.openide.util.NbBundle.getMessage(SonarLintRuleSettings.class, "SonarLintRuleSettings.ruleParametersTable.columnModel.title1_1")); // NOI18N
-            ruleParametersTable.getColumnModel().getColumn(2).setHeaderValue(org.openide.util.NbBundle.getMessage(SonarLintRuleSettings.class, "SonarLintRuleParameters.parametersTable.columnModel.title3_1")); // NOI18N
+            ruleParametersTable.getColumnModel().getColumn(2).setHeaderValue(org.openide.util.NbBundle.getMessage(SonarLintRuleSettings.class, "SonarLintRuleSettings.ruleParametersTable.columnModel.title2_1")); // NOI18N
         }
 
         ruleDescription.setEditable(false);

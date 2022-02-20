@@ -187,11 +187,11 @@ public final class SonarLintTestUtils {
      */
     public static void cleanSonarLintEngine(SonarLintEngine sonarLintEngine) throws BackingStoreException
     {
-        List<RuleKey> arrayList = new ArrayList<>(sonarLintEngine.getExcludedRules());
+        List<RuleKey> arrayList = new ArrayList<>(sonarLintEngine.getExcludedRules(SonarLintEngine.GLOBAL_SETTINGS_PROJECT));
         for (RuleKey ruleKey : arrayList) {
-            sonarLintEngine.includeRuleKey(ruleKey);
+            sonarLintEngine.includeRuleKey(ruleKey, SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
         }
-        sonarLintEngine.getPreferences().removeNode();
+        sonarLintEngine.getPreferences(SonarLintEngine.GLOBAL_SETTINGS_PROJECT).removeNode();
     }
     
     /**

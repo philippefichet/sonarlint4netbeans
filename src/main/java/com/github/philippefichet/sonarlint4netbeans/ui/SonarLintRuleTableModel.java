@@ -24,6 +24,7 @@ import com.github.philippefichet.sonarlint4netbeans.SonarLintUtils;
 import java.util.Collection;
 import java.util.stream.Collectors;
 import javax.swing.table.DefaultTableModel;
+import org.netbeans.api.project.Project;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 
 
@@ -50,7 +51,7 @@ public class SonarLintRuleTableModel extends DefaultTableModel {
         addColumn("Details");
     }
 
-    public void setRules(SonarLintEngine engine, String languagekey, String ruleFilter) {
+    public void setRules(SonarLintEngine engine, String languagekey, String ruleFilter, Project project) {
         while(getRowCount() > 0) {
             removeRow(0);
         }
@@ -63,7 +64,7 @@ public class SonarLintRuleTableModel extends DefaultTableModel {
         .sorted((r1, r2) -> 
             r1.getKey().compareTo(r2.getKey())
         ).map(ruleDetail -> new Object[] {
-            !engine.isExcluded(ruleDetail),
+            !engine.isExcluded(ruleDetail, project),
             hasParams(ruleDetail),
             ruleDetail.getKey(),
             ruleDetail.getSeverity(),

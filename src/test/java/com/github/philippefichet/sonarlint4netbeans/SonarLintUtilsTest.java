@@ -19,6 +19,7 @@
  */
 package com.github.philippefichet.sonarlint4netbeans;
 
+import com.github.philippefichet.sonarlint4netbeans.project.SonarLintProjectPreferenceScope;
 import com.github.philippefichet.sonarlint4netbeans.treenode.SonarLintAnalyzerRootNode;
 import java.io.File;
 import java.io.IOException;
@@ -36,11 +37,17 @@ import java.util.Optional;
 import java.util.prefs.BackingStoreException;
 import java.util.stream.Collectors;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mockito;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ProjectManagerImplementation;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Utilities;
@@ -54,6 +61,25 @@ import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
 public class SonarLintUtilsTest {
+    private static final Project mockedProjectWithProjectScope = Mockito.mock(Project.class);
+    private static final Project mockedProjectWithGlobalScope = Mockito.mock(Project.class);
+
+    @RegisterExtension
+    private final SonarLintLookupMockedExtension lookupExtension = SonarLintLookupMockedExtension.builder()
+        .logCall()
+        .mockLookupMethodWith(ProjectManagerImplementation.class, Mockito.mock(ProjectManagerImplementation.class))
+        .mockLookupMethodWith(SonarLintOptions.class, Mockito.mock(SonarLintOptions.class))
+        .mockLookupMethodWith(
+            SonarLintDataManager.class,
+            new SonarLintDataManagerMockedBuilder()
+                .createPreferences(mockedProjectWithProjectScope)
+                .preferencesScope(mockedProjectWithProjectScope, SonarLintProjectPreferenceScope.PROJECT)
+                .createPreferences(mockedProjectWithGlobalScope)
+                .preferencesScope(mockedProjectWithGlobalScope, SonarLintProjectPreferenceScope.GLOBAL)
+                .preferencesScope(null, SonarLintProjectPreferenceScope.GLOBAL)
+                .build()
+        ).build();
+
     @Test
     @DisplayName("Analyze hierarchical tree used in \"Analyze with Sonarlint\"")
     public void likeAnalyzeWithSonarlint() throws IOException, BackingStoreException {
@@ -178,10 +204,10 @@ public class SonarLintUtilsTest {
     @DisplayName("Analyze hierarchical tree used in \"Analyze with Sonarlint\" with a custom rule parameter value")
     public void likeAnalyzeWithSonarlintWithParameter() throws BackingStoreException, IOException {
         SonarLintEngine sonarLintEngine = SonarLintTestUtils.getCleanSonarLintEngine();
-        sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey())));
-        sonarLintEngine.includeRuleKey( RuleKey.parse("java:S100"));
-        sonarLintEngine.includeRuleKey( RuleKey.parse("java:S1186"));
-        sonarLintEngine.setRuleParameter("java:S100", "format", "^.+$");
+        sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey()), SonarLintEngine.GLOBAL_SETTINGS_PROJECT));
+        sonarLintEngine.includeRuleKey(RuleKey.parse("java:S100"), SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
+        sonarLintEngine.includeRuleKey(RuleKey.parse("java:S1186"), SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
+        sonarLintEngine.setRuleParameter("java:S100", "format", "^.+$", SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
 
         // first step, check all issue in file
         List<Issue> actualIssues = new ArrayList<>();
@@ -383,16 +409,87 @@ public class SonarLintUtilsTest {
     public void ruleParameterChanged() throws MalformedURLException, IOException, BackingStoreException {
         SonarLintEngine sonarLintEngine = SonarLintTestUtils.getCleanSonarLintEngine();
         String ruleKeyString = "java:S115";
-        sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey())));
-        sonarLintEngine.includeRuleKey( RuleKey.parse(ruleKeyString));
+        sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey()), SonarLintEngine.GLOBAL_SETTINGS_PROJECT));
+        sonarLintEngine.includeRuleKey(RuleKey.parse(ruleKeyString), SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
         File sonarlintFileDemo = FileUtil.normalizeFile(new File("./src/test/resources/SonarLintFileDemo.java").getAbsoluteFile());
         Path sonarlintFileDemoPath = sonarlintFileDemo.toPath();
-        sonarLintEngine.setRuleParameter(ruleKeyString, "format", "^.+$");
+        sonarLintEngine.setRuleParameter(ruleKeyString, "format", "^.+$", SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
         List<Issue> issues = SonarLintUtils.analyze(
             FileUtil.toFileObject(sonarlintFileDemo),
             new String(Files.readAllBytes(sonarlintFileDemoPath))
         );
         Assertions.assertThat(issues).isEqualTo(Collections.emptyList());
+    }
+
+    @Test
+    @DisplayName("Analyze with custom rule parameter value on project with global scope")
+    public void ruleParameterChangedOnProjectWithGlobalScope() throws MalformedURLException, IOException, BackingStoreException {
+        SonarLintDataManager sonarlintDataMangerMocked = lookupExtension.lookupMocked(SonarLintDataManager.class).get();
+        SonarLintEngine sonarLintEngine = SonarLintTestUtils.getCleanSonarLintEngine();
+        String ruleKeyString = "java:S115";
+        Project project = mockedProjectWithGlobalScope;
+        sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey()), SonarLintEngine.GLOBAL_SETTINGS_PROJECT));
+        sonarLintEngine.includeRuleKey(RuleKey.parse(ruleKeyString), SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
+        sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey()), project));
+        sonarLintEngine.includeRuleKey(RuleKey.parse(ruleKeyString), project);
+        File sonarlintFileDemo = FileUtil.normalizeFile(new File("./src/test/resources/SonarLintFileDemo.java").getAbsoluteFile());
+        File sonarlintFileDemoOnFakeProject = FileUtil.normalizeFile(new File("./src/test/resources/fakeproject/SonarLintFileDemo.java").getAbsoluteFile());
+        FileObject toFileObject = FileUtil.toFileObject(sonarlintFileDemo);
+        FileObject toFileObjectOnFakeProject = FileUtil.toFileObject(sonarlintFileDemoOnFakeProject);
+        Mockito.when(sonarlintDataMangerMocked.getProject(toFileObjectOnFakeProject))
+            .thenReturn(Optional.of(project));
+        List<Issue> issues = new ArrayList<>();
+        List<Issue> issuesOnFakeProject = new ArrayList<>();
+        sonarLintEngine.setRuleParameter(ruleKeyString, "format", "^.+$", project);
+        // When
+        issues.addAll(SonarLintUtils.analyze(
+            toFileObject,
+            new String(Files.readAllBytes(sonarlintFileDemo.toPath()))
+        ));
+        issuesOnFakeProject.addAll(SonarLintUtils.analyze(
+            toFileObjectOnFakeProject,
+            new String(Files.readAllBytes(sonarlintFileDemoOnFakeProject.toPath()))
+        ));
+        // Then
+        Assertions.assertThat(issues)
+            .hasSize(1);
+        Assertions.assertThat(issuesOnFakeProject)
+            .hasSize(1);
+    }
+
+    @Test
+    @DisplayName("Analyze with custom rule parameter value on project")
+    public void ruleParameterChangedOnProject() throws MalformedURLException, IOException, BackingStoreException {
+        SonarLintDataManager sonarlintDataMangerMocked = lookupExtension.lookupMocked(SonarLintDataManager.class).get();
+        SonarLintEngine sonarLintEngine = SonarLintTestUtils.getCleanSonarLintEngine();
+        String ruleKeyString = "java:S115";
+        sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey()), SonarLintEngine.GLOBAL_SETTINGS_PROJECT));
+        sonarLintEngine.includeRuleKey(RuleKey.parse(ruleKeyString), SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
+        sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey()), mockedProjectWithProjectScope));
+        sonarLintEngine.includeRuleKey(RuleKey.parse(ruleKeyString), mockedProjectWithProjectScope);
+        File sonarlintFileDemo = FileUtil.normalizeFile(new File("./src/test/resources/SonarLintFileDemo.java").getAbsoluteFile());
+        File sonarlintFileDemoOnFakeProject = FileUtil.normalizeFile(new File("./src/test/resources/fakeproject/SonarLintFileDemo.java").getAbsoluteFile());
+        FileObject toFileObject = FileUtil.toFileObject(sonarlintFileDemo);
+        FileObject toFileObjectOnFakeProject = FileUtil.toFileObject(sonarlintFileDemoOnFakeProject);
+        Mockito.when(sonarlintDataMangerMocked.getProject(toFileObjectOnFakeProject))
+            .thenReturn(Optional.of(mockedProjectWithProjectScope));
+        List<Issue> issues = new ArrayList<>();
+        List<Issue> issuesOnFakeProject = new ArrayList<>();
+        sonarLintEngine.setRuleParameter(ruleKeyString, "format", "^.+$", mockedProjectWithProjectScope);
+        // When
+        issues.addAll(SonarLintUtils.analyze(
+            toFileObject,
+            new String(Files.readAllBytes(sonarlintFileDemo.toPath()))
+        ));
+        issuesOnFakeProject.addAll(SonarLintUtils.analyze(
+            toFileObjectOnFakeProject,
+            new String(Files.readAllBytes(sonarlintFileDemoOnFakeProject.toPath()))
+        ));
+        // Then
+        Assertions.assertThat(issues)
+            .hasSize(1);
+        Assertions.assertThat(issuesOnFakeProject)
+            .isEqualTo(Collections.emptyList());
     }
 
     @Test
@@ -412,9 +509,9 @@ public class SonarLintUtilsTest {
     {
         SonarLintEngine sonarLintEngine = SonarLintTestUtils.getCleanSonarLintEngine();
         String ruleKeyString = "java:S115";
-        sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey())));
-        sonarLintEngine.includeRuleKey( RuleKey.parse(ruleKeyString));
-        Map<StandaloneRuleParam, String> extractRuleParameters = SonarLintUtils.extractRuleParameters(sonarLintEngine, ruleKeyString);
+        sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey()), SonarLintEngine.GLOBAL_SETTINGS_PROJECT));
+        sonarLintEngine.includeRuleKey(RuleKey.parse(ruleKeyString), SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
+        Map<StandaloneRuleParam, String> extractRuleParameters = SonarLintUtils.extractRuleParameters(sonarLintEngine, ruleKeyString, SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
         Assertions.assertThat(extractRuleParameters)
             .hasSize(1)
             .containsValue("^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$");
@@ -426,12 +523,63 @@ public class SonarLintUtilsTest {
     {
         SonarLintEngine sonarLintEngine = SonarLintTestUtils.getCleanSonarLintEngine();
         String ruleKeyString = "java:S115";
-        sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey())));
-        sonarLintEngine.includeRuleKey( RuleKey.parse(ruleKeyString));
-        sonarLintEngine.setRuleParameter(ruleKeyString, "format", "^[A-Z]*$");
-        Map<StandaloneRuleParam, String> extractRuleParameters = SonarLintUtils.extractRuleParameters(sonarLintEngine, ruleKeyString);
+        sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey()), SonarLintEngine.GLOBAL_SETTINGS_PROJECT));
+        sonarLintEngine.includeRuleKey(RuleKey.parse(ruleKeyString), SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
+        sonarLintEngine.setRuleParameter(ruleKeyString, "format", "^[A-Z]*$", SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
+        Map<StandaloneRuleParam, String> extractRuleParameters = SonarLintUtils.extractRuleParameters(sonarLintEngine, ruleKeyString, SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
         Assertions.assertThat(extractRuleParameters)
             .hasSize(1)
             .containsValue("^[A-Z]*$");
+    }
+
+    @Test
+    @DisplayName("Check custom rule parameter value from extractRuleParameters on project with global scope")
+    public void extractRuleParametersWithCustomValueOnProjectWithGlobalScope() throws BackingStoreException, MalformedURLException
+    {
+        SonarLintEngine sonarLintEngine = new SonarLintEngineImpl();
+        SonarLintTestUtils.cleanSonarLintEngine(sonarLintEngine);
+        String ruleKey = "java:S115";
+        String parameterName = "format";
+        String defaultFormatValue = "^[A-Z][A-Z0-9]*(_[A-Z0-9]+)*$";
+        String newFormatValue = "^[_A-Z][A-Z0-9]*(_[A-Z0-9]+)*$";
+        String newFormatValueOnGlobalScope = "^[_0-9A-Z][A-Z0-9]*(_[A-Z0-9]+)*$";
+        sonarLintEngine.setRuleParameter(ruleKey, parameterName, newFormatValue, mockedProjectWithProjectScope);
+        sonarLintEngine.setRuleParameter(ruleKey, parameterName, newFormatValueOnGlobalScope, mockedProjectWithGlobalScope);
+        Map<StandaloneRuleParam, String> extractRuleParametersProjectScope = SonarLintUtils.extractRuleParameters(sonarLintEngine, ruleKey, mockedProjectWithProjectScope);
+        Map<StandaloneRuleParam, String> extractRuleParametersGlobalScope = SonarLintUtils.extractRuleParameters(sonarLintEngine, ruleKey, mockedProjectWithGlobalScope);
+        Map<StandaloneRuleParam, String> extractRuleParametersGlobalSetting = SonarLintUtils.extractRuleParameters(sonarLintEngine, ruleKey, SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
+        Assertions.assertThat(extractRuleParametersProjectScope)
+            .describedAs("rule parameter on project with project scope")
+            .extractingFromEntries(SonarLintUtilsTest::toTuple)
+            .containsExactlyInAnyOrder(
+                Assertions.tuple("format", defaultFormatValue, newFormatValue)
+            );
+        Assertions.assertThat(extractRuleParametersGlobalScope)
+            .describedAs("rule parameter on project with global scope")
+            .extractingFromEntries(SonarLintUtilsTest::toTuple)
+            .containsExactlyInAnyOrder(
+                Assertions.tuple("format", defaultFormatValue, newFormatValueOnGlobalScope)
+            );
+        Assertions.assertThat(extractRuleParametersGlobalSetting)
+            .describedAs("rule parameter on global settings")
+            .extractingFromEntries(SonarLintUtilsTest::toTuple)
+            .containsExactlyInAnyOrder(
+                Assertions.tuple("format", defaultFormatValue, defaultFormatValue)
+            );
+    }
+    
+    /**
+     * Transform entry into tuple with name, default value and actual value
+     * @param entry
+     * @return 
+     */
+    private static Tuple toTuple(Map.Entry<StandaloneRuleParam, String> entry)
+    {
+        StandaloneRuleParam key = entry.getKey();
+        return Assertions.tuple(
+            key.name(),
+            key.defaultValue(),
+            entry.getValue()
+        );
     }
 }

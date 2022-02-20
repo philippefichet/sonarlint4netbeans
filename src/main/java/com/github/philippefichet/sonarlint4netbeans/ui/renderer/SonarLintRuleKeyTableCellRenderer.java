@@ -29,6 +29,7 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import org.netbeans.api.project.Project;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
 
@@ -39,9 +40,11 @@ import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
 public class SonarLintRuleKeyTableCellRenderer implements TableCellRenderer {
     private final DefaultTableCellRenderer defaultTableCellRenderer = new DefaultTableCellRenderer();
     private final SonarLintEngine sonarLintEngine;
+    private final Project project;
 
-    public SonarLintRuleKeyTableCellRenderer(SonarLintEngine sonarLintEngine) {
+    public SonarLintRuleKeyTableCellRenderer(SonarLintEngine sonarLintEngine, Project project) {
         this.sonarLintEngine = sonarLintEngine;
+        this.project = project;
     }
 
     @Override
@@ -52,7 +55,7 @@ public class SonarLintRuleKeyTableCellRenderer implements TableCellRenderer {
             StandaloneRuleDetails standaloneRule = optionalRuleDetails.get();
             boolean hasCustomParamValue = false;
             for (StandaloneRuleParam param : standaloneRule.paramDetails()) {
-                if (sonarLintEngine.getRuleParameter(standaloneRule.getKey(), param.key()).isPresent()) {
+                if (sonarLintEngine.getRuleParameter(standaloneRule.getKey(), param.key(), project).isPresent()) {
                     hasCustomParamValue = true;
                     break;
                 }

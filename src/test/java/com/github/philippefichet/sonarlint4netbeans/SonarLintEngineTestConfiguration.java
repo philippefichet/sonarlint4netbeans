@@ -39,6 +39,7 @@ public final class SonarLintEngineTestConfiguration {
     private final List<RuleKey> includedRules;
     private final List<ClientInputFile> clientInputFiles;
     private final List<RuleParameter> ruleParameters;
+    private final boolean requireNodeJS;
 
     private SonarLintEngineTestConfiguration(Builder builder) {
         this.description = builder.description;
@@ -46,6 +47,7 @@ public final class SonarLintEngineTestConfiguration {
         this.includedRules = builder.includedRules;
         this.clientInputFiles = builder.clientInputFiles;
         this.ruleParameters = builder.ruleParameters;
+        this.requireNodeJS = builder.requireNodeJS;
     }
 
     public List<RuleKey> getExcludedRules() {
@@ -62,6 +64,10 @@ public final class SonarLintEngineTestConfiguration {
 
     public List<RuleParameter> getRuleParameters() {
         return ruleParameters;
+    }
+
+    public boolean isRequireNodeJS() {
+        return requireNodeJS;
     }
 
     @Override
@@ -103,12 +109,18 @@ public final class SonarLintEngineTestConfiguration {
         private final List<RuleKey> includedRules = new ArrayList<>();
         private final List<ClientInputFile> clientInputFiles = new ArrayList<>();
         private final List<RuleParameter> ruleParameters = new ArrayList<>();
+        private boolean requireNodeJS = false;
 
         public Builder description(String description) {
             this.description = description;
             return this;
         }
-        
+
+        public Builder requireNodeJS() {
+            this.requireNodeJS = true;
+            return this;
+        }
+
         public Builder addClientInputFile(File file) throws IOException {
             Path path = file.toPath();
             clientInputFiles.add(new FSClientInputFile(
