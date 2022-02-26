@@ -24,9 +24,11 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.prefs.BackingStoreException;
 import java.util.stream.Collectors;
 import org.assertj.core.api.Assertions;
+import org.netbeans.api.project.Project;
 import org.sonarsource.sonarlint.core.client.api.common.Version;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
@@ -46,6 +48,10 @@ public final class SonarLintEngineImplTestUtils {
         SonarLintEngineImpl sonarLintEngine = new SonarLintEngineImpl();
         sonarLintEngine.waitingInitialization();
         sonarLintEngine.getPreferences(SonarLintEngine.GLOBAL_SETTINGS_PROJECT).removeNode();
+        testConfiguration.getExtraProperties().forEach(
+            (Project project, Map<String, String> extraProperties) ->
+            sonarLintEngine.setAllExtraProperties(extraProperties, project)
+        );
         testConfiguration.getRuleParameters().forEach(
             ruleParameter -> sonarLintEngine.setRuleParameter(ruleParameter.getRuleKey(), ruleParameter.getName(), ruleParameter.getValue(), SonarLintEngine.GLOBAL_SETTINGS_PROJECT)
         );
@@ -65,6 +71,7 @@ public final class SonarLintEngineImplTestUtils {
             .addExcludedRules(testConfiguration.getExcludedRules())
             .addIncludedRules(testConfiguration.getIncludedRules())
             .addRuleParameters(sonarLintEngine.getRuleParameters(SonarLintEngine.GLOBAL_SETTINGS_PROJECT))
+            .putAllExtraProperties(sonarLintEngine.getAllExtraProperties(SonarLintEngine.GLOBAL_SETTINGS_PROJECT))
             .build();
 
         List<Issue> actualIssues = new ArrayList<>();

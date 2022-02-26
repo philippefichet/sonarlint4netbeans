@@ -28,9 +28,11 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -73,6 +75,7 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
     private static final String SONAR_XML_PLUGIN_VERSION = "2.4.0.3273";
     private static final String PREFIX_PREFERENCE_RULE_PARAMETER = "rules.parameters.";
     private static final String PREFIX_EXCLUDE_RULE = "excludedRules";
+    private static final String PREFIX_RUNTIME_EXTRA_PROPERTIES_PREFERENCE = "extraProperties";
     private static final String PREFIX_RUNTIME_PREFERENCE = "runtime.";
     private static final String RUNTIME_NODE_JS_PATH_PREFERENCE = "nodejs.path";
     private static final String RUNTIME_NODE_JS_VERSION_PREFERENCE = "nodejs.version";
@@ -159,14 +162,14 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
     @Override
     public Collection<RuleKey> getExcludedRules(Project project) {
         String excludedRulesJson = getPreferences(project).get(PREFIX_EXCLUDE_RULE, null);
-        List<Map<String, String>> fromJson = null;
+        Set<Map<String, String>> fromJson = null;
         if (excludedRulesJson != null) {
-            fromJson = gson.fromJson(excludedRulesJson, List.class);
+            fromJson = gson.fromJson(excludedRulesJson, Set.class);
         }
 
         if (fromJson == null) {
             if (standaloneSonarLintEngineImpl != null) {
-                Collection<RuleKey> excludedRules = new ArrayList<>();
+                Collection<RuleKey> excludedRules = new HashSet<>();
                 Collection<StandaloneRuleDetails> allRuleDetails = standaloneSonarLintEngineImpl.getAllRuleDetails();
                 for (StandaloneRuleDetails allRuleDetail : allRuleDetails) {
                     if (!allRuleDetail.isActiveByDefault()) {
@@ -179,7 +182,7 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
                 return new ArrayList<>(0);
             }
         } else {
-            Collection<RuleKey> excludedRules = new ArrayList<>();
+            Collection<RuleKey> excludedRules = new HashSet<>();
             for (Map<String, String> ruleKey : fromJson) {
                 excludedRules.add(RuleKey.parse(ruleKey.get("repository") + ":" + ruleKey.get("rule")));
             }
@@ -343,6 +346,19 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
                     }
                 })
         );
+    }
+
+    @Override
+    public Map<String, String> getAllExtraProperties(Project project) {
+        return gson.fromJson(
+            getPreferences(project).get(PREFIX_RUNTIME_EXTRA_PROPERTIES_PREFERENCE, "{}"),
+            Map.class
+        );
+    }
+
+    @Override
+    public void setAllExtraProperties(Map<String, String> extraProperties, Project project) {
+        getPreferences(project).put(PREFIX_RUNTIME_EXTRA_PROPERTIES_PREFERENCE, gson.toJson(extraProperties));
     }
 
     private SonarLintDataManager getSonarLintDataManager()

@@ -31,6 +31,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -54,6 +55,7 @@ import org.openide.util.Utilities;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.common.Version;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
 
 /**
@@ -76,7 +78,7 @@ public class SonarLintUtilsTest {
                 .preferencesScope(mockedProjectWithProjectScope, SonarLintProjectPreferenceScope.PROJECT)
                 .createPreferences(mockedProjectWithGlobalScope)
                 .preferencesScope(mockedProjectWithGlobalScope, SonarLintProjectPreferenceScope.GLOBAL)
-                .preferencesScope(null, SonarLintProjectPreferenceScope.GLOBAL)
+                .preferencesScope(SonarLintEngine.GLOBAL_SETTINGS_PROJECT, SonarLintProjectPreferenceScope.GLOBAL)
                 .build()
         ).build();
 
@@ -567,7 +569,88 @@ public class SonarLintUtilsTest {
                 Assertions.tuple("format", defaultFormatValue, defaultFormatValue)
             );
     }
-    
+
+    @Test
+    @DisplayName("Analyze with extra properties on project")
+    public void extraPropertiesOnProject() throws IOException, BackingStoreException {
+        String commonExtraPropertyName = "sonar.java.source";
+        SonarLintDataManager sonarlintDataMangerMocked = lookupExtension.lookupMocked(SonarLintDataManager.class).get();
+        SonarLintEngine sonarLintEngine = SonarLintTestUtils.getCleanSonarLintEngine();
+        sonarLintEngine.waitingInitialization();
+        String ruleKeyString = "java:S3725";
+        RuleKey ruleKey = RuleKey.parse(ruleKeyString);
+        StandaloneRuleDetails ruleDetails = sonarLintEngine.getRuleDetails(ruleKeyString).get();
+        List<RuleKey> allRuleKey = sonarLintEngine.getAllRuleDetails()
+            .stream()
+            .map( (StandaloneRuleDetails standaloneRuleDetails) -> RuleKey.parse(standaloneRuleDetails.getKey()))
+            .collect(Collectors.toList());
+        sonarLintEngine.excludeRuleKeys(allRuleKey, SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
+        sonarLintEngine.includeRuleKey(ruleKey, SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
+        Assertions.assertThat(sonarLintEngine.isExcluded(ruleDetails, SonarLintEngine.GLOBAL_SETTINGS_PROJECT))
+            .describedAs("Check no excluded rule \"" + ruleKeyString + "\" on global settings")
+            .isFalse();
+
+        sonarLintEngine.excludeRuleKeys(allRuleKey, mockedProjectWithProjectScope);
+        sonarLintEngine.includeRuleKey(ruleKey, mockedProjectWithProjectScope);
+        Assertions.assertThat(sonarLintEngine.isExcluded(ruleDetails, mockedProjectWithProjectScope))
+            .describedAs("Check no excluded rule " + ruleKeyString + " on project scope")
+            .isFalse();
+
+        sonarLintEngine.excludeRuleKeys(allRuleKey, mockedProjectWithGlobalScope);
+        sonarLintEngine.includeRuleKey(ruleKey, mockedProjectWithGlobalScope);
+        Assertions.assertThat(sonarLintEngine.isExcluded(ruleDetails, mockedProjectWithGlobalScope))
+            .describedAs("Check no excluded rule " + ruleKeyString + " on global scope")
+            .isFalse();
+
+        File sonarlintFileDemo = FileUtil.normalizeFile(new File("./src/test/resources/CheckS3725WithExtraProperties.java").getAbsoluteFile());
+        File sonarlintFileDemoOnFakeProject = FileUtil.normalizeFile(new File("./src/test/resources/fakeproject/CheckS3725WithExtraProperties.java").getAbsoluteFile());
+        File sonarlintFileDemoOnFakeProject2 = FileUtil.normalizeFile(new File("./src/test/resources/fakeproject2/CheckS3725WithExtraProperties.java").getAbsoluteFile());
+
+        FileObject toFileObject = FileUtil.toFileObject(sonarlintFileDemo);
+        FileObject toFileObjectOnFakeProject = FileUtil.toFileObject(sonarlintFileDemoOnFakeProject);
+        FileObject toFileObjectOnFakeProject2 = FileUtil.toFileObject(sonarlintFileDemoOnFakeProject2);
+        Mockito.when(sonarlintDataMangerMocked.getProject(toFileObjectOnFakeProject))
+            .thenReturn(Optional.of(mockedProjectWithProjectScope));
+        Mockito.when(sonarlintDataMangerMocked.getProject(toFileObjectOnFakeProject2))
+            .thenReturn(Optional.of(mockedProjectWithGlobalScope));
+        List<Issue> issues = new ArrayList<>();
+        List<Issue> issuesOnFakeProject = new ArrayList<>();
+        List<Issue> issuesOnFakeProject2 = new ArrayList<>();
+        Map<String, String> extraPropertiesForGlobal = new HashMap<>();
+        extraPropertiesForGlobal.put(commonExtraPropertyName, "11");
+        Map<String, String> extraPropertiesForProjectScope = new HashMap<>();
+        extraPropertiesForProjectScope.put(commonExtraPropertyName, "8");
+        Map<String, String> extraPropertiesForGlobalScope = new HashMap<>();
+        extraPropertiesForGlobalScope.put(commonExtraPropertyName, "8");
+        sonarLintEngine.setAllExtraProperties(extraPropertiesForGlobal, SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
+        sonarLintEngine.setAllExtraProperties(extraPropertiesForProjectScope, mockedProjectWithProjectScope);
+        sonarLintEngine.setAllExtraProperties(extraPropertiesForGlobalScope, mockedProjectWithGlobalScope);
+        
+        issues.addAll(SonarLintUtils.analyze(
+            toFileObject,
+            new String(Files.readAllBytes(sonarlintFileDemo.toPath()))
+        ));
+        Assertions.assertThat(issues)
+            .describedAs("Global property")
+            .hasSize(0);
+
+        issuesOnFakeProject.addAll(SonarLintUtils.analyze(
+            toFileObjectOnFakeProject,
+            new String(Files.readAllBytes(sonarlintFileDemoOnFakeProject.toPath()))
+        ));
+        Assertions.assertThat(issuesOnFakeProject)
+            .describedAs("project scope")
+            .hasSize(1);
+
+        issuesOnFakeProject.addAll(SonarLintUtils.analyze(
+            toFileObjectOnFakeProject2,
+            new String(Files.readAllBytes(sonarlintFileDemoOnFakeProject2.toPath()))
+        ));
+        Assertions.assertThat(issuesOnFakeProject2)
+            .describedAs("global scope")
+            .hasSize(0);
+    }
+
     /**
      * Transform entry into tuple with name, default value and actual value
      * @param entry

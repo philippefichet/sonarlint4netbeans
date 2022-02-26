@@ -25,7 +25,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import org.netbeans.api.project.Project;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 
@@ -39,6 +42,8 @@ public final class SonarLintEngineTestConfiguration {
     private final List<RuleKey> includedRules;
     private final List<ClientInputFile> clientInputFiles;
     private final List<RuleParameter> ruleParameters;
+    private final Map<Project, Map<String, String>> extraProperties;
+
     private final boolean requireNodeJS;
 
     private SonarLintEngineTestConfiguration(Builder builder) {
@@ -48,6 +53,7 @@ public final class SonarLintEngineTestConfiguration {
         this.clientInputFiles = builder.clientInputFiles;
         this.ruleParameters = builder.ruleParameters;
         this.requireNodeJS = builder.requireNodeJS;
+        this.extraProperties = builder.extraProperties;
     }
 
     public List<RuleKey> getExcludedRules() {
@@ -68,6 +74,10 @@ public final class SonarLintEngineTestConfiguration {
 
     public boolean isRequireNodeJS() {
         return requireNodeJS;
+    }
+
+    public Map<Project, Map<String, String>> getExtraProperties() {
+        return extraProperties;
     }
 
     @Override
@@ -109,6 +119,7 @@ public final class SonarLintEngineTestConfiguration {
         private final List<RuleKey> includedRules = new ArrayList<>();
         private final List<ClientInputFile> clientInputFiles = new ArrayList<>();
         private final List<RuleParameter> ruleParameters = new ArrayList<>();
+        private final Map<Project, Map<String, String>> extraProperties = new HashMap<>();
         private boolean requireNodeJS = false;
 
         public Builder description(String description) {
@@ -132,7 +143,12 @@ public final class SonarLintEngineTestConfiguration {
             ));
             return this;
         }
-        
+
+        public Builder addExtraProperty(String name, String value, Project project) {
+            extraProperties.computeIfAbsent(project, p -> new HashMap<>()).put(name, value);
+            return this;
+        }
+
         public Builder addRuleParameter(String ruleKey, String name, String value)
         {
             ruleParameters.add(new RuleParameter(ruleKey, name, value));
