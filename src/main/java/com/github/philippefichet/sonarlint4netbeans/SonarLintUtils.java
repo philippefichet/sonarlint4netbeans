@@ -641,8 +641,20 @@ public final class SonarLintUtils {
             NodeProcessWrapper nodeProcessWrapper = new NodeProcessWrapper();
             NodeCommand nodeCommandVersion = new NodeCommandBuilderImpl(nodeProcessWrapper)
                 .nodeJsArgs("--version")
-                .pathResolver(new NodeBundlePathResolver())
-                .build();
+                .pathResolver(
+                    new NodeBundlePathResolver(
+                        System.getenv("PATH"),
+                        File.pathSeparator,
+                        (String basePath, String pathSearch) -> {
+                            String fullPath = basePath + File.separator + pathSearch;
+                            File fullPathFile = new File(fullPath);
+                            if (fullPathFile.exists() && fullPathFile.isFile()) {
+                                return fullPath;
+                            }
+                            return null;
+                        }
+                    )
+                ).build();
             nodeCommandVersion.start();
             if (nodeCommandVersion.waitFor() == 0 && nodeProcessWrapper.getCommandLineUsed().isPresent()) {
                 String nodeJSPath = nodeProcessWrapper.getCommandLineUsed().get().get(0);

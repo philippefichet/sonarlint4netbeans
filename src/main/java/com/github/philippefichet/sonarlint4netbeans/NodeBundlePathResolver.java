@@ -19,6 +19,7 @@
  */
 package com.github.philippefichet.sonarlint4netbeans;
 
+import java.util.function.BiFunction;
 import org.sonarsource.nodejs.BundlePathResolver;
 
 /**
@@ -27,11 +28,27 @@ import org.sonarsource.nodejs.BundlePathResolver;
  */
 public class NodeBundlePathResolver implements BundlePathResolver
 {
+    private final String pathToSearch;
+    private final String pathSeparator;
+    private final BiFunction<String, String, String> checkFileExist;
+    /**
+     * 
+     * @param pathToSearch Like $PATH environement variable
+     */
+    public NodeBundlePathResolver(String pathToSearch, String pathSeparator, BiFunction<String, String, String> checkFileExist) {
+        this.pathToSearch = pathToSearch;
+        this.pathSeparator = pathSeparator;
+        this.checkFileExist = checkFileExist;
+    }
+
     @Override
     public String resolve(String relativePath) {
-        System.out.println("relativePath = " + relativePath);
-        System.out.println("System.getenv() = " + System.getenv());
-        System.out.println("System.getenv().get(\"PATH\") = " + System.getenv().get("PATH"));
+        for (String pathSearch : pathToSearch.split(pathSeparator)) {
+            String pathIfExist = checkFileExist.apply(pathSearch, relativePath);
+            if (pathIfExist != null) {
+                return pathIfExist;
+            }
+        }
         return null;
     }
     
