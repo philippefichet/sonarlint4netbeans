@@ -86,6 +86,10 @@
                             <name>junit.jupiter.extensions.autodetection.enabled</name>
                             <value>true</value>
                         </property>
+                        <property>
+                            <name>hasNodeJSRuntime</name>
+                            <value>${hasNodeJSRuntime}</value>
+                        </property>
                     </systemProperties>
                 </configuration>
                 <dependencies>
@@ -403,5 +407,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <org.netbeans.version>RELEASE110</org.netbeans.version>
         <aspectj.version>1.9.7</aspectj.version>
+        <!-- false by default -->
+        <hasNodeJSRuntime>false</hasNodeJSRuntime>
     </properties>
 </project>
