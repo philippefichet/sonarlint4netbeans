@@ -20,7 +20,6 @@
 package com.github.philippefichet.sonarlint4netbeans;
 
 import com.google.gson.Gson;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
@@ -39,9 +38,6 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.openide.util.Lookup;
-import org.sonarsource.nodejs.NodeCommand;
-import org.sonarsource.nodejs.NodeCommandBuilderImpl;
-import org.sonarsource.nodejs.NodeCommandException;
 import org.sonarsource.sonarlint.core.StandaloneSonarLintEngineImpl;
 import org.sonarsource.sonarlint.core.client.api.common.Language;
 import org.sonarsource.sonarlint.core.client.api.common.LogOutput;
@@ -117,27 +113,10 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
             consumerWaitingInitialization.clear();
         }).start();
     }
-    
+
     private void tryToSetDefaultNodeJS(StandaloneGlobalConfiguration.Builder configBuilder) {
-        try {
-            NodeProcessWrapper nodeProcessWrapper = new NodeProcessWrapper();
-            NodeCommand nodeCommandVersion = new NodeCommandBuilderImpl(nodeProcessWrapper)
-                .nodeJsArgs("--version")
-                .build();
-            nodeCommandVersion.start();
-            if (nodeCommandVersion.waitFor() == 0 && nodeProcessWrapper.getCommandLineUsed().isPresent()) {
-                String nodeJSPath = nodeProcessWrapper.getCommandLineUsed().get().get(0);
-                Optional<Version> detectNodeJSVersion = SonarLintUtils.detectNodeJSVersion(nodeJSPath);
-                if (detectNodeJSVersion.isPresent()) {
-                    configBuilder.setNodeJs(Paths.get(nodeJSPath), detectNodeJSVersion.get());
-                    Logger.getLogger(SonarLintEngineImpl.class.getName()).log(Level.SEVERE, "Use default nodejs path");
-                }
-            }
-        } catch (NodeCommandException | IOException ex) {
-            Logger.getLogger(SonarLintEngineImpl.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        SonarLintUtils.tryToSearchDefaultNodeJS(configBuilder::setNodeJs);
     }
-        
 
     @Override
     public Optional<String> getNodeJSPath() {
@@ -365,4 +344,12 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
     {
         return Lookup.getDefault().lookup(SonarLintDataManager.class);
     }
+
+    @Override
+    public void stop() {
+        if (standaloneSonarLintEngineImpl != null) {
+            standaloneSonarLintEngineImpl.stop();
+        }
+    }
+
 }

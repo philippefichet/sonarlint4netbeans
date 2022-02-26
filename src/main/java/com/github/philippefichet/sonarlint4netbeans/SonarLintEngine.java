@@ -205,4 +205,9 @@ public interface SonarLintEngine {
      * @param project Project to change all extra properties
      */
     public void setAllExtraProperties(Map<String, String> extraProperties, Project project);
+
+    /**
+     * Stop the engine
+     */
+    public void stop();
 }

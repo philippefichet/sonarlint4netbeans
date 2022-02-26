@@ -30,6 +30,7 @@ import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,7 +40,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.StringJoiner;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
@@ -52,6 +55,9 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.sonarsource.nodejs.NodeCommand;
+import org.sonarsource.nodejs.NodeCommandBuilderImpl;
+import org.sonarsource.nodejs.NodeCommandException;
 import org.sonarsource.sonarlint.core.client.api.common.ProgressMonitor;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
@@ -629,4 +635,26 @@ public final class SonarLintUtils {
         }
         return Optional.empty();
     }
+
+    public static void tryToSearchDefaultNodeJS(BiConsumer<Path, Version> consumer) {
+        try {
+            NodeProcessWrapper nodeProcessWrapper = new NodeProcessWrapper();
+            NodeCommand nodeCommandVersion = new NodeCommandBuilderImpl(nodeProcessWrapper)
+                .nodeJsArgs("--version")
+                .pathResolver(null)
+                .build();
+            nodeCommandVersion.start();
+            if (nodeCommandVersion.waitFor() == 0 && nodeProcessWrapper.getCommandLineUsed().isPresent()) {
+                String nodeJSPath = nodeProcessWrapper.getCommandLineUsed().get().get(0);
+                Optional<Version> detectNodeJSVersion = SonarLintUtils.detectNodeJSVersion(nodeJSPath);
+                if (detectNodeJSVersion.isPresent()) {
+                    consumer.accept(Paths.get(nodeJSPath), detectNodeJSVersion.get());
+                    Logger.getLogger(SonarLintUtils.class.getName()).log(Level.SEVERE, "Use default nodejs path");
+                }
+            }
+        } catch (NodeCommandException | IOException ex) {
+            Logger.getLogger(SonarLintUtils.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
 }
