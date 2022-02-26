@@ -641,7 +641,7 @@ public final class SonarLintUtils {
             NodeProcessWrapper nodeProcessWrapper = new NodeProcessWrapper();
             NodeCommand nodeCommandVersion = new NodeCommandBuilderImpl(nodeProcessWrapper)
                 .nodeJsArgs("--version")
-                .pathResolver(null)
+                .pathResolver(new NodeBundlePathResolver())
                 .build();
             nodeCommandVersion.start();
             if (nodeCommandVersion.waitFor() == 0 && nodeProcessWrapper.getCommandLineUsed().isPresent()) {
