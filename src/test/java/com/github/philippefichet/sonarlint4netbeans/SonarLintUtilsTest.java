@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -44,6 +45,7 @@ import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -661,6 +663,7 @@ public class SonarLintUtilsTest {
     @DisplayName("Check to search default nodeJS installation")
     @Tag("runtime")
     @EnabledIfSystemProperty(named = "hasNodeJSRuntime", matches = "true", disabledReason = "This test require a nodeJS runtime")
+    @Timeout(value = 5, unit = TimeUnit.SECONDS)
     public void tryToSearchDefaultNodeJS() throws IOException {
         BiConsumer<Path, Version> biConsumerMocked = Mockito.mock(BiConsumer.class);
         SonarLintUtils.tryToSearchDefaultNodeJS(biConsumerMocked);
