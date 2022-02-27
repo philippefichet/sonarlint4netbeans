@@ -648,7 +648,10 @@ public final class SonarLintUtils {
                         (String basePath, String pathSearch) -> {
                             String fullPath = basePath + File.separator + pathSearch;
                             File fullPathFile = new File(fullPath);
+                            LOG.fine("Node pathResolver for \"" + basePath + "\" and \"" + pathSearch + "\" to \"" + fullPath + "\"");
+                            LOG.fine("Node pathResolver \"" + fullPath + "\" exists \"" + fullPathFile.exists() + "\" and isFile \"" + fullPathFile.isFile() + "\"");
                             if (fullPathFile.exists() && fullPathFile.isFile()) {
+                                LOG.fine("Node pathResolver return \"" + fullPath + "\"");
                                 return fullPath;
                             }
                             return null;

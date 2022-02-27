@@ -27,9 +27,9 @@ import org.junit.jupiter.api.Test;
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
 public class NodeBundlePathResolverTest {
-    
+
     @Test
-    public void testSomeMethod() {
+    public void resolve() {
         String pathToSearch = "/Users/runner/hostedtoolcache/node/14.19.0/x64/bin:"
             + "/Users/runner/hostedtoolcache/jdk/8.0.322/x64/bin:"
             + "/usr/local/lib/ruby/gems/2.7.0/bin:"
@@ -50,16 +50,15 @@ public class NodeBundlePathResolverTest {
             + "/Users/runner/.dotnet/tools:"
             + "/Users/runner/.ghcup/bin:"
             + "/Users/runner/hostedtoolcache/stack/2.7.3/x64";
-        // /Users/runner/hostedtoolcache/node/14.19.0/x64
         String pathSeparator = ":";
         String relativePath = "package/node_modules/run-node/run-node";
-        
+
         NodeBundlePathResolver nodeBundlePathResolver = new NodeBundlePathResolver(
             pathToSearch,
             pathSeparator,
             (String basePath, String search) -> {
                 if (basePath.equals("/Users/runner/hostedtoolcache/node/14.19.0/x64/bin")
-                    && search.equals(relativePath)) {
+                && search.equals(relativePath)) {
                     return basePath + "/" + relativePath;
                 }
                 return null;
@@ -69,5 +68,5 @@ public class NodeBundlePathResolverTest {
         Assertions.assertThat(resolve)
             .isEqualTo("/Users/runner/hostedtoolcache/node/14.19.0/x64/bin/package/node_modules/run-node/run-node");
     }
-    
+
 }

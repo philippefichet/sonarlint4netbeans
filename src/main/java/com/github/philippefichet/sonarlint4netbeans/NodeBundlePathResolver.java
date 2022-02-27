@@ -20,6 +20,7 @@
 package com.github.philippefichet.sonarlint4netbeans;
 
 import java.util.function.BiFunction;
+import java.util.logging.Logger;
 import org.sonarsource.nodejs.BundlePathResolver;
 
 /**
@@ -28,6 +29,7 @@ import org.sonarsource.nodejs.BundlePathResolver;
  */
 public class NodeBundlePathResolver implements BundlePathResolver
 {
+    private static final Logger LOG = Logger.getLogger(NodeBundlePathResolver.class.getCanonicalName());
     private final String pathToSearch;
     private final String pathSeparator;
     private final BiFunction<String, String, String> checkFileExist;
@@ -39,6 +41,8 @@ public class NodeBundlePathResolver implements BundlePathResolver
         this.pathToSearch = pathToSearch;
         this.pathSeparator = pathSeparator;
         this.checkFileExist = checkFileExist;
+        LOG.fine("NodeBundlePathResolver pathToSearch \"" + pathToSearch + "\"");
+        LOG.fine("NodeBundlePathResolver pathSeparator \"" + pathSeparator + "\"");
     }
 
     @Override
