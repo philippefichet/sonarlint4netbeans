@@ -54,19 +54,20 @@ public class NodeBundlePathResolverTest {
         String relativePath = "package/node_modules/run-node/run-node";
 
         NodeBundlePathResolver nodeBundlePathResolver = new NodeBundlePathResolver(
-            pathToSearch,
+            () -> pathToSearch,
             pathSeparator,
             (String basePath, String search) -> {
                 if (basePath.equals("/Users/runner/hostedtoolcache/node/14.19.0/x64/bin")
-                && search.equals(relativePath)) {
-                    return basePath + "/" + relativePath;
+                    && search.equals("node")
+                ) {
+                    return basePath + "/" + search;
                 }
                 return null;
             }
         );
         String resolve = nodeBundlePathResolver.resolve(relativePath);
         Assertions.assertThat(resolve)
-            .isEqualTo("/Users/runner/hostedtoolcache/node/14.19.0/x64/bin/package/node_modules/run-node/run-node");
+            .isEqualTo("/Users/runner/hostedtoolcache/node/14.19.0/x64/bin/node");
     }
 
 }

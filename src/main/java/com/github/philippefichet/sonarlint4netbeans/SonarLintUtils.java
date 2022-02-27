@@ -20,9 +20,11 @@
 package com.github.philippefichet.sonarlint4netbeans;
 
 import com.github.philippefichet.sonarlint4netbeans.project.SonarLintProjectPreferenceScope;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -42,6 +44,7 @@ import java.util.Optional;
 import java.util.StringJoiner;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -635,15 +638,42 @@ public final class SonarLintUtils {
         }
         return Optional.empty();
     }
+    
+    public static Optional<String> searchPathEnvVar()
+    {
+        try {
+            Process exec = Runtime.getRuntime().exec(new String[] {"/usr/bin/bash", "-c", "env"});
+            int waitFor = exec.waitFor();
+            if(waitFor == 0) {
+                try(
+                    InputStreamReader isr = new InputStreamReader(exec.getInputStream());
+                    BufferedReader br = new BufferedReader(isr);
+                ) {
+                    Optional<String> findFirst = br.lines().filter(line -> line.startsWith("PATH=")).findFirst();
+                    if (findFirst.isPresent()) {
+                        return Optional.of(findFirst.get().substring(5));
+                    }
+                }
+            } else {
+                LOG.warning("Error while read environment variables, exit code " + waitFor);
+            }
+        } catch (IOException ex) {
+            LOG.warning("Error while found environment variables : " + ex.getMessage());
+        } catch (InterruptedException ex) {
+            LOG.warning("Interruped while found environment variables : " + ex.getMessage());
+            Thread.currentThread().interrupt();
+        }
+        return Optional.empty();
+    }
 
-    public static void tryToSearchDefaultNodeJS(BiConsumer<Path, Version> consumer) {
+    public static void tryToSearchDefaultNodeJS(Supplier<String> pathEnvironmentVariable, BiConsumer<Path, Version> consumer) {
         try {
             NodeProcessWrapper nodeProcessWrapper = new NodeProcessWrapper();
             NodeCommand nodeCommandVersion = new NodeCommandBuilderImpl(nodeProcessWrapper)
                 .nodeJsArgs("--version")
                 .pathResolver(
                     new NodeBundlePathResolver(
-                        System.getenv("PATH"),
+                        pathEnvironmentVariable,
                         File.pathSeparator,
                         (String basePath, String pathSearch) -> {
                             String fullPath = basePath + File.separator + pathSearch;

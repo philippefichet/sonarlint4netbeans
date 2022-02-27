@@ -663,7 +663,10 @@ public class SonarLintUtilsTest {
     @EnabledIfSystemProperty(named = "hasNodeJSRuntime", matches = "true", disabledReason = "This test require a nodeJS runtime")
     public void tryToSearchDefaultNodeJS() throws IOException {
         BiConsumer<Path, Version> biConsumerMocked = Mockito.mock(BiConsumer.class);
-        SonarLintUtils.tryToSearchDefaultNodeJS(biConsumerMocked);
+        SonarLintUtils.tryToSearchDefaultNodeJS(
+            () -> SonarLintUtils.searchPathEnvVar().orElse(""),
+            biConsumerMocked
+        );
         ArgumentCaptor<Path> nodeJSPathCaptor = ArgumentCaptor.forClass(Path.class);
         ArgumentCaptor<Version> nodeJSVersionCaptor = ArgumentCaptor.forClass(Version.class);
         Mockito.verify(biConsumerMocked, Mockito.times(1))

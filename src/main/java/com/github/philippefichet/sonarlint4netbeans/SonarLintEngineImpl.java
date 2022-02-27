@@ -115,7 +115,10 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
     }
 
     private void tryToSetDefaultNodeJS(StandaloneGlobalConfiguration.Builder configBuilder) {
-        SonarLintUtils.tryToSearchDefaultNodeJS(configBuilder::setNodeJs);
+        SonarLintUtils.tryToSearchDefaultNodeJS(
+            () -> SonarLintUtils.searchPathEnvVar().orElse(""),
+            configBuilder::setNodeJs
+        );
     }
 
     @Override
