@@ -41,7 +41,9 @@ public class NodeBundlePathResolver implements BundlePathResolver
 
     /**
      * 
-     * @param pathToSearch Like $PATH environement variable
+     * @param pathToSearchSupplier supply like $PATH environement variable
+     * @param pathSeparator path separator used with pathToSearchSupplier
+     * @param checkFileExist bi function to check file exist with pathToSearchSupplier x relativePath (in resolve method)
      */
     public NodeBundlePathResolver(Supplier<String> pathToSearchSupplier, String pathSeparator, BiFunction<String, String, String> checkFileExist) {
         this.pathToSearchSupplier = pathToSearchSupplier;
