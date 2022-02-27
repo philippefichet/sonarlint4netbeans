@@ -642,7 +642,7 @@ public final class SonarLintUtils {
     public static Optional<String> searchPathEnvVar()
     {
         try {
-            Process exec = Runtime.getRuntime().exec(new String[] {"/usr/bin/bash", "-c", "env"});
+            Process exec = Runtime.getRuntime().exec(new String[] {"/bin/bash", "-c", "env"});
             int waitFor = exec.waitFor();
             if(waitFor == 0) {
                 try(
