@@ -66,13 +66,13 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
     // https://search.maven.org/artifact/org.sonarsource.java/sonar-java-plugin/
     private static final String SONAR_JAVA_PLUGIN_VERSION = "7.4.0.27839";
     // https://search.maven.org/artifact/org.sonarsource.javascript/sonar-javascript-plugin/
-    private static final String SONAR_JAVASCRIPT_PLUGIN_VERSION = "8.4.0.16431";
+    private static final String SONAR_JAVASCRIPT_PLUGIN_VERSION = "8.6.0.16913";
     // https://search.maven.org/artifact/org.sonarsource.php/sonar-php-plugin/
-    private static final String SONAR_PHP_PLUGIN_VERSION = "3.21.0.8193";
-    // https://mvnrepository.com/artifact/org.sonarsource.html/sonar-html-plugin/
-    private static final String SONAR_HTML_PLUGIN_VERSION = "3.4.0.2754";
-    // https://repo1.maven.org/maven2/org/sonarsource/xml/sonar-xml-plugin/
-    private static final String SONAR_XML_PLUGIN_VERSION = "2.4.0.3273";
+    private static final String SONAR_PHP_PLUGIN_VERSION = "3.21.2.8292";
+    // https://search.maven.org/artifact/org.sonarsource.html/sonar-html-plugin/
+    private static final String SONAR_HTML_PLUGIN_VERSION = "3.6.0.3106";
+    // https://search.maven.org/artifact/org.sonarsource.xml/sonar-xml-plugin/
+    private static final String SONAR_XML_PLUGIN_VERSION = "2.5.0.3376";
     private static final String PREFIX_PREFERENCE_RULE_PARAMETER = "rules.parameters.";
     private static final String PREFIX_EXCLUDE_RULE = "excludedRules";
     private static final String PREFIX_RUNTIME_EXTRA_PROPERTIES_PREFERENCE = "extraProperties";

@@ -44,6 +44,7 @@ public class SonarLintEngineImplJavascriptPluginTest {
             Arguments.of(
                 SonarLintEngineTestConfiguration.builder()
                 .description("sonarlint-example.js with rule javascript:S108 to check javascript plugin that require nodejs")
+                .requirePlugin("javascript")
                 .requireNodeJS()
                 .includeRules("javascript:S108")
                 .addClientInputFile(new File("./src/test/resources/sonarlint-example.js"))
@@ -64,6 +65,7 @@ public class SonarLintEngineImplJavascriptPluginTest {
             Arguments.of(
                 SonarLintEngineTestConfiguration.builder()
                 .description("sonarlint-example-with-global-variables.js with rule javascript:S3827 to check 3 issues from global variable declaring without extra properties \"sonar.javascript.globals\"")
+                .requirePlugin("javascript")
                 .requireNodeJS()
                 .includeRules("javascript:S3827")
                 .addClientInputFile(new File("./src/test/resources/sonarlint-example-with-global-variables.js"))
@@ -107,6 +109,7 @@ public class SonarLintEngineImplJavascriptPluginTest {
             Arguments.of(
                 SonarLintEngineTestConfiguration.builder()
                 .description("sonarlint-example-with-global-variables.js with rule javascript:S3827 to check one issue from global variable declaring in extra properties \"sonar.javascript.globals\" for \"globalVariables,api\"")
+                .requirePlugin("javascript")
                 .requireNodeJS()
                 .includeRules("javascript:S3827")
                 .addClientInputFile(new File("./src/test/resources/sonarlint-example-with-global-variables.js"))
@@ -129,6 +132,7 @@ public class SonarLintEngineImplJavascriptPluginTest {
             Arguments.of(
                 SonarLintEngineTestConfiguration.builder()
                 .description("sonarlint-example-with-global-variables.js with rule javascript:S3827 to check two issues from global variable declaring with extra properties \"sonar.javascript.globals\" for \"AapiI\"")
+                .requirePlugin("javascript")
                 .requireNodeJS()
                 .includeRules("javascript:S3827")
                 .addClientInputFile(new File("./src/test/resources/sonarlint-example-with-global-variables.js"))
