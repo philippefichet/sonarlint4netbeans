@@ -403,5 +403,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <org.netbeans.version>RELEASE110</org.netbeans.version>
         <aspectj.version>1.9.7</aspectj.version>
+        <sonar.organization>philippefichet</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
 </project>
