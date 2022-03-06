@@ -65,6 +65,6 @@ public class NodeBundlePathResolver implements BundlePathResolver
                 return pathIfExist;
             }
         }
-        return null;
+        return relativePath;
     }
 }
