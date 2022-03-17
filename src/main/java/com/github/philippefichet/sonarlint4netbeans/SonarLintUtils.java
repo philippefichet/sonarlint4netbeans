@@ -694,11 +694,11 @@ public final class SonarLintUtils {
                 Optional<Version> detectNodeJSVersion = SonarLintUtils.detectNodeJSVersion(nodeJSPath);
                 if (detectNodeJSVersion.isPresent()) {
                     consumer.accept(Paths.get(nodeJSPath), detectNodeJSVersion.get());
-                    Logger.getLogger(SonarLintUtils.class.getName()).log(Level.SEVERE, "Use default nodejs path");
+                    Logger.getLogger(SonarLintUtils.class.getName()).log(Level.INFO, "Use default Node.js path");
                 }
             }
         } catch (NodeCommandException | IOException ex) {
-            Logger.getLogger(SonarLintUtils.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(SonarLintUtils.class.getName()).log(Level.INFO, "Cannot use default installation of Node.js: " + ex.getMessage());
         }
     }
 

@@ -44,12 +44,14 @@ import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ProjectManagerImplementation;
@@ -673,6 +675,20 @@ public class SonarLintUtilsTest {
             .accept(nodeJSPathCaptor.capture(), nodeJSVersionCaptor.capture());
         LOG.info("nodeJSPathCaptor = " + nodeJSPathCaptor.getValue().toRealPath().toFile().getAbsolutePath());
         LOG.info("nodeJSVersionCaptor = " + nodeJSVersionCaptor.getValue());
+    }
+
+    @Test
+    @DisplayName("Check no error when no nodeJS installation detected")
+    @Tag("runtime")
+    @DisabledIfSystemProperty(named = "hasNodeJSRuntime", matches = "true", disabledReason = "This test require a nodeJS runtime")
+    public void tryToSearchDefaultNodeJSWithoutNodeJS() throws IOException {
+        BiConsumer<Path, Version> biConsumerMocked = Mockito.mock(BiConsumer.class);
+        SonarLintUtils.tryToSearchDefaultNodeJS(
+            () -> SonarLintUtils.searchPathEnvVar().orElse(""),
+            biConsumerMocked
+        );
+        Mockito.verify(biConsumerMocked, Mockito.times(0))
+            .accept(ArgumentMatchers.any(), ArgumentMatchers.any());
     }
 
     /**
