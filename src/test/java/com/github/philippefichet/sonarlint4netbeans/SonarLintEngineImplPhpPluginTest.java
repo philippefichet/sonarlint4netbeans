@@ -44,9 +44,10 @@ public class SonarLintEngineImplPhpPluginTest {
             Arguments.of(
                 SonarLintEngineTestConfiguration.builder()
                 .description("sonarlin-example.php with rule php:S101 but without php:S1105 to check php plugin")
+                .requirePlugin("php")
                 .includeRules("php:S101")
                 .excludeRules("php:S1105")
-                .addClientInputFile(new File("./src/test/resources/sonarlin-example.php"))
+                .addClientInputFile(new File("./src/test/resources/sonarlint-example.php"))
                 .build(),
                 Arrays.asList(
                     new DefaultIssueTestImpl.Builder()

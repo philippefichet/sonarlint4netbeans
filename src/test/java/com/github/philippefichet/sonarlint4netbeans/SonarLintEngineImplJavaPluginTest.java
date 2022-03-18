@@ -42,6 +42,7 @@ public class SonarLintEngineImplJavaPluginTest {
         return new Arguments[] {
             Arguments.of(
                 SonarLintEngineTestConfiguration.builder()
+                .requirePlugin("java")
                 .description("SonarLintFileDemo.java with rule java:S115 but without java:S122 and java:S1118 to check CODE_SMELL CRITICAL")
                 .includeRules("java:S115")
                 .excludeRules("java:S1220", "java:S1118")
@@ -62,6 +63,7 @@ public class SonarLintEngineImplJavaPluginTest {
             ),
             Arguments.of(
                 SonarLintEngineTestConfiguration.builder()
+                .requirePlugin("java")
                 .description("NewClass.java with rule java:S1133 but without java:S1186, java:S1598, java:S100, java:S1134, java:S2168 and java:S115  to check CODE_SMELL INFO")
                 .includeRules("java:S1133")
                 .excludeRules("java:S1186", "java:S1598", "java:S100", "java:S1134", "java:S2168", "java:S115")
@@ -82,6 +84,7 @@ public class SonarLintEngineImplJavaPluginTest {
             ),
             Arguments.of(
                 SonarLintEngineTestConfiguration.builder()
+                .requirePlugin("java")
                 .description("SonarLintFileDemo.java with rule java:S115 but without java:S1220 and S1118 rule with default parameters")
                 .includeRules("java:S115")
                 .excludeRules("java:S1220", "java:S1118")
@@ -102,6 +105,7 @@ public class SonarLintEngineImplJavaPluginTest {
             ),
             Arguments.of(
                 SonarLintEngineTestConfiguration.builder()
+                .requirePlugin("java")
                 .description("SonarLintFileDemo.java with rule java:S115 but without java:S1220 and S1118 rule with custom parameters")
                 .includeRules("java:S115")
                 .excludeRules("java:S1220", "java:S1118")

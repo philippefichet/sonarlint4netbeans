@@ -23,12 +23,16 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.stream.Collectors;
 import org.assertj.core.api.Assertions;
 import org.netbeans.api.project.Project;
+import org.sonarsource.sonarlint.core.client.api.common.LogOutput;
+import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
 import org.sonarsource.sonarlint.core.client.api.common.Version;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
@@ -40,6 +44,8 @@ import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisCo
  */
 public final class SonarLintEngineImplTestUtils {
 
+    private static final Logger LOG = Logger.getLogger(SonarLintEngineImplTestUtils.class.getName());
+
     private SonarLintEngineImplTestUtils() {
     }
 
@@ -47,6 +53,16 @@ public final class SonarLintEngineImplTestUtils {
     {
         SonarLintEngineImpl sonarLintEngine = new SonarLintEngineImpl();
         sonarLintEngine.waitingInitialization();
+        Collection<PluginDetails> pluginDetails = sonarLintEngine.getPluginDetails();
+        List<String> requirePlugin = testConfiguration.getRequirePlugin();
+        pluginDetails.forEach(d -> {
+            d.skipReason().ifPresent(s -> {
+                LOG.info("Plugin \"" + d.key() + ":" + d.name() + "\" skipped : " + s.toString());
+                if (requirePlugin.contains(d.key())) {
+                    Assertions.fail("Plugin %s is required but disabled : %s", d.key(), s.toString());
+                }
+            });
+        });
         sonarLintEngine.getPreferences(SonarLintEngine.GLOBAL_SETTINGS_PROJECT).removeNode();
         testConfiguration.getExtraProperties().forEach(
             (Project project, Map<String, String> extraProperties) ->
@@ -78,7 +94,12 @@ public final class SonarLintEngineImplTestUtils {
         AnalysisResults analyze = sonarLintEngine.analyze(
             standaloneAnalysisConfiguration,
             actualIssues::add,
-            null,
+            new LogOutput() {
+            @Override
+            public void log(String formattedMessage, LogOutput.Level level) {
+                LOG.info("[" + level + "] " + formattedMessage);
+            }
+            },
             null
         );
         sonarLintEngine.stop();

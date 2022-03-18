@@ -43,6 +43,7 @@ public final class SonarLintEngineTestConfiguration {
     private final List<ClientInputFile> clientInputFiles;
     private final List<RuleParameter> ruleParameters;
     private final Map<Project, Map<String, String>> extraProperties;
+    private final List<String> requirePlugin;
 
     private final boolean requireNodeJS;
 
@@ -54,6 +55,7 @@ public final class SonarLintEngineTestConfiguration {
         this.ruleParameters = builder.ruleParameters;
         this.requireNodeJS = builder.requireNodeJS;
         this.extraProperties = builder.extraProperties;
+        this.requirePlugin = builder.requirePlugin;
     }
 
     public List<RuleKey> getExcludedRules() {
@@ -74,6 +76,10 @@ public final class SonarLintEngineTestConfiguration {
 
     public boolean isRequireNodeJS() {
         return requireNodeJS;
+    }
+
+    public List<String> getRequirePlugin() {
+        return requirePlugin;
     }
 
     public Map<Project, Map<String, String>> getExtraProperties() {
@@ -120,6 +126,7 @@ public final class SonarLintEngineTestConfiguration {
         private final List<ClientInputFile> clientInputFiles = new ArrayList<>();
         private final List<RuleParameter> ruleParameters = new ArrayList<>();
         private final Map<Project, Map<String, String>> extraProperties = new HashMap<>();
+        private final List<String> requirePlugin = new ArrayList<>();
         private boolean requireNodeJS = false;
 
         public Builder description(String description) {
@@ -166,6 +173,11 @@ public final class SonarLintEngineTestConfiguration {
             for (String ruleKey : ruleKeys) {
                 excludedRules.add(RuleKey.parse(ruleKey));
             }
+            return this;
+        }
+        
+        public Builder requirePlugin(String pluginKey) {
+            requirePlugin.add(pluginKey);
             return this;
         }
 

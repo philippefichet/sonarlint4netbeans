@@ -409,5 +409,7 @@
         <aspectj.version>1.9.7</aspectj.version>
         <!-- false by default -->
         <hasNodeJSRuntime>false</hasNodeJSRuntime>
+        <sonar.organization>philippefichet</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
 </project>
