@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.stream.Collectors;
@@ -53,6 +54,22 @@ public final class SonarLintEngineImplTestUtils {
     {
         SonarLintEngineImpl sonarLintEngine = new SonarLintEngineImpl();
         sonarLintEngine.waitingInitialization();
+        if (testConfiguration.isRequireNodeJS()) {
+            SonarLintTestUtils.installNodeJS();
+            // Avoir reload engine if same nodejs version
+            Optional<String> nodeJSPath = sonarLintEngine.getNodeJSPath();
+            Optional<Version> nodeJSVersion = sonarLintEngine.getNodeJSVersion();
+            if (!nodeJSPath.isPresent() || !nodeJSVersion.isPresent()
+                || !nodeJSPath.get().equals(SonarLintTestUtils.getNodeJS().getAbsolutePath())
+                || !nodeJSVersion.get().equals(Version.create(SonarLintTestUtils.getNodeJSVersion()))
+                ) {
+                sonarLintEngine.setNodeJSPathAndVersion(
+                    SonarLintTestUtils.getNodeJS().getAbsolutePath(),
+                    Version.create(SonarLintTestUtils.getNodeJSVersion())
+                );
+                sonarLintEngine.waitingInitialization();
+            }
+        }
         Collection<PluginDetails> pluginDetails = sonarLintEngine.getPluginDetails();
         List<String> requirePlugin = testConfiguration.getRequirePlugin();
         pluginDetails.forEach(d -> {
@@ -72,14 +89,6 @@ public final class SonarLintEngineImplTestUtils {
             ruleParameter -> sonarLintEngine.setRuleParameter(ruleParameter.getRuleKey(), ruleParameter.getName(), ruleParameter.getValue(), SonarLintEngine.GLOBAL_SETTINGS_PROJECT)
         );
         String sonarLintHome = System.getProperty("user.home") + File.separator + ".sonarlint4netbeans";
-        if (testConfiguration.isRequireNodeJS()) {
-            SonarLintTestUtils.installNodeJS();
-            sonarLintEngine.setNodeJSPathAndVersion(
-                SonarLintTestUtils.getNodeJS().getAbsolutePath(),
-                Version.create(SonarLintTestUtils.getNodeJSVersion())
-            );
-        }
-
         StandaloneAnalysisConfiguration standaloneAnalysisConfiguration = 
             StandaloneAnalysisConfiguration.builder()
             .setBaseDir(new File(sonarLintHome).toPath())
