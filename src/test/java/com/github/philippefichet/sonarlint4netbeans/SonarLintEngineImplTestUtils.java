@@ -102,6 +102,7 @@ public final class SonarLintEngineImplTestUtils {
             },
             null
         );
+        sonarLintEngine.stop();
 
         Assertions.assertThat(actualIssues)
             .hasSameSizeAs(expectedIssue);

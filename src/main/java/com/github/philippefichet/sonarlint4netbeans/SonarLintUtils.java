@@ -20,9 +20,11 @@
 package com.github.philippefichet.sonarlint4netbeans;
 
 import com.github.philippefichet.sonarlint4netbeans.project.SonarLintProjectPreferenceScope;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -30,6 +32,7 @@ import java.nio.file.FileVisitResult;
 import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,7 +42,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.StringJoiner;
+import java.util.function.BiConsumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.UIManager;
@@ -52,6 +58,9 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.sonarsource.nodejs.NodeCommand;
+import org.sonarsource.nodejs.NodeCommandBuilderImpl;
+import org.sonarsource.nodejs.NodeCommandException;
 import org.sonarsource.sonarlint.core.client.api.common.ProgressMonitor;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
@@ -629,4 +638,68 @@ public final class SonarLintUtils {
         }
         return Optional.empty();
     }
+    
+    public static Optional<String> searchPathEnvVar()
+    {
+        try {
+            Process exec = Runtime.getRuntime().exec(new String[] {"/bin/bash", "-c", "env"});
+            int waitFor = exec.waitFor();
+            if(waitFor == 0) {
+                try(
+                    InputStreamReader isr = new InputStreamReader(exec.getInputStream());
+                    BufferedReader br = new BufferedReader(isr);
+                ) {
+                    Optional<String> findFirst = br.lines().filter(line -> line.startsWith("PATH=")).findFirst();
+                    if (findFirst.isPresent()) {
+                        return Optional.of(findFirst.get().substring(5));
+                    }
+                }
+            } else {
+                LOG.warning("Error while read environment variables, exit code " + waitFor);
+            }
+        } catch (IOException ex) {
+            LOG.warning("Error while found environment variables : " + ex.getMessage());
+        } catch (InterruptedException ex) {
+            LOG.warning("Interruped while found environment variables : " + ex.getMessage());
+            Thread.currentThread().interrupt();
+        }
+        return Optional.empty();
+    }
+
+    public static void tryToSearchDefaultNodeJS(Supplier<String> pathEnvironmentVariable, BiConsumer<Path, Version> consumer) {
+        try {
+            NodeProcessWrapper nodeProcessWrapper = new NodeProcessWrapper();
+            NodeCommand nodeCommandVersion = new NodeCommandBuilderImpl(nodeProcessWrapper)
+                .nodeJsArgs("--version")
+                .pathResolver(
+                    new NodeBundlePathResolver(
+                        pathEnvironmentVariable,
+                        File.pathSeparator,
+                        (String basePath, String pathSearch) -> {
+                            String fullPath = basePath + File.separator + pathSearch;
+                            File fullPathFile = new File(fullPath);
+                            LOG.fine("Node pathResolver for \"" + basePath + "\" and \"" + pathSearch + "\" to \"" + fullPath + "\"");
+                            LOG.fine("Node pathResolver \"" + fullPath + "\" exists \"" + fullPathFile.exists() + "\" and isFile \"" + fullPathFile.isFile() + "\"");
+                            if (fullPathFile.exists() && fullPathFile.isFile()) {
+                                LOG.fine("Node pathResolver return \"" + fullPath + "\"");
+                                return fullPath;
+                            }
+                            return null;
+                        }
+                    )
+                ).build();
+            nodeCommandVersion.start();
+            if (nodeCommandVersion.waitFor() == 0 && nodeProcessWrapper.getCommandLineUsed().isPresent()) {
+                String nodeJSPath = nodeProcessWrapper.getCommandLineUsed().get().get(0);
+                Optional<Version> detectNodeJSVersion = SonarLintUtils.detectNodeJSVersion(nodeJSPath);
+                if (detectNodeJSVersion.isPresent()) {
+                    consumer.accept(Paths.get(nodeJSPath), detectNodeJSVersion.get());
+                    Logger.getLogger(SonarLintUtils.class.getName()).log(Level.INFO, "Use default Node.js path");
+                }
+            }
+        } catch (NodeCommandException | IOException ex) {
+            Logger.getLogger(SonarLintUtils.class.getName()).log(Level.INFO, "Cannot use default installation of Node.js: " + ex.getMessage());
+        }
+    }
+
 }

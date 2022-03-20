@@ -35,16 +35,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.stream.Collectors;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ProjectManagerImplementation;
@@ -65,6 +70,7 @@ import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
 public class SonarLintUtilsTest {
     private static final Project mockedProjectWithProjectScope = Mockito.mock(Project.class);
     private static final Project mockedProjectWithGlobalScope = Mockito.mock(Project.class);
+    private static final Logger LOG = Logger.getLogger(SonarLintUtilsTest.class.getCanonicalName());
 
     @RegisterExtension
     private final SonarLintLookupMockedExtension lookupExtension = SonarLintLookupMockedExtension.builder()
@@ -649,6 +655,24 @@ public class SonarLintUtilsTest {
         Assertions.assertThat(issuesOnFakeProject2)
             .describedAs("global scope")
             .hasSize(0);
+    }
+
+    @Test
+    @DisplayName("Check to search default nodeJS installation")
+    @Tag("runtime")
+    @EnabledIfSystemProperty(named = "hasNodeJSRuntime", matches = "true", disabledReason = "This test require a nodeJS runtime")
+    public void tryToSearchDefaultNodeJS() throws IOException {
+        BiConsumer<Path, Version> biConsumerMocked = Mockito.mock(BiConsumer.class);
+        SonarLintUtils.tryToSearchDefaultNodeJS(
+            () -> SonarLintUtils.searchPathEnvVar().orElse(""),
+            biConsumerMocked
+        );
+        ArgumentCaptor<Path> nodeJSPathCaptor = ArgumentCaptor.forClass(Path.class);
+        ArgumentCaptor<Version> nodeJSVersionCaptor = ArgumentCaptor.forClass(Version.class);
+        Mockito.verify(biConsumerMocked, Mockito.times(1))
+            .accept(nodeJSPathCaptor.capture(), nodeJSVersionCaptor.capture());
+        LOG.info("nodeJSPathCaptor = " + nodeJSPathCaptor.getValue().toRealPath().toFile().getAbsolutePath());
+        LOG.info("nodeJSVersionCaptor = " + nodeJSVersionCaptor.getValue());
     }
 
     /**
