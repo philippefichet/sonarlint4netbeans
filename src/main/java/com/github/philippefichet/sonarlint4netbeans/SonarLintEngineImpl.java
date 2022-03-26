@@ -20,12 +20,14 @@
 package com.github.philippefichet.sonarlint4netbeans;
 
 import com.google.gson.Gson;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -59,6 +61,8 @@ import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
  */
 public final class SonarLintEngineImpl implements SonarLintEngine {
 
+    private static final Logger LOG = Logger.getLogger(SonarLintEngineImpl.class.getName());
+
     // https://search.maven.org/artifact/org.sonarsource.java/sonar-java-plugin/
     private static final String SONAR_JAVA_PLUGIN_VERSION = "7.4.0.27839";
     // https://search.maven.org/artifact/org.sonarsource.javascript/sonar-javascript-plugin/
@@ -72,13 +76,15 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
     private static final String PREFIX_PREFERENCE_RULE_PARAMETER = "rules.parameters.";
     private static final String PREFIX_EXCLUDE_RULE = "excludedRules";
     private static final String PREFIX_RUNTIME_EXTRA_PROPERTIES_PREFERENCE = "extraProperties";
+    private static final String PREFIX_ADDITIONAL_PLUGINS_PREFERENCE = "additionnalPlugins";
     private static final String PREFIX_RUNTIME_PREFERENCE = "runtime.";
     private static final String RUNTIME_NODE_JS_PATH_PREFERENCE = "nodejs.path";
     private static final String RUNTIME_NODE_JS_VERSION_PREFERENCE = "nodejs.version";
     private final Gson gson = new Gson();
     private StandaloneSonarLintEngineImpl standaloneSonarLintEngineImpl;
-    private final List<Consumer<SonarLintEngine>> consumerWaitingInitialization = new ArrayList<>();
-    private final List<Consumer<SonarLintEngine>> configurationChanged = new ArrayList<>();
+    private final List<Consumer<SonarLintEngine>> consumerWaitingInitialization = Collections.synchronizedList(new ArrayList<>());
+    private final List<Consumer<SonarLintEngine>> consumerRestarted = Collections.synchronizedList(new ArrayList<>());
+    private final List<Consumer<SonarLintEngine>> configurationChanged = Collections.synchronizedList(new ArrayList<>());
     private final Map<String, URL> pluginURLs = new HashMap<>();
 
     public SonarLintEngineImpl() throws MalformedURLException {
@@ -90,16 +96,61 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
         createInternalEngine();
     }
 
+    /**
+     * Retrieve all base plugins
+     * @return all  additionnal plugins
+     */
+    @Override
+    public Set<String> getBasePlugins() {
+        return pluginURLs.keySet();
+    }
+
+    /**
+     * Retrieve all additionnal plugins
+     * @return all  additionnal plugins
+     */
+    @Override
+    public Map<String, String> getAdditionnalPlugins() {
+        return gson.fromJson(
+            getPreferences(GLOBAL_SETTINGS_PROJECT)
+            .get(PREFIX_ADDITIONAL_PLUGINS_PREFERENCE, "{}"),
+            Map.class
+        );
+    }
+
+    /**
+     * Change all additionnal plugins
+     * @param additionnalPluging all additionnal plugins
+     */
+    @Override
+    public void setAdditionnalPlugins(Map<String, String> additionnalPluging) {
+        getPreferences(GLOBAL_SETTINGS_PROJECT)
+            .put(PREFIX_ADDITIONAL_PLUGINS_PREFERENCE, gson.toJson(additionnalPluging));
+        createInternalEngine();
+    }
+
     private void createInternalEngine() {
         StandaloneSonarLintEngineImpl oldStandaloneSonarLintEngineImpl = standaloneSonarLintEngineImpl;
         standaloneSonarLintEngineImpl = null;
+        consumerRestarted.forEach(consumer -> consumer.accept(this));
+        consumerRestarted.clear();
         new Thread(() -> {
             if (oldStandaloneSonarLintEngineImpl != null) {
                 oldStandaloneSonarLintEngineImpl.stop();
             }
+            Map<String, URL> allPluginURLs = new HashMap<>(pluginURLs);
+            getAdditionnalPlugins().forEach((String key, String url) -> {
+                try {
+                    allPluginURLs.put(key, SonarLintUtils.toReadableURL(url));
+                } catch (MalformedURLException ex) {
+                    LOG.warning("Additional plugin \"" + key + "\" has mal formed URL : " + url);
+                } catch (IOException ex) {
+                    LOG.warning("Additional plugin \"" + key + "\" cannot read byte from " + url);
+                }
+            });
             StandaloneGlobalConfiguration.Builder configBuilder = StandaloneGlobalConfiguration.builder()
                 .addEnabledLanguages(Language.values())
-                .addPlugins(pluginURLs.values().toArray(new URL[pluginURLs.values().size()]));
+                .addPlugins(allPluginURLs.values().toArray(new URL[allPluginURLs.size()]));
             if (getNodeJSPath().isPresent() && getNodeJSVersion().isPresent()) {
                 String nodeJSPath = getNodeJSPath().get();
                 Version nodeJSVersion = getNodeJSVersion().get();
@@ -224,6 +275,11 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
         } else {
             consumerWaitingInitialization.add(consumer);
         }
+    }
+
+    @Override
+    public void whenRestarted(Consumer<SonarLintEngine> consumer) {
+        consumerRestarted.add(consumer);
     }
 
     @Override

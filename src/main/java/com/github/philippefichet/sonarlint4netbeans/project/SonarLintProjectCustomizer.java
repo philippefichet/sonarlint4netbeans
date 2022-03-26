@@ -51,6 +51,7 @@ public class SonarLintProjectCustomizer implements ProjectCustomizer.CompositeCa
         @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-maven", position = 5000),
         @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-gradle", position = 5000),
         @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-cnd-makeproject", position = 5000),
+        @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-cpplite-project-CPPLiteProject", position = 5000),
         @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-php-project", position = 5000),
         @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-web-project", position = 5000),
         @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-web-clientproject", position = 5000),

@@ -21,6 +21,7 @@ package com.github.philippefichet.sonarlint4netbeans;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -30,24 +31,41 @@ import javax.swing.table.DefaultTableModel;
 public final class SonarLintPropertiesTableModel extends DefaultTableModel {
     private static final int KEY_COLUMN_INDEX = 0;
     private static final int VALUE_COLUMN_INDEX = 1;
-    public SonarLintPropertiesTableModel() {
+    public SonarLintPropertiesTableModel(String keyName, String valueName) {
         super();
-        addColumn("Key");
-        addColumn("Value");
+        addColumn(keyName);
+        addColumn(valueName);
     }
 
-    public void setExtraProperties(Map<String, String> extraProperties) {
+    public void setProperties(Map<String, String> properties) {
         while (this.getRowCount() > 0) {
             this.removeRow(0);
         }
-        extraProperties.forEach(this::addExtraProperty);
+        properties.forEach(this::addProperty);
     }
 
-    private void addExtraProperty(String key, String value) {
+    public void forEach(BiConsumer<String, String> biConsumer) {
+        for (int i = 0; i < getRowCount(); i++) {
+            biConsumer.accept(
+                getPropertyKey(i),
+                getPropertyValue(i)
+            );
+        }
+    }
+
+    public String getPropertyKey(int row) {
+        return (String)getValueAt(row, KEY_COLUMN_INDEX);
+    }
+
+    public String getPropertyValue(int row) {
+        return (String)getValueAt(row, VALUE_COLUMN_INDEX);
+    }
+
+    private void addProperty(String key, String value) {
         addRow(new Object[] {key, value});
     }
 
-    public void addOrUpdateExtraProperty(String key, String value) {
+    public void addOrUpdateProperty(String key, String value) {
         for (int i = 0; i < getRowCount(); i++) {
             String propertyName = (String)getValueAt(i, KEY_COLUMN_INDEX);
             if (propertyName.equals(key)) {
@@ -55,7 +73,7 @@ public final class SonarLintPropertiesTableModel extends DefaultTableModel {
                 return;
             }
         }
-        addExtraProperty(key, value);
+        addProperty(key, value);
     }
 
     @Override
@@ -63,7 +81,7 @@ public final class SonarLintPropertiesTableModel extends DefaultTableModel {
         return true;
     }
 
-    public Map<String, String> toExtraProperties() {
+    public Map<String, String> toPropertiesMap() {
         Map<String, String> extraProperties = new HashMap<>();
         for (int i = 0; i < getRowCount(); i++) {
             extraProperties.put(
