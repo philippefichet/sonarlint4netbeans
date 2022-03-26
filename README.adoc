@@ -17,6 +17,7 @@ Features:
 - Enable/Disable/Configure Rules by project
 - Add or remove analyse properties (global or by project)
 - Restore selected rule from activated by default
+- Add or update plugins from configuration
 - Custom "Sonar Rule Details" window with CSS
 - Enable or disabled test rules on test files
 - Severity icons
@@ -51,6 +52,21 @@ When a rule has no settings, this icon image:docs/icon-settings-empty.png[] is p
 
 .Sonar rule details window with name filter
 image::docs/SonarRuleDetailsWindowWithNameFilter.jpg[]
+
+== Add or update plugins from configuration
+
+It is possible to add a plugin compatible with SonarLint by indicating a key and the URL of the plugin. +
+To avoid downloading the plugin each time it is used, it is recommended to download the plugin and use the `file` scheme +
+
+Example:
+
+[source]
+----
+file:/c:/path/to/plugin.jar <1>
+file:/path/to/plugin.jar <2>
+----
+<1> On Windows
+<2> On Linux or MacOS
 
 == "Sonar rule details" window StyleSheet
 
@@ -98,6 +114,9 @@ image::docs/OptionsSonarLintRulesRestoreToDefaultAfter.jpg[]
 
 .Add or remove analyse properties
 image::docs/OptionsSonarLintProperties.jpg[]
+
+.Add or update plugins from configuration
+image::docs/OptionsSonarLintPlugins.jpg[]
 
 .SonarLint Options
 image::docs/OptionsSonarLintOptions

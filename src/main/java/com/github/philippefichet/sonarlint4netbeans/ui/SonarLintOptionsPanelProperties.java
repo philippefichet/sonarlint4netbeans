@@ -29,18 +29,17 @@ import java.util.Map;
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
 public class SonarLintOptionsPanelProperties extends javax.swing.JPanel {
-    private final SonarLintPropertiesTableModel sonarLintPropertiesTableModel = new SonarLintPropertiesTableModel();
-    private final SonarLintOptionsPanelPropertiesListener listener;
+    private final SonarLintPropertiesTableModel sonarLintPropertiesTableModel = new SonarLintPropertiesTableModel("Property key", "Property value");
+
     /**
      * Creates new form SonarLintOptionsPanelProperties
      */
     public SonarLintOptionsPanelProperties(Map<String, String> initialExtraProperties, SonarLintOptionsPanelPropertiesListener listener) {
-        this.listener = listener;
         initComponents();
-        sonarLintPropertiesTableModel.setExtraProperties(initialExtraProperties);
+        sonarLintPropertiesTableModel.setProperties(initialExtraProperties);
         sonarLintPropertiesTableModel.addTableModelListener(
             e ->
-            listener.changed(sonarLintPropertiesTableModel.toExtraProperties())
+            listener.changed(sonarLintPropertiesTableModel.toPropertiesMap())
         );
     }
 
@@ -162,14 +161,14 @@ public class SonarLintOptionsPanelProperties extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-        sonarLintPropertiesTableModel.addOrUpdateExtraProperty(propertyNameTextField.getText(), propertyValueTextField.getText());
+        sonarLintPropertiesTableModel.addOrUpdateProperty(propertyNameTextField.getText(), propertyValueTextField.getText());
     }//GEN-LAST:event_addButtonActionPerformed
 
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
         int[] selectedRows = propertiesJTable.getSelectedRows();
         Arrays.sort(selectedRows);
         for (int i = selectedRows.length - 1; i >= 0; i--) {
-            sonarLintPropertiesTableModel.removeRow(i);
+            sonarLintPropertiesTableModel.removeRow(selectedRows[i]);
         }
     }//GEN-LAST:event_removeButtonActionPerformed
 

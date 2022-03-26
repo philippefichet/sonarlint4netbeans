@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
@@ -158,6 +159,13 @@ public interface SonarLintEngine {
     public void whenInitialized(Consumer<SonarLintEngine> consumer);
 
     /**
+     * Call consumer when engine is restart.
+     *
+     * @param consumer consumer to call when engine is initialized.
+     */
+    public void whenRestarted(Consumer<SonarLintEngine> consumer);
+
+    /**
      * Call consumer when configuration on engine is changed.
      *
      * @param consumer consumer to call when configuration engine is changed.
@@ -210,4 +218,22 @@ public interface SonarLintEngine {
      * Stop the engine
      */
     public void stop();
+
+    /**
+     * Retrieve all additionnal plugins
+     * @return all  additionnal plugins
+     */
+    public Map<String, String> getAdditionnalPlugins();
+
+    /**
+     * Change all additionnal plugins
+     * @param additionnalPluings all additionnal plugins
+     */
+    public void setAdditionnalPlugins(Map<String, String> additionnalPluings);
+
+    /**
+     * Retrieve all base plugin key
+     * @return all base plugin key
+     */
+    public Set<String> getBasePlugins();
 }

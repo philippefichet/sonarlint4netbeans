@@ -25,6 +25,7 @@ import com.github.philippefichet.sonarlint4netbeans.SonarLintUtils;
 import java.awt.BorderLayout;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -41,9 +42,11 @@ public final class SonarLintPanel extends javax.swing.JPanel {
 
     private final Map<RuleKey, Boolean> ruleKeyChanged = new HashMap<>();
     private final Map<String, String> extraProperties = new HashMap<>();
+    private final Map<String, String> additionnalPlugins = new HashMap<>();
     private String nodeJSPathToSave;
     private Version nodeJSVersionToSave;
     private Boolean applyDifferentRulesOnTestFiles = null;
+    private AtomicBoolean loadingPanel = new AtomicBoolean(true);
 
     private SonarLintRuleTableModel rulesDefaultTableModel = new SonarLintRuleTableModel();
 
@@ -55,7 +58,71 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         this.changedListener = changedListener;
         this.project = project;
         initComponents();
+        showLoadingPanel();
 
+        SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
+        extraProperties.putAll(sonarLintEngine.getAllExtraProperties(project));
+        rulesDefaultTableModel.addTableModelListener(e -> {
+            this.changedListener.changed();
+            int column = e.getColumn();
+            if (column == 0) {
+                int firstRow = e.getFirstRow();
+                RuleKey ruleKey = RuleKey.parse(
+                    rulesDefaultTableModel.getRuleKeyValueAt(firstRow).toString()
+                );
+                Object valueAt = rulesDefaultTableModel.getValueAt(firstRow, column);
+                ruleKeyChanged.put(ruleKey, (Boolean) valueAt);
+            }
+        });
+        categoriesList.addListSelectionListener((e) -> {
+            if (!loadingPanel.get()) {
+                showPanelFromCategory(sonarLintEngine, categoriesList.getSelectedValue());
+            }
+        });
+        sonarLintEngine.whenInitialized(this::whenInitialized);
+    }
+
+    private void whenInitialized(SonarLintEngine engine)
+    {
+        engine.whenRestarted(this::whenRestarted);
+        loadingPanel.set(false);
+        String category = categoriesList.getSelectedValue();
+        if (category == null) {
+            categoriesList.setSelectedIndex(0);
+            category = categoriesList.getSelectedValue();
+        }
+        showPanelFromCategory(engine, category);
+    }
+    
+    private void showPanelFromCategory(SonarLintEngine engine, String category)
+    {
+        if ("Rules".equals(category)) {
+            initRulesPanel(engine);
+        }
+        if ("Analyzers".equals(category)) {
+            initAnalyzersPanel(engine);
+        }
+        if ("Options".equals(category)) {
+            initOptionsPanel(engine);
+        }
+        if ("Properties".equals(category)) {
+            initPropertiesPanel(engine);
+        }
+        if ("Plugins".equals(category)) {
+            initPluginsPanel(engine);
+        }
+        optionPanel.revalidate();
+        optionPanel.repaint();
+    }
+
+    private void whenRestarted(SonarLintEngine engine)
+    {
+        engine.whenInitialized(this::whenInitialized);
+        loadingPanel.set(true);
+        showLoadingPanel();
+    }
+
+    private void showLoadingPanel() {
         JPanel loadingPanel = new JPanel();
         loadingPanel.setLayout(new BoxLayout(loadingPanel, BoxLayout.PAGE_AXIS));
         JProgressBar waiting = new JProgressBar();
@@ -63,48 +130,10 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         JLabel loadingText = new JLabel("Loading ...");
         loadingPanel.add(loadingText);
         loadingPanel.add(waiting);
+        optionPanel.removeAll();
         optionPanel.add(loadingPanel, BorderLayout.NORTH);
-
-        SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
-        sonarLintEngine.whenInitialized(engine -> {
-            extraProperties.putAll(engine.getAllExtraProperties(project));
-            rulesDefaultTableModel.addTableModelListener(e -> {
-                this.changedListener.changed();
-                int column = e.getColumn();
-
-                if (column == 0) {
-                    int firstRow = e.getFirstRow();
-                    RuleKey ruleKey = RuleKey.parse(
-                        rulesDefaultTableModel.getRuleKeyValueAt(firstRow).toString()
-                    );
-                    Object valueAt = rulesDefaultTableModel.getValueAt(firstRow, column);
-                    ruleKeyChanged.put(ruleKey, (Boolean) valueAt);
-                }
-            });
-
-            categoriesList.addListSelectionListener((e) -> {
-                if ("Rules".equals(categoriesList.getSelectedValue())) {
-                    initRulesPanel(engine);
-                }
-                if ("Analyzers".equals(categoriesList.getSelectedValue())) {
-                    initAnalyzersPanel(engine);
-                }
-                if ("Options".equals(categoriesList.getSelectedValue())) {
-                    initOptionsPanel(engine);
-                }
-                if ("Properties".equals(categoriesList.getSelectedValue())) {
-                    initPropertiesPanel(engine);
-                }
-                optionPanel.revalidate();
-                optionPanel.repaint();
-            });
-
-            // Rule panel by default
-            initRulesPanel(engine);
-            optionPanel.revalidate();
-            optionPanel.repaint();
-        });
-
+        optionPanel.revalidate();
+        optionPanel.repaint();
     }
 
     private void initAnalyzersPanel(SonarLintEngine sonarLintEngine) {
@@ -132,7 +161,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         optionPanel.revalidate();
         optionPanel.repaint();
     }
-    
+
     private void initRulesPanel(SonarLintEngine sonarLintEngine) {
         optionPanel.removeAll();
         SonarLintRuleListPanel sonarLintRuleListPanel = new SonarLintRuleListPanel(
@@ -148,7 +177,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         );
         optionPanel.add(sonarLintRuleListPanel, BorderLayout.CENTER);
     }
-    
+
     private void initPropertiesPanel(SonarLintEngine sonarLintEngine) {
         optionPanel.removeAll();
         optionPanel.add(
@@ -157,6 +186,22 @@ public final class SonarLintPanel extends javax.swing.JPanel {
                 (Map<String, String> extraProperties) -> {
                     this.extraProperties.clear();
                     this.extraProperties.putAll(extraProperties);
+                    this.changedListener.changed();
+                }
+            )
+        );
+    }
+
+    private void initPluginsPanel(SonarLintEngine sonarLintEngine) {
+        optionPanel.removeAll();
+        optionPanel.add(
+            new SonarLintOptionsPanelPlugins(
+                sonarLintEngine.getBasePlugins(),
+                sonarLintEngine.getAdditionnalPlugins(),
+                (Map<String, String> additionnalPlugins) -> {
+                    this.additionnalPlugins.clear();
+                    this.additionnalPlugins.putAll(additionnalPlugins);
+                    this.changedListener.changed();
                 }
             )
         );
@@ -184,7 +229,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         categoriesPanel.setPreferredSize(new java.awt.Dimension(100, 100));
 
         categoriesList.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Options", "Rules", "Analyzers", "Properties" };
+            String[] strings = { "Options", "Rules", "Analyzers", "Properties", "Plugins" };
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
@@ -296,6 +341,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
             sonarLintEngine.setNodeJSPathAndVersion(nodeJSPathToSave, nodeJSVersionToSave);
         }
         sonarLintEngine.setAllExtraProperties(extraProperties, project);
+        sonarLintEngine.setAdditionnalPlugins(additionnalPlugins);
     }
 
     boolean valid() {
