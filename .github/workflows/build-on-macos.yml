@@ -22,5 +22,5 @@ jobs:
       with:
         node-version: '14'
     - name: Test with Maven
-      run: mvn -DhasNodeJSRuntime clean test
+      run: mvn -Ddependency-check.skip=true -DhasNodeJSRuntime clean test
       timeout-minutes: 5
