@@ -4,6 +4,6 @@ RUN curl -o /tmp/netbeans-13-bin.zip https://downloads.apache.org/netbeans/netbe
   && unzip -d /home/gitpod/ /tmp/netbeans-13-bin.zip \
   && rm /tmp/netbeans-13-bin.zip
 
-# https://docs.oracle.com/javase/8/docs/technotes/guides/2d/flags.html#xrender
-# not proprely render with VNC with true by default
-RUN sed -i -e 's#netbeans_default_options="#netbeans_default_options="-J-Dsun.java2d.xrender=false #' /home/gitpod/netbeans/etc/netbeans.conf
+# to avoid java.lang.UnsatisfiedLinkError: /home/gitpod/.sdkman/candidates/java/11.0.13.fx-zulu/lib/libawt_xawt.so: libXtst.so.6: cannot open shared object file: No such file or directory
+RUN sudo apt install libxtst6
+
