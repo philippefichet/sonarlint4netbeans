@@ -8,6 +8,18 @@
             "type": "shell",
             "command": "mvn nbm:cluster nbm:run-ide",
             "group": "build"
+        },
+        {
+            "label": "Run in Netbeans (Debug not waiting)",
+            "type": "shell",
+            "command": "mvn -Dnetbeans.run.params.debug='-J-Xdebug -J-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000' nbm:cluster nbm:run-ide",
+            "group": "build"
+        },
+        {
+            "label": "Run in Netbeans (Debug waiting)",
+            "type": "shell",
+            "command": "mvn -Dnetbeans.run.params.debug='-J-Xdebug -J-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000' nbm:cluster nbm:run-ide",
+            "group": "build"
         }
     ]
 }

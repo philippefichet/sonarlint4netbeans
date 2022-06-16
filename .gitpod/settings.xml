@@ -3,13 +3,15 @@
           xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
     <profiles>
         <profile>
-            <id>netbeans</id>
+            <id>netbeans-for-developement</id>
             <activation>
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
                 <netbeans.installation>/home/gitpod/netbeans</netbeans.installation>
                 <netbeans.userdir>/home/gitpod/netbeans.userdir</netbeans.userdir>
+                <!-- skip dependency check during development -->
+                <dependency-check.skip>true</dependency-check.skip>
             </properties>
         </profile>
     </profiles>
