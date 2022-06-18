@@ -20,6 +20,7 @@ jobs:
       uses: actions/setup-java@v2
       with:
         java-version: 11
+        distribution: temurin
     - name: Build with Maven
       run: mvn clean package javadoc:jar verify spotless:check
       timeout-minutes: 10
