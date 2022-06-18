@@ -20,10 +20,12 @@
 package com.github.philippefichet.sonarlint4netbeans;
 
 import com.github.philippefichet.sonarlint4netbeans.project.SonarLintProjectPreferenceScope;
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
 import org.netbeans.api.project.Project;
 
 /**
@@ -40,6 +42,11 @@ public final class SonarLintDataManagerMockedBuilder {
             .thenReturn(new SonarLintPreferencesForTesting());
         Mockito.when(sonarLintDataManagerMocked.isTest(ArgumentMatchers.any()))
             .thenReturn(Boolean.FALSE);
+        Mockito.when(sonarLintDataManagerMocked.getInstalledFile(ArgumentMatchers.any()))
+            .thenAnswer(
+                (InvocationOnMock iom) ->
+                new File("." + File.separator + "src" + File.separator + "main" + File.separator + (String)iom.getArgument(0))
+            );
     }
 
     public SonarLintDataManagerMockedBuilder createPreferences(Project project)

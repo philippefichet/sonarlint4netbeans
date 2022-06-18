@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -38,6 +39,14 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 @Tag("web")
 public class SonarLintEngineImplWebPluginTest {
 
+    @RegisterExtension
+    SonarLintLookupMockedExtension lookupExtension = SonarLintLookupMockedExtension.builder()
+        .logCall()
+        .mockLookupMethodWith(
+            SonarLintDataManager.class,
+            new SonarLintDataManagerMockedBuilder().build()
+        ).build();
+    
     public static Arguments[] parametersForAnalyze() throws IOException
     {
         return new Arguments[] {

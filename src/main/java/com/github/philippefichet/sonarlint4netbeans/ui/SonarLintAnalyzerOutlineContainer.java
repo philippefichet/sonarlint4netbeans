@@ -31,13 +31,12 @@ import org.openide.explorer.view.OutlineView;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 
 /**
  *
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
-public class SonarLintAnalyzerOutlineContainer extends JPanel implements ExplorerManager.Provider, Lookup.Provider, IssueListener {
+public class SonarLintAnalyzerOutlineContainer extends JPanel implements ExplorerManager.Provider, Lookup.Provider {
     private final Lookup lookup;
     private final ExplorerManager manager;
     private final SonarLintAnalyzerRootNode rootNode = new SonarLintAnalyzerRootNode();
@@ -102,9 +101,8 @@ public class SonarLintAnalyzerOutlineContainer extends JPanel implements Explore
         return lookup;
     }
 
-    @Override
-    public void handle(Issue issue) {
-        rootNode.handle(issue);
+    public void handle(Issue issue, String ruleName) {
+        rootNode.handle(issue, ruleName);
     }
 
     // It is good idea to switch all listeners on and off when the

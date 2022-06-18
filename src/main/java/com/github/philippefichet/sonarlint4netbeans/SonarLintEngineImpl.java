@@ -21,8 +21,8 @@ package com.github.philippefichet.sonarlint4netbeans;
 
 import com.google.gson.Gson;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.nio.file.InvalidPathException;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -41,19 +41,19 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.openide.util.Lookup;
 import org.sonarsource.sonarlint.core.StandaloneSonarLintEngineImpl;
-import org.sonarsource.sonarlint.core.client.api.common.Language;
-import org.sonarsource.sonarlint.core.client.api.common.LogOutput;
+import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
-import org.sonarsource.sonarlint.core.client.api.common.ProgressMonitor;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
-import org.sonarsource.sonarlint.core.client.api.common.Version;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneGlobalConfiguration;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
+import org.sonarsource.sonarlint.core.commons.Language;
+import org.sonarsource.sonarlint.core.commons.Version;
+import org.sonarsource.sonarlint.core.commons.log.ClientLogOutput;
+import org.sonarsource.sonarlint.core.commons.progress.ClientProgressMonitor;
 
 /**
  * Main implemantation of SonarLintEngine
@@ -85,14 +85,16 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
     private final List<Consumer<SonarLintEngine>> consumerWaitingInitialization = Collections.synchronizedList(new ArrayList<>());
     private final List<Consumer<SonarLintEngine>> consumerRestarted = Collections.synchronizedList(new ArrayList<>());
     private final List<Consumer<SonarLintEngine>> configurationChanged = Collections.synchronizedList(new ArrayList<>());
-    private final Map<String, URL> pluginURLs = new HashMap<>();
+    private final Map<String, Path> pluginPaths = new HashMap<>();
+    private final Lookup lookup = Lookup.getDefault();
 
-    public SonarLintEngineImpl() throws MalformedURLException {
-        pluginURLs.put("java", getClass().getResource("/com/github/philippefichet/sonarlint4netbeans/resources/sonar-java-plugin-" + SONAR_JAVA_PLUGIN_VERSION + ".jar"));
-        pluginURLs.put("javascript", getClass().getResource("/com/github/philippefichet/sonarlint4netbeans/resources/sonar-javascript-plugin-" + SONAR_JAVASCRIPT_PLUGIN_VERSION + ".jar"));
-        pluginURLs.put("php", getClass().getResource("/com/github/philippefichet/sonarlint4netbeans/resources/sonar-php-plugin-" + SONAR_PHP_PLUGIN_VERSION + ".jar"));
-        pluginURLs.put("web", getClass().getResource("/com/github/philippefichet/sonarlint4netbeans/resources/sonar-html-plugin-" + SONAR_HTML_PLUGIN_VERSION + ".jar"));
-        pluginURLs.put("xml", getClass().getResource("/com/github/philippefichet/sonarlint4netbeans/resources/sonar-xml-plugin-" + SONAR_XML_PLUGIN_VERSION + ".jar"));
+    public SonarLintEngineImpl() {
+        SonarLintDataManager sonarLintDataManager = getSonarLintDataManager();
+        pluginPaths.put("java", sonarLintDataManager.getInstalledFile("sonar/plugins/sonar-java-plugin-" + SONAR_JAVA_PLUGIN_VERSION + ".jar").toPath());
+        pluginPaths.put("javascript", sonarLintDataManager.getInstalledFile("sonar/plugins/sonar-javascript-plugin-" + SONAR_JAVASCRIPT_PLUGIN_VERSION + ".jar").toPath());
+        pluginPaths.put("php", sonarLintDataManager.getInstalledFile("sonar/plugins/sonar-php-plugin-" + SONAR_PHP_PLUGIN_VERSION + ".jar").toPath());
+        pluginPaths.put("web", sonarLintDataManager.getInstalledFile("sonar/plugins/sonar-html-plugin-" + SONAR_HTML_PLUGIN_VERSION + ".jar").toPath());
+        pluginPaths.put("xml", sonarLintDataManager.getInstalledFile("sonar/plugins/sonar-xml-plugin-" + SONAR_XML_PLUGIN_VERSION + ".jar").toPath());
         createInternalEngine();
     }
 
@@ -102,7 +104,7 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
      */
     @Override
     public Set<String> getBasePlugins() {
-        return pluginURLs.keySet();
+        return pluginPaths.keySet();
     }
 
     /**
@@ -135,34 +137,42 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
         consumerRestarted.forEach(consumer -> consumer.accept(this));
         consumerRestarted.clear();
         new Thread(() -> {
-            if (oldStandaloneSonarLintEngineImpl != null) {
-                oldStandaloneSonarLintEngineImpl.stop();
-            }
-            Map<String, URL> allPluginURLs = new HashMap<>(pluginURLs);
-            getAdditionnalPlugins().forEach((String key, String url) -> {
-                try {
-                    allPluginURLs.put(key, SonarLintUtils.toReadableURL(url));
-                } catch (MalformedURLException ex) {
-                    LOG.warning("Additional plugin \"" + key + "\" has mal formed URL : " + url);
-                } catch (IOException ex) {
-                    LOG.warning("Additional plugin \"" + key + "\" cannot read byte from " + url);
-                }
-            });
-            StandaloneGlobalConfiguration.Builder configBuilder = StandaloneGlobalConfiguration.builder()
-                .addEnabledLanguages(Language.values())
-                .addPlugins(allPluginURLs.values().toArray(new URL[allPluginURLs.size()]));
-            if (getNodeJSPath().isPresent() && getNodeJSVersion().isPresent()) {
-                String nodeJSPath = getNodeJSPath().get();
-                Version nodeJSVersion = getNodeJSVersion().get();
-                Path nodeJS = Paths.get(nodeJSPath);
-                configBuilder.setNodeJs(nodeJS, nodeJSVersion);
-            } else {
-                tryToSetDefaultNodeJS(configBuilder);
-            }
-            standaloneSonarLintEngineImpl = new StandaloneSonarLintEngineImpl(configBuilder.build());
-            consumerWaitingInitialization.forEach(consumer -> consumer.accept(this));
-            consumerWaitingInitialization.clear();
+            createInternalEngine(oldStandaloneSonarLintEngineImpl);
         }).start();
+    }
+
+    private void createInternalEngine(StandaloneSonarLintEngineImpl oldStandaloneSonarLintEngineImpl) {
+        if (oldStandaloneSonarLintEngineImpl != null) {
+            oldStandaloneSonarLintEngineImpl.stop();
+        }
+        Map<String, Path> allPlugins = new HashMap<>(pluginPaths);
+        getAdditionnalPlugins().forEach((String key, String url) -> {
+            try {
+                allPlugins.put(key, Paths.get(url).toRealPath());
+            } catch (NoSuchFileException ex) {
+                LOG.warning("Additional plugin \"" + key + "\" with path \"" + url + "\" not exists");
+            } catch (InvalidPathException ex) {
+                LOG.warning("Additional plugin \"" + key + "\" has mal formed path : " + url);
+            } catch (IOException ex) {
+                LOG.warning("Additional plugin \"" + key + "\" has an error with path : " + url + " : " + ex.getMessage());
+            }
+        });
+        
+        List<Path> allPluginPaths = new ArrayList<>(allPlugins.values());
+        StandaloneGlobalConfiguration.Builder configBuilder = StandaloneGlobalConfiguration.builder()
+            .addEnabledLanguages(Language.values())
+            .addPlugins(allPluginPaths.toArray(new Path[allPluginPaths.size()]));
+        if (getNodeJSPath().isPresent() && getNodeJSVersion().isPresent()) {
+            String nodeJSPath = getNodeJSPath().get();
+            Version nodeJSVersion = getNodeJSVersion().get();
+            Path nodeJS = Paths.get(nodeJSPath);
+            configBuilder.setNodeJs(nodeJS, nodeJSVersion);
+        } else {
+            tryToSetDefaultNodeJS(configBuilder);
+        }
+        standaloneSonarLintEngineImpl = new StandaloneSonarLintEngineImpl(configBuilder.build());
+        consumerWaitingInitialization.forEach(consumer -> consumer.accept(this));
+        consumerWaitingInitialization.clear();
     }
 
     private void tryToSetDefaultNodeJS(StandaloneGlobalConfiguration.Builder configBuilder) {
@@ -251,7 +261,7 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
     }
 
     @Override
-    public AnalysisResults analyze(StandaloneAnalysisConfiguration configuration, IssueListener issueListener, LogOutput logOutput, ProgressMonitor monitor) {
+    public AnalysisResults analyze(StandaloneAnalysisConfiguration configuration, IssueListener issueListener, ClientLogOutput logOutput, ClientProgressMonitor monitor) {
         waitingInitialization();
         return standaloneSonarLintEngineImpl.analyze(configuration, issueListener, logOutput, monitor);
     }
@@ -401,7 +411,7 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
 
     private SonarLintDataManager getSonarLintDataManager()
     {
-        return Lookup.getDefault().lookup(SonarLintDataManager.class);
+        return lookup.lookup(SonarLintDataManager.class);
     }
 
     @Override

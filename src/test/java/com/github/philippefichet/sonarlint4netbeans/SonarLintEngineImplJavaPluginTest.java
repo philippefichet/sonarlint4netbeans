@@ -21,11 +21,11 @@ package com.github.philippefichet.sonarlint4netbeans;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -35,9 +35,17 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
  *
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
-public class SonarLintEngineImplJavaPluginTest {
+final class SonarLintEngineImplJavaPluginTest {
 
-    public static Arguments[] parametersForAnalyze() throws IOException
+    @RegisterExtension
+    SonarLintLookupMockedExtension lookupExtension = SonarLintLookupMockedExtension.builder()
+        .logCall()
+        .mockLookupMethodWith(
+            SonarLintDataManager.class,
+            new SonarLintDataManagerMockedBuilder().build()
+        ).build();
+
+    static Arguments[] parametersForAnalyze() throws IOException
     {
         return new Arguments[] {
             Arguments.of(
@@ -119,7 +127,7 @@ public class SonarLintEngineImplJavaPluginTest {
 
     @ParameterizedTest(name = "[{index}}] analyze({0})")
     @MethodSource("parametersForAnalyze")
-    public void analyze(SonarLintEngineTestConfiguration testConfiguration, List<Issue> expectedIssue) throws MalformedURLException, BackingStoreException, IOException {
+    void analyze(SonarLintEngineTestConfiguration testConfiguration, List<Issue> expectedIssue) throws BackingStoreException, IOException {
         SonarLintEngineImplTestUtils.analyzeTesting(testConfiguration, expectedIssue);
     }
 }

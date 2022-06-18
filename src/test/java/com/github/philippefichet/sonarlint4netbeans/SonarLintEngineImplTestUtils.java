@@ -21,7 +21,6 @@ package com.github.philippefichet.sonarlint4netbeans;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -32,12 +31,12 @@ import java.util.prefs.BackingStoreException;
 import java.util.stream.Collectors;
 import org.assertj.core.api.Assertions;
 import org.netbeans.api.project.Project;
-import org.sonarsource.sonarlint.core.client.api.common.LogOutput;
+import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
-import org.sonarsource.sonarlint.core.client.api.common.Version;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
+import org.sonarsource.sonarlint.core.commons.Version;
+import org.sonarsource.sonarlint.core.commons.log.ClientLogOutput;
 
 /**
  *
@@ -50,7 +49,7 @@ public final class SonarLintEngineImplTestUtils {
     private SonarLintEngineImplTestUtils() {
     }
 
-    public static void analyzeTesting(SonarLintEngineTestConfiguration testConfiguration, List<Issue> expectedIssue) throws MalformedURLException, BackingStoreException, IOException
+    public static void analyzeTesting(SonarLintEngineTestConfiguration testConfiguration, List<Issue> expectedIssue) throws BackingStoreException, IOException
     {
         SonarLintEngineImpl sonarLintEngine = new SonarLintEngineImpl();
         sonarLintEngine.waitingInitialization();
@@ -103,9 +102,9 @@ public final class SonarLintEngineImplTestUtils {
         AnalysisResults analyze = sonarLintEngine.analyze(
             standaloneAnalysisConfiguration,
             actualIssues::add,
-            new LogOutput() {
+            new ClientLogOutput() {
             @Override
-            public void log(String formattedMessage, LogOutput.Level level) {
+            public void log(String formattedMessage, ClientLogOutput.Level level) {
                 LOG.info("[" + level + "] " + formattedMessage);
             }
             },

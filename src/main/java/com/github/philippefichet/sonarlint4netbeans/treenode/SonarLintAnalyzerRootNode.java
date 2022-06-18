@@ -26,15 +26,14 @@ import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreePath;
 import org.openide.nodes.AbstractNode;
-import org.sonarsource.sonarlint.core.analyzer.issue.DefaultClientIssue;
+import org.sonarsource.sonarlint.core.client.api.common.analysis.DefaultClientIssue;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 
 /**
  *
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
-public class SonarLintAnalyzerRootNode extends AbstractNode implements IssueListener {
+public class SonarLintAnalyzerRootNode extends AbstractNode {
 
     private final List<TreeModelListener> listeners = new ArrayList<>();
     private final SonarLintAnalyserIssueSeverityChildren children;
@@ -68,11 +67,10 @@ public class SonarLintAnalyzerRootNode extends AbstractNode implements IssueList
         }
     }
 
-    @Override
-    public void handle(Issue issue) {
+    public void handle(Issue issue, String ruleName) {
         if (issue instanceof DefaultClientIssue) {
             flatChildCount++;
-            children.addIssue(issue);
+            children.addIssue(issue, ruleName);
             updateStartingTitle();
             for (TreeModelListener listener : listeners) {
                 listener.treeNodesInserted(new TreeModelEvent(this, (TreePath)null));

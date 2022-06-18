@@ -21,9 +21,10 @@ package com.github.philippefichet.sonarlint4netbeans;
 
 import java.util.List;
 import org.assertj.core.groups.Tuple;
-import org.sonarsource.sonarlint.core.client.api.common.QuickFix;
-import org.sonarsource.sonarlint.core.client.api.common.TextRange;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
+import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
+import org.sonarsource.sonarlint.core.analysis.api.Flow;
+import org.sonarsource.sonarlint.core.analysis.api.QuickFix;
+import org.sonarsource.sonarlint.core.analysis.api.TextRange;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 
 /**
@@ -35,18 +36,16 @@ public class DefaultIssueTestImpl implements Issue {
     private final String severity;
     private final String type;
     private final String ruleKey;
-    private final String ruleName;
     private final Integer startLine;
     private final Integer endLine;
     private final Integer startLineOffset;
     private final Integer endLineOffset;
     private final ClientInputFile clientInputFile;
 
-    public DefaultIssueTestImpl(String severity, String type, String ruleKey, String ruleName, Integer startLine, Integer endLine, Integer startLineOffset, Integer endLineOffset, ClientInputFile clientInputFile) {
+    public DefaultIssueTestImpl(String severity, String type, String ruleKey, Integer startLine, Integer endLine, Integer startLineOffset, Integer endLineOffset, ClientInputFile clientInputFile) {
         this.severity = severity;
         this.type = type;
         this.ruleKey = ruleKey;
-        this.ruleName = ruleName;
         this.startLine = startLine;
         this.endLine = endLine;
         this.startLineOffset = startLineOffset;
@@ -67,11 +66,6 @@ public class DefaultIssueTestImpl implements Issue {
     @Override
     public String getRuleKey() {
         return ruleKey;
-    }
-
-    @Override
-    public String getRuleName() {
-        return ruleName;
     }
 
     @Override
@@ -120,7 +114,6 @@ public class DefaultIssueTestImpl implements Issue {
             issue.getSeverity(),
             issue.getType(),
             issue.getRuleKey(),
-            issue.getRuleName(),
             issue.getStartLine(),
             issue.getEndLine(),
             issue.getStartLineOffset(),
@@ -140,7 +133,7 @@ public class DefaultIssueTestImpl implements Issue {
 
     @Override
     public String toString() {
-        return "DefaultIssueTestImpl{" + "severity=" + severity + ", type=" + type + ", ruleKey=" + ruleKey + ", ruleName=" + ruleName + ", startLine=" + startLine + ", endLine=" + endLine + ", startLineOffset=" + startLineOffset + ", endLineOffset=" + endLineOffset + ", clientInputFile=" + clientInputFile + '}';
+        return "DefaultIssueTestImpl{" + "severity=" + severity + ", type=" + type + ", ruleKey=" + ruleKey + ", startLine=" + startLine + ", endLine=" + endLine + ", startLineOffset=" + startLineOffset + ", endLineOffset=" + endLineOffset + ", clientInputFile=" + clientInputFile + '}';
     }
 
     public static class Builder
@@ -214,7 +207,6 @@ public class DefaultIssueTestImpl implements Issue {
                 severity,
                 type,
                 ruleKey,
-                ruleName,
                 startLine,
                 endLine,
                 startLineOffset,
@@ -227,7 +219,6 @@ public class DefaultIssueTestImpl implements Issue {
                 severity,
                 type,
                 ruleKey,
-                ruleName,
                 startLine,
                 endLine,
                 startLineOffset,

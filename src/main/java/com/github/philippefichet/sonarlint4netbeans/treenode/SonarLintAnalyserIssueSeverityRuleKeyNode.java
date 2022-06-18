@@ -23,7 +23,7 @@ import com.github.philippefichet.sonarlint4netbeans.SonarLintUtils;
 import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Sheet;
-import org.sonarsource.sonarlint.core.analyzer.issue.DefaultClientIssue;
+import org.sonarsource.sonarlint.core.client.api.common.analysis.DefaultClientIssue;
 
 /**
  *
@@ -45,16 +45,16 @@ public class SonarLintAnalyserIssueSeverityRuleKeyNode extends AbstractNode {
     };
     private int flatChildCount = 0;
     
-    public SonarLintAnalyserIssueSeverityRuleKeyNode(DefaultClientIssue issue) {
+    public SonarLintAnalyserIssueSeverityRuleKeyNode(DefaultClientIssue issue, String ruleName) {
         super(new SonarLintAnalyserIssueChildren());
         children = (SonarLintAnalyserIssueChildren)getChildren();
         this.ruleKey = issue.getRuleKey();
-        this.ruleName = issue.getRuleName();
+        this.ruleName = ruleName;
         this.type = issue.getType();
         ruleNamePropertySet.setName("ruleName");
         ruleNamePropertySet.setDisplayName("Rule name");
         ruleNamePropertySet.setShortDescription("Rule name");
-        ruleNamePropertySet.put(new SonarLintAnalyserIssueNode.RuleNameProperty(issue.getRuleName()));
+        ruleNamePropertySet.put(new SonarLintAnalyserIssueNode.RuleNameProperty(ruleName));
         typePropertySet.setName("type");
         typePropertySet.setDisplayName("Type");
         typePropertySet.setShortDescription("Type");
@@ -73,8 +73,8 @@ public class SonarLintAnalyserIssueSeverityRuleKeyNode extends AbstractNode {
         setDisplayName(ruleKey + " : " + ruleName + " (" + flatChildCount + ")");
     }
 
-    public void addIssue(DefaultClientIssue issue) {
-        children.addIssue(issue);
+    public void addIssue(DefaultClientIssue issue, String ruleName) {
+        children.addIssue(issue, ruleName);
         flatChildCount++;
         updateDisplayName();
     }

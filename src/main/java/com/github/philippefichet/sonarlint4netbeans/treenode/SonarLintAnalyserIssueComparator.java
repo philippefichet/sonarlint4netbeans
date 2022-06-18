@@ -39,9 +39,9 @@ public class SonarLintAnalyserIssueComparator implements Comparator<Issue> {
         } else {
             int compare = splitO1[splitO1.length-1].compareTo(splitO2[splitO2.length-1]);
             if (compare == 0) {
-                int compareLine =  o1.getStartLine() - o2.getStartLine();
+                int compareLine = (o1.getStartLine() == null ? 0 : o1.getStartLine()) - (o2.getStartLine() == null ? 0 : o2.getStartLine());
                 if (compareLine == 0) {
-                    return o1.getStartLineOffset() - o2.getStartLineOffset();
+                    return (o1.getStartLineOffset() == null ? 0 : o1.getStartLineOffset()) - (o2.getStartLineOffset() == null ? 0 : o2.getStartLineOffset());
                 } else {
                     return compareLine;
                 }

@@ -19,7 +19,7 @@
  */
 package com.github.philippefichet.sonarlint4netbeans.ui;
 
-import org.sonarsource.sonarlint.core.client.api.common.Version;
+import org.sonarsource.sonarlint.core.commons.Version;
 
 /**
  *

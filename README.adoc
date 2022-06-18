@@ -5,7 +5,10 @@
 
 == SonarLint integration for Apache Netbeans
 
-Features:
+This plugin is a https://www.sonarlint.org/[sonarlint] integration for netbeans. +
+It requests netbeans in version 13.0 or higher and Java in version 11 or higher. +
+
+== Features
 
 - Support Java, Javascript, PHP, HTML and XML
 - Annotation in editor
@@ -21,6 +24,11 @@ Features:
 - Custom "Sonar Rule Details" window with CSS
 - Enable or disabled test rules on test files
 - Severity icons
+
+== Release 2.x to 3.x
+
+SonarLint no longer uses URLs to find plugins but file paths. +
+You have to update the path to the plugins you added in Tools -> Options -> Miscelaneous -> SonarLint -> Plugins. +
 
 == Release 1.x to 2.x
 

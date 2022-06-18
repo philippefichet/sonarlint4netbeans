@@ -62,18 +62,17 @@ import org.openide.util.Lookup;
 import org.sonarsource.nodejs.NodeCommand;
 import org.sonarsource.nodejs.NodeCommandBuilderImpl;
 import org.sonarsource.nodejs.NodeCommandException;
-import org.sonarsource.sonarlint.core.client.api.common.ProgressMonitor;
+import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
+import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
-import org.sonarsource.sonarlint.core.client.api.common.Version;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
-import org.sonarsource.sonarlint.core.container.model.DefaultAnalysisResult;
+import org.sonarsource.sonarlint.core.commons.Version;
+import org.sonarsource.sonarlint.core.commons.progress.ClientProgressMonitor;
 
 /**
  *
@@ -454,7 +453,7 @@ public final class SonarLintUtils {
     ) throws IOException {
         SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
         if (sonarLintEngine == null) {
-            return new DefaultAnalysisResult();
+            return new AnalysisResults();
         }
 
         List<File> fileGlobalSettings = new ArrayList<>();
@@ -538,10 +537,25 @@ public final class SonarLintUtils {
             standaloneAnalysisConfiguration,
             listener,
             null,
-            new ProgressMonitor() {
+            new ClientProgressMonitor() {
                 @Override
                 public boolean isCanceled() {
                     return sonarLintAnalyzerCancelableTask != null && sonarLintAnalyzerCancelableTask.isCanceled();
+                }
+
+                @Override
+                public void setMessage(String msg) {
+                    LOG.info("ClientProgressMonitor.setMessage(\"" + msg + "\")");
+                }
+
+                @Override
+                public void setFraction(float fraction) {
+                    LOG.info("ClientProgressMonitor.setFraction(" + fraction + ")");
+                }
+
+                @Override
+                public void setIndeterminate(boolean indeterminate) {
+                    LOG.info("ClientProgressMonitor.setIndeterminate(" + indeterminate + ")");
                 }
             }
         );

@@ -124,15 +124,19 @@ public final class SonarLintAnnotationHandler {
             int nbEndLineOffset = NbDocument.findLineOffset(editorCookie.getDocument(), endLine - 1);
             int endOffset = nbEndLineOffset + endLineOffset;
             int length = endOffset - startOffset;
-            currentAnnocationOnFileObject.add(
-                new SonarLintAnnotation(
-                    sue.getRuleKey(),
-                    sue.getRuleName(),
-                    SonarLintUtils.extractRuleParameters(standaloneSonarLintEngine, sue.getRuleKey(), projectForAnalyse),
-                    sue.getSeverity(),
-                    startOffset,
-                    length
-                )
+            standaloneSonarLintEngine.getRuleDetails(sue.getRuleKey()).ifPresent(
+                (ruleDetails) -> {
+                    currentAnnocationOnFileObject.add(
+                        new SonarLintAnnotation(
+                            sue.getRuleKey(),
+                            ruleDetails.getName(),
+                            SonarLintUtils.extractRuleParameters(standaloneSonarLintEngine, sue.getRuleKey(), projectForAnalyse),
+                            sue.getSeverity(),
+                            startOffset,
+                            length
+                        )
+                    );
+                }
             );
         });
 

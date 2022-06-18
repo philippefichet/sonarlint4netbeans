@@ -33,8 +33,8 @@ import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
-import org.sonarsource.sonarlint.core.analyzer.issue.DefaultClientIssue;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
+import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
+import org.sonarsource.sonarlint.core.client.api.common.analysis.DefaultClientIssue;
 
 /**
  *
@@ -55,7 +55,7 @@ public class SonarLintAnalyserIssueNode extends AbstractNode {
     private final File file;
     private final SonarLintDataManager sonarLintDataManager;
 
-    public SonarLintAnalyserIssueNode(DefaultClientIssue issue) {
+    public SonarLintAnalyserIssueNode(DefaultClientIssue issue, String ruleName) {
         super(Children.LEAF);
         this.issue = issue;
         sonarLintDataManager = Lookup.getDefault().lookup(SonarLintDataManager.class);
@@ -76,7 +76,7 @@ public class SonarLintAnalyserIssueNode extends AbstractNode {
         ruleNamePropertySet.setName("ruleName");
         ruleNamePropertySet.setDisplayName("Rule name");
         ruleNamePropertySet.setShortDescription("Rule name");
-        ruleNamePropertySet.put(new RuleNameProperty(issue.getRuleName()));
+        ruleNamePropertySet.put(new RuleNameProperty(ruleName));
         locationPropertySet.setName("location");
         locationPropertySet.setDisplayName("Location");
         locationPropertySet.setShortDescription("Location");

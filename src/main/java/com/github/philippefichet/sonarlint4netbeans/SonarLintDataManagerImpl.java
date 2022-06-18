@@ -33,6 +33,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 
@@ -135,5 +136,10 @@ public class SonarLintDataManagerImpl implements SonarLintDataManager {
             }
         }
         return Optional.empty();
+    }
+
+    @Override
+    public File getInstalledFile(String path) {
+        return InstalledFileLocator.getDefault().locate(path, "com.github.philippefichet.sonarlint4netbeans", false);
     }
 }
