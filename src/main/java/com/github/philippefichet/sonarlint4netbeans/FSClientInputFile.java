@@ -99,7 +99,9 @@ public class FSClientInputFile implements ClientInputFile {
 
     private void consumePathURI() {
         for (ClientInputFileListener clientInputFileURIEvent : clientInputFileURIEvents) {
-            clientInputFileURIEvent.consume(path.toUri());
+            if (clientInputFileURIEvent != null) {
+                clientInputFileURIEvent.consume(path.toUri());
+            }
         }
     }
 }
