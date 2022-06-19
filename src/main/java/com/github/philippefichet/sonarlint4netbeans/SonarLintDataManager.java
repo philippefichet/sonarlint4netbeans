@@ -97,4 +97,11 @@ public interface SonarLintDataManager {
      * @return icon for this file
      */
     public Optional<Image> getIcon(File file, int type);
+
+    /**
+     * Retrieve file installed with this plugin
+     * @param path path to installed file
+     * @return installed file or null if not found
+     */
+    public File getInstalledFile(String path);
 }

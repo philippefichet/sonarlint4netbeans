@@ -24,15 +24,15 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.sonarsource.sonarlint.core.client.api.common.Language;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
+import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
+import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
+import org.sonarsource.sonarlint.core.commons.Language;
 
 /**
  * implementation of AnalysisResults to merge multiple analyze from different configuration
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
-public final class AnalysisResultsMergerable implements AnalysisResults {
+public final class AnalysisResultsMergerable extends AnalysisResults {
     private int indexedFileCount = 0;
     private final List<ClientInputFile> failedAnalysisFiles = new ArrayList<>();
     private final Map<ClientInputFile, Language> languagePerFile = new HashMap<>();

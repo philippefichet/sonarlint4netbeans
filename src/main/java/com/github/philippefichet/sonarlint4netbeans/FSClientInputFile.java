@@ -27,7 +27,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.ClientInputFile;
+import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
 
 /**
  *
@@ -52,9 +52,7 @@ public class FSClientInputFile implements ClientInputFile {
 
     @Override
     public String getPath() {
-        for (ClientInputFileListener clientInputFileURIEvent : clientInputFileURIEvents) {
-            clientInputFileURIEvent.consumeInputStream(path.toUri());
-        }
+        consumePathURI();
         return path.toString();
     }
 
@@ -75,11 +73,13 @@ public class FSClientInputFile implements ClientInputFile {
 
     @Override
     public InputStream inputStream() throws IOException {
+        consumePathURI();
         return new ByteArrayInputStream(content.getBytes());
     }
 
     @Override
     public String contents() throws IOException {
+        consumePathURI();
         return content;
     }
 
@@ -95,5 +95,13 @@ public class FSClientInputFile implements ClientInputFile {
     @Override
     public URI uri() {
         return path.toUri();
+    }
+
+    private void consumePathURI() {
+        for (ClientInputFileListener clientInputFileURIEvent : clientInputFileURIEvents) {
+            if (clientInputFileURIEvent != null) {
+                clientInputFileURIEvent.consume(path.toUri());
+            }
+        }
     }
 }

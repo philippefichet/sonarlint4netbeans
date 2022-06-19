@@ -24,6 +24,7 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -34,6 +35,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 
 /**
  *
@@ -69,10 +71,11 @@ public class SonarLintTaskScanner extends FileTaskScanner implements PropertyCha
             return analyze.stream()
                 .map(issue -> {
                     Integer startLine = issue.getStartLine();
+                    Optional<StandaloneRuleDetails> ruleDetails = sonarLintEngine.getRuleDetails(issue.getRuleKey());
                     return Task.create(
                         fileObject,
                         "nb-sonarlint-" + issue.getSeverity().toLowerCase(),
-                        issue.getRuleKey() + " = " + issue.getRuleName(), startLine == null ? 1 : startLine
+                        issue.getRuleKey() + " = " + ruleDetails.map(StandaloneRuleDetails::getName).orElse("unknown"), startLine == null ? 1 : startLine
                     );
                 })
                 .collect(Collectors.toList());

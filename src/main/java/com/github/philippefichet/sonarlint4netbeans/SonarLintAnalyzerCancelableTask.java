@@ -33,9 +33,11 @@ import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
-import org.sonarsource.sonarlint.core.client.api.exceptions.CanceledException;
+import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
+import org.sonarsource.sonarlint.core.commons.progress.CanceledException;
 
 /**
  *
@@ -104,7 +106,12 @@ public class SonarLintAnalyzerCancelableTask implements Runnable, Cancellable {
         try {
             AnalysisResults analyze = SonarLintUtils.analyze(
                 files,
-                sonarLintAnalyzerContainer,
+                (Issue issue) -> {
+                    sonarLintEngine.getRuleDetails(issue.getRuleKey()).ifPresent((StandaloneRuleDetails ruleDetails) -> {
+                        String ruleName = ruleDetails.getName();
+                        sonarLintAnalyzerContainer.handle(issue, ruleName);
+                    });
+                },
                 clientInputFileInputStreamEvent,
                 this
             );

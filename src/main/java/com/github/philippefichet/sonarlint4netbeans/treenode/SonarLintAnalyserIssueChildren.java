@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.sonarsource.sonarlint.core.analyzer.issue.DefaultClientIssue;
+import org.sonarsource.sonarlint.core.client.api.common.analysis.DefaultClientIssue;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 
 /**
@@ -41,8 +41,8 @@ public class SonarLintAnalyserIssueChildren extends Children.Keys<Issue> {
         
     }
 
-    public void addIssue(DefaultClientIssue issue) {
-        nodeInstancies.put(issue, new SonarLintAnalyserIssueNode(issue));
+    public void addIssue(DefaultClientIssue issue, String ruleName) {
+        nodeInstancies.put(issue, new SonarLintAnalyserIssueNode(issue, ruleName));
         List<Issue> keySet = new ArrayList<>(nodeInstancies.keySet());
         Collections.sort(keySet, issueComparator);
         setKeys(keySet);

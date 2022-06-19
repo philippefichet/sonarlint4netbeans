@@ -56,12 +56,13 @@ import org.netbeans.spi.project.ProjectManagerImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
-import org.sonarsource.sonarlint.core.client.api.common.Version;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
+import org.sonarsource.sonarlint.core.commons.Version;
 
 /**
  *
@@ -75,6 +76,11 @@ public class SonarLintUtilsTest {
     @RegisterExtension
     private final SonarLintLookupMockedExtension lookupExtension = SonarLintLookupMockedExtension.builder()
         .logCall()
+        .mockLookupMethodInstanceWith(SonarLintEngine.class, () -> {
+            SonarLintEngineImpl engine = new SonarLintEngineImpl();
+            engine.waitingInitialization();
+            return engine;
+        })
         .mockLookupMethodWith(ProjectManagerImplementation.class, Mockito.mock(ProjectManagerImplementation.class))
         .mockLookupMethodWith(SonarLintOptions.class, Mockito.mock(SonarLintOptions.class))
         .mockLookupMethodWith(
@@ -94,8 +100,15 @@ public class SonarLintUtilsTest {
         // first step, check all issue in file
         List<Issue> actualIssues = new ArrayList<>();
         List<Issue> expectedIssues = getExpectedIssueForNewClassFile();
-        // Clean engine before use
-        SonarLintTestUtils.cleanSonarLintEngine();
+        SonarLintEngine engine = Lookup.getDefault().lookup(SonarLintEngine.class);
+        engine.waitingInitialization();
+        engine.getAllRuleDetails().forEach(d -> engine.excludeRuleKey(RuleKey.parse(d.getKey()), SonarLintEngine.GLOBAL_SETTINGS_PROJECT));
+        // check and activate required rules
+        String[] requiredRuleKeys = new String[] {"java:S2168", "java:S1186", "java:S115", "java:S1134", "java:S1133", "java:S100"};
+        for (String requiredRuleKey : requiredRuleKeys) {
+            Assertions.assertThat(engine.getRuleDetails(requiredRuleKey)).isPresent();
+            engine.includeRuleKey(RuleKey.parse(requiredRuleKey), SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
+        }
         SonarLintUtils.analyze(
            Arrays.asList(FileUtil.normalizeFile(new File("./src/test/resources/NewClass.java"))),
             actualIssues::add,
@@ -114,7 +127,10 @@ public class SonarLintUtilsTest {
         SonarLintAnalyzerRootNode sonarLintAnalyzerRootNode = new SonarLintAnalyzerRootNode();
         SonarLintUtils.analyze(
            Arrays.asList(FileUtil.normalizeFile(new File("./src/test/resources/NewClass.java"))),
-            sonarLintAnalyzerRootNode,
+            (Issue issue) -> 
+                //  lookupExtension.executeInMockedLookup to use mock ProjectManagerImplementation
+                lookupExtension.executeInMockedLookup(() -> sonarLintAnalyzerRootNode.handle(issue, engine.getRuleDetails(issue.getRuleKey()).get().getName()))
+            ,
             null,
             null
         );
@@ -185,6 +201,7 @@ public class SonarLintUtilsTest {
             .isEqualTo("java:S1134 : Track uses of \"FIXME\" tags (1)");
         Node[] majorFileNodes = issueMajorRuleKeyNodes[0].getChildren().getNodes();
         Assertions.assertThat(majorFileNodes)
+            .isNotNull()
             .hasSize(1);
         Assertions.assertThat(majorFileNodes[0])
             .extracting(Node::getDisplayName)
@@ -259,7 +276,9 @@ public class SonarLintUtilsTest {
         SonarLintAnalyzerRootNode sonarLintAnalyzerRootNode = new SonarLintAnalyzerRootNode();
         SonarLintUtils.analyze(
            Arrays.asList(FileUtil.normalizeFile(new File("./src/test/resources/NewClass.java"))),
-            sonarLintAnalyzerRootNode,
+            (Issue issue) ->
+                sonarLintAnalyzerRootNode.handle(issue, sonarLintEngine.getRuleDetails(issue.getRuleKey()).get().getName())
+            ,
             null,
             null
         );
@@ -290,7 +309,10 @@ public class SonarLintUtilsTest {
             .describedAs("critial S1186 second file display name")
             .isEqualTo("19:16: NewClass.java");
     }
-    
+
+    @SuppressWarnings({
+        "java:S1075" // URIs should not be hardcoded -> test on URI
+    })
     public static Arguments[] parametersForToTruncateURI() throws URISyntaxException
     {
         return new Arguments[] {
@@ -414,7 +436,7 @@ public class SonarLintUtilsTest {
 
     @Test
     @DisplayName("Analyze with custom rule parameter value")
-    public void ruleParameterChanged() throws MalformedURLException, IOException, BackingStoreException {
+    public void ruleParameterChanged() throws BackingStoreException, IOException {
         SonarLintEngine sonarLintEngine = SonarLintTestUtils.getCleanSonarLintEngine();
         String ruleKeyString = "java:S115";
         sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey()), SonarLintEngine.GLOBAL_SETTINGS_PROJECT));
@@ -431,7 +453,7 @@ public class SonarLintUtilsTest {
 
     @Test
     @DisplayName("Analyze with custom rule parameter value on project with global scope")
-    public void ruleParameterChangedOnProjectWithGlobalScope() throws MalformedURLException, IOException, BackingStoreException {
+    public void ruleParameterChangedOnProjectWithGlobalScope() throws IOException, BackingStoreException {
         SonarLintDataManager sonarlintDataMangerMocked = lookupExtension.lookupMocked(SonarLintDataManager.class).get();
         SonarLintEngine sonarLintEngine = SonarLintTestUtils.getCleanSonarLintEngine();
         String ruleKeyString = "java:S115";
@@ -467,7 +489,7 @@ public class SonarLintUtilsTest {
 
     @Test
     @DisplayName("Analyze with custom rule parameter value on project")
-    public void ruleParameterChangedOnProject() throws MalformedURLException, IOException, BackingStoreException {
+    public void ruleParameterChangedOnProject() throws IOException, BackingStoreException {
         SonarLintDataManager sonarlintDataMangerMocked = lookupExtension.lookupMocked(SonarLintDataManager.class).get();
         SonarLintEngine sonarLintEngine = SonarLintTestUtils.getCleanSonarLintEngine();
         String ruleKeyString = "java:S115";

@@ -27,16 +27,16 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
-import org.sonarsource.sonarlint.core.client.api.common.LogOutput;
+import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
-import org.sonarsource.sonarlint.core.client.api.common.ProgressMonitor;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
-import org.sonarsource.sonarlint.core.client.api.common.Version;
-import org.sonarsource.sonarlint.core.client.api.common.analysis.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
+import org.sonarsource.sonarlint.core.commons.Version;
+import org.sonarsource.sonarlint.core.commons.log.ClientLogOutput;
+import org.sonarsource.sonarlint.core.commons.progress.ClientProgressMonitor;
 
 /**
  *
@@ -52,7 +52,7 @@ public interface SonarLintEngine {
      * @param monitor monitor
      * @return result of analyze
      */
-    public AnalysisResults analyze(StandaloneAnalysisConfiguration configuration, IssueListener issueListener, LogOutput logOutput, ProgressMonitor monitor);
+    public AnalysisResults analyze(StandaloneAnalysisConfiguration configuration, IssueListener issueListener, ClientLogOutput logOutput, ClientProgressMonitor monitor);
 
     /**
      * Block current Thread while engine is not ready

@@ -20,10 +20,12 @@
 package com.github.philippefichet.sonarlint4netbeans.ui;
 
 import com.github.philippefichet.sonarlint4netbeans.SonarLintPropertiesTableModel;
-import com.github.philippefichet.sonarlint4netbeans.SonarLintUtils;
 import com.github.philippefichet.sonarlint4netbeans.ui.listener.SonarLintOptionsPanelPluginsListener;
 import java.io.IOException;
-import java.net.MalformedURLException;
+import java.nio.file.InvalidPathException;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -43,7 +45,7 @@ import javax.swing.text.html.HTMLEditorKit;
  */
 public class SonarLintOptionsPanelPlugins extends javax.swing.JPanel {
 
-    private final SonarLintPropertiesTableModel sonarLintPropertiesTableModel = new SonarLintPropertiesTableModel("Plugin key", "Plugin URL");
+    private final SonarLintPropertiesTableModel sonarLintPropertiesTableModel = new SonarLintPropertiesTableModel("Plugin key", "Plugin path");
     private final String baseInformation;
     private final Map<String, String> pluginStatus = Collections.synchronizedMap(new HashMap<>());
     private final ExecutorService executorService = Executors.newFixedThreadPool(5);
@@ -105,12 +107,14 @@ public class SonarLintOptionsPanelPlugins extends javax.swing.JPanel {
         pluginStatus.put(key, "running ...");
         executorService.submit(() -> {
             try {
-                SonarLintUtils.toReadableURL(url);
+                Path path = Paths.get(url).toRealPath();
                 pluginStatus.put(key, "OK");
-            } catch (MalformedURLException ex) {
-                pluginStatus.put(key, "wrong URL format : \"" + url + "\"");
+            } catch (NoSuchFileException ex) {
+                pluginStatus.put(key, "Path \"" + url + "\" not exists");
+            } catch (InvalidPathException ex) {
+                pluginStatus.put(key, "Mal formed path : " + url);
             } catch (IOException ex) {
-                pluginStatus.put(key, "cannot be read data from \"" + url + "\"");
+                pluginStatus.put(key, "Error with path : " + url + " : " + ex.getMessage());
             }
             SwingUtilities.invokeLater(() -> updateInformationTextPane());
         });

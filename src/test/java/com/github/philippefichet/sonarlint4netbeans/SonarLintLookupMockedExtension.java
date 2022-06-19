@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.InvocationInterceptor;
@@ -46,14 +47,17 @@ public final class SonarLintLookupMockedExtension implements InvocationIntercept
     private final boolean logCall;
     private final Map<Class<?>, Object> lookupMethod = new HashMap<>();
     private final Lookup mockedLookup = Mockito.mock(Lookup.class);
+    private final Map<Class<?>, Supplier<?>> lookupMethodInstance = new HashMap<>();
     private SonarLintLookupMockedExtension(Builder builder)
     {
         this.logCall = builder.logCall;
         this.lookupMethod.putAll(builder.lookupMethod);
+        this.lookupMethodInstance.putAll(builder.lookupMethodInstance);
+        init();
     }
-
-    @Override
-    public void interceptTestMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws Throwable {
+    
+    private void init()
+    {
         Lookup defaultLookup = Lookup.getDefault();
         if (!lookupMethod.isEmpty()) {
             Predicate<Class<?>> actualPredicate = null;
@@ -112,7 +116,27 @@ public final class SonarLintLookupMockedExtension implements InvocationIntercept
                     return defaultLookup.lookup(firstArgument);
             });
         }
-        GlobalLookup.execute(mockedLookup, () -> {
+
+        if (!lookupMethodInstance.isEmpty()) {
+            Map<Class<?>, Object> instances = new HashMap<>();
+            lookupMethodInstance.forEach(
+                (Class<?> clazz, Supplier<?> supplier) -> {
+                    Mockito.when(mockedLookup.lookup(clazz))
+                    .thenAnswer(
+                        (InvocationOnMock iom) -> {
+                            if (logCall) {
+                                LOG.debug("defaultLookup.lookup(Class<?>) for an specific instance called with \"{}\"", clazz);
+                            }
+                            return instances.computeIfAbsent(clazz, (Class<?> cls) -> supplier.get());
+                    });
+                }
+            );
+        }
+    }
+
+    @Override
+    public void interceptTestMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws Throwable {
+        executeInMockedLookup(() -> {
             try {
                 InvocationInterceptor.super.interceptTestMethod(
                     invocation,
@@ -124,6 +148,27 @@ public final class SonarLintLookupMockedExtension implements InvocationIntercept
                 Assertions.fail(ex);
             }
         });
+    }
+
+    @Override
+    public void interceptTestTemplateMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws Throwable {
+        executeInMockedLookup(() -> {
+            try {
+                InvocationInterceptor.super.interceptTestTemplateMethod(
+                    invocation,
+                    invocationContext,
+                    extensionContext
+                );
+            } catch (Throwable ex) {
+                ex.printStackTrace();
+                Assertions.fail(ex);
+            }
+        });
+    }
+
+    public void executeInMockedLookup(Runnable r)
+    {
+        GlobalLookup.execute(mockedLookup, r);
     }
 
     /**
@@ -147,6 +192,7 @@ public final class SonarLintLookupMockedExtension implements InvocationIntercept
     {
         private boolean logCall = false;
         private final Map<Class<?>, Object> lookupMethod = new HashMap<>();
+        private final Map<Class<?>, Supplier<?>> lookupMethodInstance = new HashMap<>();
         private Builder()
         {
             
@@ -166,7 +212,22 @@ public final class SonarLintLookupMockedExtension implements InvocationIntercept
             lookupMethod.put(classForLookup, instance);
             return this;
         }
-        
+
+        /**
+         * Replace actual instance by instance in &lt;T&gt; T lookup(Class&lt;T&gt; clazz)
+         * @param <T>
+         * @param classForLookup
+         * @param instanceFactory
+         * @return this builder
+         * @see org.​openide.​util.​Lookup#lookup(Class&lt;T&gt; clazz)
+         * 
+         */
+        public <T> Builder mockLookupMethodInstanceWith(Class<T> classForLookup, Supplier<T> instanceFactory)
+        {
+            lookupMethodInstance.put(classForLookup, instanceFactory);
+            return this;
+        }
+
         /**
          * Alias to logCall(true)
          * @return this builder

@@ -28,8 +28,8 @@ import java.net.URI;
 @FunctionalInterface
 public interface ClientInputFileListener {
     /**
-     * Event when an inputStream retrieve from a FSClientInputFile
+     * Event when content retrieve from a FSClientInputFile
      * @param uri 
      */
-    public void consumeInputStream(URI uri);
+    public void consume(URI uri);
 }

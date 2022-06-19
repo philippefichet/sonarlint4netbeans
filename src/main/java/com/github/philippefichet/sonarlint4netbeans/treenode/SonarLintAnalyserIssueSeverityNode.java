@@ -22,7 +22,7 @@ package com.github.philippefichet.sonarlint4netbeans.treenode;
 import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Sheet;
-import org.sonarsource.sonarlint.core.analyzer.issue.DefaultClientIssue;
+import org.sonarsource.sonarlint.core.client.api.common.analysis.DefaultClientIssue;
 
 /**
  *
@@ -58,8 +58,8 @@ public class SonarLintAnalyserIssueSeverityNode extends AbstractNode {
         }
     }
 
-    public void addIssue(DefaultClientIssue issue) {
-        children.addIssue(issue);
+    public void addIssue(DefaultClientIssue issue, String ruleName) {
+        children.addIssue(issue, ruleName);
         flatChildCount++;
         updateDisplayName();
     }

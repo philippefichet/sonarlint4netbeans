@@ -32,7 +32,7 @@ import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.NodeAction;
-import org.sonarsource.sonarlint.core.analyzer.issue.DefaultClientIssue;
+import org.sonarsource.sonarlint.core.client.api.common.analysis.DefaultClientIssue;
 
 /**
  *
