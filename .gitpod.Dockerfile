@@ -1,4 +1,4 @@
-FROM gitpod/workspace-full-vnc
+FROM gitpod/workspace-full-vnc:2022-06-17-15-14-36
 
 RUN curl -o /tmp/netbeans-13-bin.zip https://archive.apache.org/dist/netbeans/netbeans/13/netbeans-13-bin.zip \
   && unzip -d /home/gitpod/ /tmp/netbeans-13-bin.zip \
