@@ -102,6 +102,13 @@ public class SonarLintUtilsTest {
         List<Issue> expectedIssues = getExpectedIssueForNewClassFile();
         SonarLintEngine engine = Lookup.getDefault().lookup(SonarLintEngine.class);
         engine.waitingInitialization();
+        engine.getAllRuleDetails().forEach(d -> engine.excludeRuleKey(RuleKey.parse(d.getKey()), SonarLintEngine.GLOBAL_SETTINGS_PROJECT));
+        // check and activate required rules
+        String[] requiredRuleKeys = new String[] {"java:S2168", "java:S1186", "java:S115", "java:S1134", "java:S1133", "java:S100"};
+        for (String requiredRuleKey : requiredRuleKeys) {
+            Assertions.assertThat(engine.getRuleDetails(requiredRuleKey)).isPresent();
+            engine.includeRuleKey(RuleKey.parse(requiredRuleKey), SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
+        }
         SonarLintUtils.analyze(
            Arrays.asList(FileUtil.normalizeFile(new File("./src/test/resources/NewClass.java"))),
             actualIssues::add,
