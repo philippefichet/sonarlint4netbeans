@@ -162,9 +162,11 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
         StandaloneGlobalConfiguration.Builder configBuilder = StandaloneGlobalConfiguration.builder()
             .addEnabledLanguages(Language.values())
             .addPlugins(allPluginPaths.toArray(new Path[allPluginPaths.size()]));
-        if (getNodeJSPath().isPresent() && getNodeJSVersion().isPresent()) {
-            String nodeJSPath = getNodeJSPath().get();
-            Version nodeJSVersion = getNodeJSVersion().get();
+        Optional<String> nodeJSPathOptional = getNodeJSPath();
+        Optional<Version> nodeJSVersionOptional = getNodeJSVersion();
+        if (nodeJSPathOptional.isPresent() && nodeJSVersionOptional.isPresent()) {
+            String nodeJSPath = nodeJSPathOptional.get();
+            Version nodeJSVersion = nodeJSVersionOptional.get();
             Path nodeJS = Paths.get(nodeJSPath);
             configBuilder.setNodeJs(nodeJS, nodeJSVersion);
         } else {
