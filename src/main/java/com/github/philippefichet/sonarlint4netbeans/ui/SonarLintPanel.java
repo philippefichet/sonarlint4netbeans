@@ -30,6 +30,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.event.ListSelectionEvent;
 import org.netbeans.api.project.Project;
 import org.openide.util.Lookup;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
@@ -46,9 +47,9 @@ public final class SonarLintPanel extends javax.swing.JPanel {
     private String nodeJSPathToSave;
     private Version nodeJSVersionToSave;
     private Boolean applyDifferentRulesOnTestFiles = null;
-    private AtomicBoolean loadingPanel = new AtomicBoolean(true);
+    private final AtomicBoolean loadingPanel = new AtomicBoolean(true);
 
-    private SonarLintRuleTableModel rulesDefaultTableModel = new SonarLintRuleTableModel();
+    private final SonarLintRuleTableModel rulesDefaultTableModel = new SonarLintRuleTableModel();
 
     public SonarLintPanel(SonarLintPanelChangedListener changedListener) {
         this(changedListener, SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
@@ -61,6 +62,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         showLoadingPanel();
 
         SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
+        additionnalPlugins.putAll(sonarLintEngine.getAdditionnalPlugins());
         extraProperties.putAll(sonarLintEngine.getAllExtraProperties(project));
         rulesDefaultTableModel.addTableModelListener(e -> {
             this.changedListener.changed();
@@ -74,7 +76,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
                 ruleKeyChanged.put(ruleKey, (Boolean) valueAt);
             }
         });
-        categoriesList.addListSelectionListener((e) -> {
+        categoriesList.addListSelectionListener((ListSelectionEvent e) -> {
             if (!loadingPanel.get()) {
                 showPanelFromCategory(sonarLintEngine, categoriesList.getSelectedValue());
             }
@@ -93,7 +95,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         }
         showPanelFromCategory(engine, category);
     }
-    
+
     private void showPanelFromCategory(SonarLintEngine engine, String category)
     {
         if ("Rules".equals(category)) {
