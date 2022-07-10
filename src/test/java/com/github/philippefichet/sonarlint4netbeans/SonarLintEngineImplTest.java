@@ -21,11 +21,15 @@ package com.github.philippefichet.sonarlint4netbeans;
 
 import com.github.philippefichet.sonarlint4netbeans.project.SonarLintProjectPreferenceScope;
 import java.net.MalformedURLException;
+import java.util.Map;
 import java.util.Optional;
 import java.util.prefs.BackingStoreException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ProjectManagerImplementation;
@@ -53,7 +57,7 @@ public class SonarLintEngineImplTest {
                 .preferencesScope(mockedProjectWithProjectScope, SonarLintProjectPreferenceScope.PROJECT)
                 .build()
         ).build();
-    
+
     @Test
     public void getRuleParameter() throws MalformedURLException, BackingStoreException
     {
@@ -81,5 +85,60 @@ public class SonarLintEngineImplTest {
         Assertions.assertThat(ruleParameterOnGlobalSettings)
             .describedAs("On global settings")
             .isNotPresent();
+    }
+
+    public static Arguments[] getMergedExtraProperties()
+    {
+        return new Arguments[] {
+            Arguments.of(
+                Map.of("p1", "v1"),
+                mockedProjectWithProjectScope,
+                Map.of("p1", "v2"),
+                mockedProjectWithProjectScope,
+                Map.of("p1", "v2")
+            ),
+            Arguments.of(
+                Map.of("p1", "v1"),
+                mockedProjectWithProjectScope,
+                Map.of("p1", "v2"),
+                SonarLintEngine.GLOBAL_SETTINGS_PROJECT,
+                Map.of("p1", "v1")
+            ),
+            Arguments.of(
+                Map.of(),
+                mockedProjectWithProjectScope,
+                Map.of("p1", "v2"),
+                SonarLintEngine.GLOBAL_SETTINGS_PROJECT,
+                Map.of()
+            ),
+            Arguments.of(
+                Map.of(),
+                mockedProjectWithProjectScope,
+                Map.of("p1", "v2"),
+                mockedProjectWithProjectScope,
+                Map.of("p1", "v2")
+            ),
+        };
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    public void getMergedExtraProperties(
+        Map<String, String> actualGlobalProperties,
+        Project project,
+        Map<String, String> actualProjectProperties,
+        Project projectForGetMergedExtraProperties,
+        Map<String, String> exptectedProperties
+    ) {
+        // Given
+        SonarLintEngineImpl sonarLintEngine = new SonarLintEngineImpl();
+        sonarLintEngine.waitingInitialization();
+        sonarLintEngine.setExtraProperties(actualGlobalProperties, SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
+        sonarLintEngine.setExtraProperties(actualProjectProperties, project);
+        // When
+        Map<String, String> mergedExtraProperties = sonarLintEngine.getMergedExtraProperties(projectForGetMergedExtraProperties);
+        // Then
+        Assertions.assertThat(mergedExtraProperties)
+            .isEqualTo(exptectedProperties);
     }
 }

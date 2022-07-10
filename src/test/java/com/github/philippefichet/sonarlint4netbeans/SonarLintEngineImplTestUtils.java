@@ -82,7 +82,7 @@ public final class SonarLintEngineImplTestUtils {
         sonarLintEngine.getPreferences(SonarLintEngine.GLOBAL_SETTINGS_PROJECT).removeNode();
         testConfiguration.getExtraProperties().forEach(
             (Project project, Map<String, String> extraProperties) ->
-            sonarLintEngine.setAllExtraProperties(extraProperties, project)
+            sonarLintEngine.setExtraProperties(extraProperties, project)
         );
         testConfiguration.getRuleParameters().forEach(
             ruleParameter -> sonarLintEngine.setRuleParameter(ruleParameter.getRuleKey(), ruleParameter.getName(), ruleParameter.getValue(), SonarLintEngine.GLOBAL_SETTINGS_PROJECT)
@@ -95,7 +95,7 @@ public final class SonarLintEngineImplTestUtils {
             .addExcludedRules(testConfiguration.getExcludedRules())
             .addIncludedRules(testConfiguration.getIncludedRules())
             .addRuleParameters(sonarLintEngine.getRuleParameters(SonarLintEngine.GLOBAL_SETTINGS_PROJECT))
-            .putAllExtraProperties(sonarLintEngine.getAllExtraProperties(SonarLintEngine.GLOBAL_SETTINGS_PROJECT))
+            .putAllExtraProperties(sonarLintEngine.getExtraProperties(SonarLintEngine.GLOBAL_SETTINGS_PROJECT))
             .build();
 
         List<Issue> actualIssues = new ArrayList<>();

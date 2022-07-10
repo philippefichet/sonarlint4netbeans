@@ -201,18 +201,26 @@ public interface SonarLintEngine {
     public Optional<String> getRuleParameter(String ruleKey, String parameterName, Project project);
 
     /**
-     * Retrieve all extra properties for a project
-     * @param project Project to retrieve all extra properties
-     * @return all extra properties for a project
+     * Retrieve merged global and project extra properties
+     * @param project Project to merge with global extra properties
+     * @return merged global and project extra properties
      */
-    public Map<String, String> getAllExtraProperties(Project project);
+    public Map<String, String> getMergedExtraProperties(Project project);
 
     /**
-     * Change all extra properties for a project
+     * Retrieve extra properties
+     * @param project Project to retrieve all extra properties
+     * @param mergeGlobalAndProject true to retrieve the global and per project merged properties 
+     * @return extra properties
+     */
+    public Map<String, String> getExtraProperties(Project project);
+
+    /**
+     * Change extra properties for a project
      * @param extraProperties all extra properties to set for a project
      * @param project Project to change all extra properties
      */
-    public void setAllExtraProperties(Map<String, String> extraProperties, Project project);
+    public void setExtraProperties(Map<String, String> extraProperties, Project project);
 
     /**
      * Stop the engine

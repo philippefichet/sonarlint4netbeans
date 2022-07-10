@@ -399,7 +399,25 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
     }
 
     @Override
-    public Map<String, String> getAllExtraProperties(Project project) {
+    public Map<String, String> getMergedExtraProperties(Project project) {
+        Map<String, String> globalExtraProperties = 
+            gson.fromJson(
+                getSonarLintDataManager().getGlobalSettingsPreferences().get(PREFIX_RUNTIME_EXTRA_PROPERTIES_PREFERENCE, "{}"),
+                Map.class
+            );
+        if (project != null) {
+            globalExtraProperties.putAll(
+                gson.fromJson(
+                    getSonarLintDataManager().getPreferences(project).get(PREFIX_RUNTIME_EXTRA_PROPERTIES_PREFERENCE, "{}"),
+                    Map.class
+                )
+            );
+        }
+        return globalExtraProperties;
+    }
+
+    @Override
+    public Map<String, String> getExtraProperties(Project project) {
         return gson.fromJson(
             getPreferences(project).get(PREFIX_RUNTIME_EXTRA_PROPERTIES_PREFERENCE, "{}"),
             Map.class
@@ -407,7 +425,7 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
     }
 
     @Override
-    public void setAllExtraProperties(Map<String, String> extraProperties, Project project) {
+    public void setExtraProperties(Map<String, String> extraProperties, Project project) {
         getPreferences(project).put(PREFIX_RUNTIME_EXTRA_PROPERTIES_PREFERENCE, gson.toJson(extraProperties));
     }
 

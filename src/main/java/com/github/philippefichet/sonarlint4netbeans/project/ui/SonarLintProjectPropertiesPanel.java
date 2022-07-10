@@ -39,11 +39,11 @@ public class SonarLintProjectPropertiesPanel extends javax.swing.JPanel {
      */
     public SonarLintProjectPropertiesPanel(SonarLintEngine sonarLintEngine, Project project, ProjectCustomizer.Category category) {
         category.setOkButtonListener((ActionEvent e) -> 
-            sonarLintEngine.setAllExtraProperties(extraProperties, project)
+            sonarLintEngine.setExtraProperties(extraProperties, project)
         );
         initComponents();
         SonarLintOptionsPanelProperties sonarLintOptionsPanelProperties = new SonarLintOptionsPanelProperties(
-            sonarLintEngine.getAllExtraProperties(project), 
+            sonarLintEngine.getExtraProperties(project), 
             (Map<String, String> newExtraProperties) -> {
                 extraProperties.clear();
                 extraProperties.putAll(newExtraProperties);

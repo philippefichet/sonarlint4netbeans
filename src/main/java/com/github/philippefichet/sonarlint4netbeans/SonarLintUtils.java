@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -112,7 +111,7 @@ public final class SonarLintUtils {
         }
     }
 
-    public static URL toReadableURL(String url) throws MalformedURLException, IOException
+    public static URL toReadableURL(String url) throws IOException
     {
         URL pluginUrl = new URL(url);
         try (InputStream pluginInputStream = pluginUrl.openStream())
@@ -245,7 +244,7 @@ public final class SonarLintUtils {
             return Collections.emptyList();
         }
         SonarLintDataManager dataManager = Lookup.getDefault().lookup(SonarLintDataManager.class);
-        Project projectForAnalyse = SonarLintDataManagerUtils.getProjectForAnalyse(dataManager, fileObject);
+        Project project = SonarLintDataManagerUtils.getProjectForAnalyse(dataManager, fileObject);
         SonarLintOptions sonarlintOptions = Lookup.getDefault().lookup(SonarLintOptions.class);
         boolean useTestRules = sonarlintOptions == null || sonarlintOptions.applyDifferentRulesOnTestFiles();
 
@@ -256,7 +255,7 @@ public final class SonarLintUtils {
         List<RuleKey> includedRules = new ArrayList<>();
         for (RuleDetails allRuleDetail : allRuleDetails) {
             RuleKey ruleKey = RuleKey.parse(allRuleDetail.getKey());
-            if (sonarLintEngine.isExcluded(allRuleDetail, projectForAnalyse)) {
+            if (sonarLintEngine.isExcluded(allRuleDetail, project)) {
                 excludedRules.add(ruleKey);
             } else {
                 includedRules.add(ruleKey);
@@ -284,8 +283,8 @@ public final class SonarLintUtils {
             .addInputFiles(files)
             .addExcludedRules(excludedRules)
             .addIncludedRules(includedRules)
-            .addRuleParameters(sonarLintEngine.getRuleParameters(projectForAnalyse))
-            .putAllExtraProperties(sonarLintEngine.getAllExtraProperties(projectForAnalyse))
+            .addRuleParameters(sonarLintEngine.getRuleParameters(project))
+            .putAllExtraProperties(getMergedExtraPropertiesAndReplaceVariables(sonarLintEngine, project))
             .build();
 
 
@@ -437,6 +436,27 @@ public final class SonarLintUtils {
         }
     }
 
+    public static Map<String, String> getMergedExtraPropertiesAndReplaceVariables(SonarLintEngine sonarLintEngine, Project project)
+    {
+        if (project != SonarLintEngine.GLOBAL_SETTINGS_PROJECT) {
+            FileObject projectDirectoryFileObject = project.getProjectDirectory();
+            File projectDirectory = projectDirectoryFileObject != null ? FileUtil.toFile(projectDirectoryFileObject) : null;
+            if (projectDirectory != null) {
+                Map<String, String> allExtraProperties = new HashMap<>(sonarLintEngine.getMergedExtraProperties(project));
+                for (Map.Entry<String, String> entry : allExtraProperties.entrySet()) {
+                    if (entry.getValue().contains("${projectDir}")) {
+                        entry.setValue(
+                            entry.getValue()
+                            .replace("${projectDir}", projectDirectory.getPath())
+                        );
+                    }
+                }
+                return allExtraProperties;
+            }
+        }
+        return sonarLintEngine.getMergedExtraProperties(project);
+    }
+
     /**
      * 
      * @param files
@@ -466,7 +486,7 @@ public final class SonarLintUtils {
             if (dataManager.getPreferencesScope(projectForFile) == SonarLintProjectPreferenceScope.GLOBAL) {
                 fileGlobalSettings.add(file);
             } else {
-                fileByProject.computeIfAbsent(projectForFile, (p) -> new ArrayList<>())
+                fileByProject.computeIfAbsent(projectForFile, (Project p) -> new ArrayList<>())
                     .add(file);
             }
         }
@@ -481,9 +501,9 @@ public final class SonarLintUtils {
             return analysisResults;
         }
 
-        Project projectForAnalyze = SonarLintEngine.GLOBAL_SETTINGS_PROJECT;
+        Project project = SonarLintEngine.GLOBAL_SETTINGS_PROJECT;
         if (fileGlobalSettings.isEmpty() && fileByProject.size() == 1) {
-            projectForAnalyze = fileByProject.entrySet().iterator().next().getKey();
+            project = fileByProject.entrySet().iterator().next().getKey();
         }
 
         String sonarLintHome = System.getProperty("user.home") + File.separator + ".sonarlint4netbeans";
@@ -492,7 +512,7 @@ public final class SonarLintUtils {
         List<RuleKey> includedRules = new ArrayList<>();
         for (RuleDetails allRuleDetail : allRuleDetails) {
             RuleKey ruleKey = RuleKey.parse(allRuleDetail.getKey());
-            if (sonarLintEngine.isExcluded(allRuleDetail, projectForAnalyze)) {
+            if (sonarLintEngine.isExcluded(allRuleDetail, project)) {
                 excludedRules.add(ruleKey);
             } else {
                 includedRules.add(ruleKey);
@@ -527,13 +547,13 @@ public final class SonarLintUtils {
             .addInputFiles(clientInputFiles)
             .addExcludedRules(excludedRules)
             .addIncludedRules(includedRules)
-            .addRuleParameters(sonarLintEngine.getRuleParameters(projectForAnalyze))
-            .putAllExtraProperties(sonarLintEngine.getAllExtraProperties(projectForAnalyze))
+            .addRuleParameters(sonarLintEngine.getRuleParameters(project))
+            .putAllExtraProperties(getMergedExtraPropertiesAndReplaceVariables(sonarLintEngine, project))
             .build();
 
         // Add listener only after configuration to prevent ClientInputFile.uri() call during configuration phase
         clientInputFiles.forEach(file -> file.addListener(clientInputFileInputStreamEvent));
-        AnalysisResults analyze = sonarLintEngine.analyze(
+        return sonarLintEngine.analyze(
             standaloneAnalysisConfiguration,
             listener,
             null,
@@ -559,7 +579,6 @@ public final class SonarLintUtils {
                 }
             }
         );
-        return analyze;
     }
 
     public static List<File> toFiles(Node[] nodes) {
@@ -653,8 +672,12 @@ public final class SonarLintUtils {
             if (executionStatus == 0) {
                 // NodeJS version is like vxx.xx.xx, no need read more and no need loop
                 byte[] buffer = new byte[32];
-                inputStream.read(buffer);
-                return Optional.of(Version.create(new String(buffer).substring(1)));
+                int read = inputStream.read(buffer);
+                if (read > 0) {
+                    return Optional.of(Version.create(new String(buffer).substring(1)));
+                } else {
+                    LOG.warning("Cannot detect NodeJS version");
+                }
             } else {
                 LOG.warning("Cannot detect NodeJS version");
             }
