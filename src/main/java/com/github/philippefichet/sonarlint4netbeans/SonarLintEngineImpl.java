@@ -38,6 +38,7 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 import org.netbeans.api.project.Project;
 import org.openide.util.Lookup;
 import org.sonarsource.sonarlint.core.StandaloneSonarLintEngineImpl;
@@ -233,6 +234,17 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
             }
             return excludedRules;
         }
+    }
+
+    @Override
+    public List<RuleKey> getIncludedRules(Project project)
+    {
+        Collection<RuleKey> excludedRules = getExcludedRules(project);
+        return getAllRuleDetails()
+            .stream()
+                .map(srd -> RuleKey.parse(srd.getKey()))
+                .filter(k -> !excludedRules.contains(k))
+                .collect(Collectors.toList());
     }
 
     @Override

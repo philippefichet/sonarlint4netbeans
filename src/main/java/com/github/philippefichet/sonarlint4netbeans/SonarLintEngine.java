@@ -110,9 +110,18 @@ public interface SonarLintEngine {
     /**
      * Retrieve excluded rules
      *
+     * @param project project to search excluded rules
      * @return excluded rules
      */
     public Collection<RuleKey> getExcludedRules(Project project);
+
+    /**
+     * Retrieve included rules
+     *
+     * @param project project to search included rules
+     * @return  included rules
+     */
+    public Collection<RuleKey> getIncludedRules(Project project);
 
     /**
      * Exclude one rule
@@ -146,6 +155,7 @@ public interface SonarLintEngine {
      * Check if rule must be exclude
      *
      * @param ruleDetails rule details
+     * @param project project to search excluded rule
      * @return true if rule must be exclude, false otherwise
      */
     public boolean isExcluded(RuleDetails ruleDetails, Project project);
