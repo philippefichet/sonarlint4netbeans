@@ -417,7 +417,7 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
                 getSonarLintDataManager().getGlobalSettingsPreferences().get(PREFIX_RUNTIME_EXTRA_PROPERTIES_PREFERENCE, "{}"),
                 Map.class
             );
-        if (project != null) {
+        if (project != SonarLintEngine.GLOBAL_SETTINGS_PROJECT) {
             globalExtraProperties.putAll(
                 gson.fromJson(
                     getSonarLintDataManager().getPreferences(project).get(PREFIX_RUNTIME_EXTRA_PROPERTIES_PREFERENCE, "{}"),

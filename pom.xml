@@ -469,7 +469,7 @@
         <assertj.version>3.22.0</assertj.version>
         <org.mockito.version>4.4.0</org.mockito.version>
         <io.qameta.allure.version>2.17.3</io.qameta.allure.version>
-        <junit-jupiter.version>5.8.2</junit-jupiter.version>
+        <junit-jupiter.version>5.9.0</junit-jupiter.version>
         <!-- like as allure -->
         <org.slf4j.version>1.7.32</org.slf4j.version>
         <!-- false by default -->

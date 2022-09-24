@@ -23,4 +23,9 @@ package fakeproject2;
  */
 public class SonarLintFileDemo {
     public static final String const_convition_violation = "TEST";
+
+    public static void testingForSonarJavaLibrary(String arg1)
+    {
+        org.slf4j.LoggerFactory.getLogger("Testing").debug("message: " + arg1);
+    }
 }

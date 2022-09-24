@@ -28,6 +28,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -47,6 +49,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIfSystemProperty;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -59,6 +62,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
+import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
@@ -76,7 +80,9 @@ class SonarLintUtilsTest {
     @Nested
     class ProjectBased {
         private final Project mockedProjectWithProjectScope = Mockito.mock(Project.class);
-        private final Project mockedProjectWithGlobalScope = Mockito.mock(Project.class);
+        private final Project mockedSecondProjectWithGlobalScope = Mockito.mock(Project.class);
+        private final Project mockedThirdProjectWithGlobalScope = Mockito.mock(Project.class);
+        private final Project mockedFirstProjectWithGlobalScope = Mockito.mock(Project.class);
 
         @RegisterExtension
         private final SonarLintLookupMockedExtension lookupExtension = SonarLintLookupMockedExtension.builder()
@@ -93,8 +99,12 @@ class SonarLintUtilsTest {
                 new SonarLintDataManagerMockedBuilder()
                     .createPreferences(mockedProjectWithProjectScope)
                     .preferencesScope(mockedProjectWithProjectScope, SonarLintProjectPreferenceScope.PROJECT)
-                    .createPreferences(mockedProjectWithGlobalScope)
-                    .preferencesScope(mockedProjectWithGlobalScope, SonarLintProjectPreferenceScope.GLOBAL)
+                    .createPreferences(mockedFirstProjectWithGlobalScope)
+                    .preferencesScope(mockedFirstProjectWithGlobalScope, SonarLintProjectPreferenceScope.GLOBAL)
+                    .createPreferences(mockedSecondProjectWithGlobalScope)
+                    .preferencesScope(mockedSecondProjectWithGlobalScope, SonarLintProjectPreferenceScope.GLOBAL)
+                    .createPreferences(mockedThirdProjectWithGlobalScope)
+                    .preferencesScope(mockedThirdProjectWithGlobalScope, SonarLintProjectPreferenceScope.GLOBAL)
                     .preferencesScope(SonarLintEngine.GLOBAL_SETTINGS_PROJECT, SonarLintProjectPreferenceScope.GLOBAL)
                     .build()
             ).build();
@@ -236,7 +246,7 @@ class SonarLintUtilsTest {
             SonarLintDataManager sonarlintDataMangerMocked = lookupExtension.lookupMocked(SonarLintDataManager.class).get();
             SonarLintEngine sonarLintEngine = SonarLintTestUtils.getCleanSonarLintEngine();
             String ruleKeyString = "java:S115";
-            Project project = mockedProjectWithGlobalScope;
+            Project project = mockedFirstProjectWithGlobalScope;
             sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey()), SonarLintEngine.GLOBAL_SETTINGS_PROJECT));
             sonarLintEngine.includeRuleKey(RuleKey.parse(ruleKeyString), SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
             sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey()), project));
@@ -303,8 +313,7 @@ class SonarLintUtilsTest {
 
         @Test
         @DisplayName("Check custom rule parameter value from extractRuleParameters on project with global scope")
-        void extractRuleParametersWithCustomValueOnProjectWithGlobalScope() throws BackingStoreException, MalformedURLException
-        {
+        void extractRuleParametersWithCustomValueOnProjectWithGlobalScope() throws BackingStoreException, MalformedURLException {
             SonarLintEngine sonarLintEngine = new SonarLintEngineImpl();
             SonarLintTestUtils.cleanSonarLintEngine(sonarLintEngine);
             String ruleKey = "java:S115";
@@ -313,9 +322,9 @@ class SonarLintUtilsTest {
             String newFormatValue = "^[_A-Z][A-Z0-9]*(_[A-Z0-9]+)*$";
             String newFormatValueOnGlobalScope = "^[_0-9A-Z][A-Z0-9]*(_[A-Z0-9]+)*$";
             sonarLintEngine.setRuleParameter(ruleKey, parameterName, newFormatValue, mockedProjectWithProjectScope);
-            sonarLintEngine.setRuleParameter(ruleKey, parameterName, newFormatValueOnGlobalScope, mockedProjectWithGlobalScope);
+            sonarLintEngine.setRuleParameter(ruleKey, parameterName, newFormatValueOnGlobalScope, mockedFirstProjectWithGlobalScope);
             Map<StandaloneRuleParam, String> extractRuleParametersProjectScope = SonarLintUtils.extractRuleParameters(sonarLintEngine, ruleKey, mockedProjectWithProjectScope);
-            Map<StandaloneRuleParam, String> extractRuleParametersGlobalScope = SonarLintUtils.extractRuleParameters(sonarLintEngine, ruleKey, mockedProjectWithGlobalScope);
+            Map<StandaloneRuleParam, String> extractRuleParametersGlobalScope = SonarLintUtils.extractRuleParameters(sonarLintEngine, ruleKey, mockedFirstProjectWithGlobalScope);
             Map<StandaloneRuleParam, String> extractRuleParametersGlobalSetting = SonarLintUtils.extractRuleParameters(sonarLintEngine, ruleKey, SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
             Assertions.assertThat(extractRuleParametersProjectScope)
                 .describedAs("rule parameter on project with project scope")
@@ -363,9 +372,9 @@ class SonarLintUtilsTest {
                 .describedAs("Check no excluded rule " + ruleKeyString + " on project scope")
                 .isFalse();
 
-            sonarLintEngine.excludeRuleKeys(allRuleKey, mockedProjectWithGlobalScope);
-            sonarLintEngine.includeRuleKey(ruleKey, mockedProjectWithGlobalScope);
-            Assertions.assertThat(sonarLintEngine.isExcluded(ruleDetails, mockedProjectWithGlobalScope))
+            sonarLintEngine.excludeRuleKeys(allRuleKey, mockedFirstProjectWithGlobalScope);
+            sonarLintEngine.includeRuleKey(ruleKey, mockedFirstProjectWithGlobalScope);
+            Assertions.assertThat(sonarLintEngine.isExcluded(ruleDetails, mockedFirstProjectWithGlobalScope))
                 .describedAs("Check no excluded rule " + ruleKeyString + " on global scope")
                 .isFalse();
 
@@ -379,7 +388,7 @@ class SonarLintUtilsTest {
             Mockito.when(sonarlintDataMangerMocked.getProject(toFileObjectOnFakeProject))
                 .thenReturn(Optional.of(mockedProjectWithProjectScope));
             Mockito.when(sonarlintDataMangerMocked.getProject(toFileObjectOnFakeProject2))
-                .thenReturn(Optional.of(mockedProjectWithGlobalScope));
+                .thenReturn(Optional.of(mockedFirstProjectWithGlobalScope));
             List<Issue> issues = new ArrayList<>();
             List<Issue> issuesOnFakeProject = new ArrayList<>();
             List<Issue> issuesOnFakeProject2 = new ArrayList<>();
@@ -391,7 +400,7 @@ class SonarLintUtilsTest {
             extraPropertiesForGlobalScope.put(commonExtraPropertyName, "8");
             sonarLintEngine.setExtraProperties(extraPropertiesForGlobal, SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
             sonarLintEngine.setExtraProperties(extraPropertiesForProjectScope, mockedProjectWithProjectScope);
-            sonarLintEngine.setExtraProperties(extraPropertiesForGlobalScope, mockedProjectWithGlobalScope);
+            sonarLintEngine.setExtraProperties(extraPropertiesForGlobalScope, mockedFirstProjectWithGlobalScope);
 
             issues.addAll(SonarLintUtils.analyze(
                 toFileObject,
@@ -420,8 +429,7 @@ class SonarLintUtilsTest {
 
         @Test
         @DisplayName("Check custom rule parameter value from extractRuleParameters")
-        void extractRuleParametersWithCustomValue() throws BackingStoreException
-        {
+        void extractRuleParametersWithCustomValue() throws BackingStoreException {
             SonarLintEngine sonarLintEngine = SonarLintTestUtils.getCleanSonarLintEngine();
             String ruleKeyString = "java:S115";
             sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey()), SonarLintEngine.GLOBAL_SETTINGS_PROJECT));
@@ -435,8 +443,7 @@ class SonarLintUtilsTest {
 
         @Test
         @DisplayName("Check default rule parameter value from extractRuleParameters")
-        void extractRuleParametersWithDefaultValue() throws BackingStoreException
-        {
+        void extractRuleParametersWithDefaultValue() throws BackingStoreException {
             SonarLintEngine sonarLintEngine = SonarLintTestUtils.getCleanSonarLintEngine();
             String ruleKeyString = "java:S115";
             sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey()), SonarLintEngine.GLOBAL_SETTINGS_PROJECT));
@@ -547,6 +554,95 @@ class SonarLintUtilsTest {
                 new String(Files.readAllBytes(sonarlintFileDemoPath))
             );
             Assertions.assertThat(issues).isEqualTo(Collections.emptyList());
+        }
+
+        @Test
+        @DisplayName("Analyze with custom rule parameter value to check ${projectDir}")
+        void analyseFilesOnTwoProjectWithProjectDirInProperties(
+            @TempDir File projectDir1,
+            @TempDir File projectDir2,
+            @TempDir File projectDir3
+        ) throws IOException, BackingStoreException {
+            // Get slf4j-api to check issue from project path
+            Optional<File> slf4jApi = SonarLintTestUtils.extractSlf4jApiFromCurrentClasspath();
+            Assertions.assertThat(slf4jApi)
+                .withFailMessage("slf4j-api is required in classpath for this test but not found")
+                .isPresent();
+            Path slf4jSourcePath = slf4jApi.get().toPath();
+            // Get sonarlint engine and set sonar.java.libraries to use slf4j-api while analyze
+            SonarLintEngine sonarLintEngine = SonarLintTestUtils.getCleanSonarLintEngine();
+            // sonar.java.libraries
+            Map<String, String> extraProperties = new HashMap<>();
+            extraProperties.put("sonar.java.libraries", "${projectDir}/lib-for-testing/slf4j-api.jar");
+            sonarLintEngine.setExtraProperties(extraProperties, SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
+            // Configure sonarline engine to use only "java:S2629" rule
+            String ruleKeyString = "java:S2629";
+            sonarLintEngine.excludeRuleKeys(
+                sonarLintEngine.getAllRuleDetails().stream()
+                    .map(ruleKey -> RuleKey.parse(ruleKey.getKey()))
+                    .collect(Collectors.toList()),
+                    SonarLintEngine.GLOBAL_SETTINGS_PROJECT
+            );
+            sonarLintEngine.includeRuleKey(RuleKey.parse(ruleKeyString), SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
+            // Configure 3 projects with local file and libs
+            Path sourcePathFile = Paths.get("./src/test/resources/fakeproject/SonarLintFileDemo.java");
+            Path sonarlintDemoProject1Pathfile = Paths.get(projectDir1.getAbsolutePath(), "SonarLintFileDemo.java");
+            Path targetLibForTestingProject1 = Paths.get(projectDir1.getAbsolutePath(), "lib-for-testing");
+            Files.copy(sourcePathFile,sonarlintDemoProject1Pathfile,StandardCopyOption.REPLACE_EXISTING);
+            Files.createDirectories(targetLibForTestingProject1);
+            Files.copy(slf4jSourcePath, Paths.get(targetLibForTestingProject1.toFile().getAbsolutePath(), "slf4j-api.jar"),StandardCopyOption.REPLACE_EXISTING);
+            
+            Path sonarlintDemoProject2Pathfile = Paths.get(projectDir2.getAbsolutePath(), "SonarLintFileDemo.java");
+            Path targetLibForTestingProject2 = Paths.get(projectDir2.getAbsolutePath(), "lib-for-testing");
+            Files.copy(sourcePathFile,sonarlintDemoProject2Pathfile,StandardCopyOption.REPLACE_EXISTING);
+            Files.createDirectories(targetLibForTestingProject2);
+            Files.copy(slf4jSourcePath,Paths.get(targetLibForTestingProject2.toFile().getAbsolutePath(), "slf4j-api.jar"),StandardCopyOption.REPLACE_EXISTING);
+            
+            Path sonarlintDemoProject3Pathfile = Paths.get(projectDir3.getAbsolutePath(), "SonarLintFileDemo.java");
+            Files.copy(sourcePathFile,sonarlintDemoProject3Pathfile,StandardCopyOption.REPLACE_EXISTING);
+
+            File sonarlintFileDemoProject1 = FileUtil.normalizeFile(sonarlintDemoProject1Pathfile.toFile());
+            File sonarlintFileDemoProject2 = FileUtil.normalizeFile(sonarlintDemoProject2Pathfile.toFile());
+            File sonarlintFileDemoProject3 = FileUtil.normalizeFile(sonarlintDemoProject3Pathfile.toFile());
+
+            SonarLintDataManager sonarlintDataMangerMocked = lookupExtension.lookupMocked(SonarLintDataManager.class).get();
+
+            // Configure first Project
+            Mockito.when(sonarlintDataMangerMocked.getProject(sonarlintFileDemoProject1))
+                .thenReturn(Optional.of(mockedFirstProjectWithGlobalScope));
+            Mockito.when(mockedFirstProjectWithGlobalScope.getProjectDirectory())
+                .thenReturn(FileUtil.toFileObject(projectDir1));
+
+            // Configure second Project
+            Mockito.when(sonarlintDataMangerMocked.getProject(sonarlintFileDemoProject2))
+                .thenReturn(Optional.of(mockedSecondProjectWithGlobalScope));
+            Mockito.when(mockedSecondProjectWithGlobalScope.getProjectDirectory())
+                .thenReturn(FileUtil.toFileObject(projectDir2));
+            
+            // Configure thirth Project
+            Mockito.when(sonarlintDataMangerMocked.getProject(sonarlintFileDemoProject3))
+                .thenReturn(Optional.of(mockedThirdProjectWithGlobalScope));
+            Mockito.when(mockedThirdProjectWithGlobalScope.getProjectDirectory())
+                .thenReturn(FileUtil.toFileObject(projectDir3));
+
+            List<Issue> issues = new ArrayList<>();
+            // Analyze 3 files in 3 different project 
+            SonarLintUtils.analyze(
+                Arrays.asList(sonarlintFileDemoProject1, sonarlintFileDemoProject2, sonarlintFileDemoProject3),
+                issues::add,
+                null,
+                null
+            );
+
+            Assertions.assertThat(issues)
+                // project1 and project2
+                .extracting(Issue::getInputFile)
+                .extracting(ClientInputFile::uri)
+                .extracting(URI::getPath)
+                .containsExactlyInAnyOrder(
+                    sonarlintFileDemoProject1.toPath().toAbsolutePath().toUri().getPath(),
+                    sonarlintFileDemoProject2.toPath().toAbsolutePath().toUri().getPath()
+                );
         }
     }
 

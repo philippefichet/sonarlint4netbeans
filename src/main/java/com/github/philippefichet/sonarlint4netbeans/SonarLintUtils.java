@@ -19,7 +19,6 @@
  */
 package com.github.philippefichet.sonarlint4netbeans;
 
-import com.github.philippefichet.sonarlint4netbeans.project.SonarLintProjectPreferenceScope;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -484,21 +483,29 @@ public final class SonarLintUtils {
         // Separe analyze and merge results
         if (!fileGlobalSettings.isEmpty() && !fileByProject.isEmpty() || fileByProject.size() > 1) {
             AnalysisResultsMergerable analysisResults = new AnalysisResultsMergerable();
-            analysisResults.merge(analyze(fileGlobalSettings, listener, clientInputFileInputStreamEvent, sonarLintAnalyzerCancelableTask));
+            if (!fileGlobalSettings.isEmpty()) {
+                analysisResults.merge(analyze(fileGlobalSettings, listener, clientInputFileInputStreamEvent, sonarLintAnalyzerCancelableTask));
+            }
             for (List<File> value : fileByProject.values()) {
                 analysisResults.merge(analyze(value, listener, clientInputFileInputStreamEvent, sonarLintAnalyzerCancelableTask));
             }
             return analysisResults;
         }
 
+        Project projectForRules = SonarLintEngine.GLOBAL_SETTINGS_PROJECT;
         Project project = SonarLintEngine.GLOBAL_SETTINGS_PROJECT;
         if (fileGlobalSettings.isEmpty() && fileByProject.size() == 1) {
-            project = fileByProject.entrySet().iterator().next().getKey();
+            Map.Entry<Project, List<File>> filesByProject = fileByProject.entrySet().iterator().next();
+            project = filesByProject.getKey();
+            List<File> projectFiles = filesByProject.getValue();
+            if (!projectFiles.isEmpty()) {
+                projectForRules = SonarLintDataManagerUtils.getProjectForAnalyse(dataManager, FileUtil.toFileObject(projectFiles.get(0)));
+            }
         }
 
         String sonarLintHome = System.getProperty("user.home") + File.separator + ".sonarlint4netbeans";
-        List<RuleKey> excludedRules = new ArrayList<>(sonarLintEngine.getExcludedRules(project));
-        List<RuleKey> includedRules = new ArrayList<>(sonarLintEngine.getIncludedRules(project));
+        List<RuleKey> excludedRules = new ArrayList<>(sonarLintEngine.getExcludedRules(projectForRules));
+        List<RuleKey> includedRules = new ArrayList<>(sonarLintEngine.getIncludedRules(projectForRules));
         List<FSClientInputFile> clientInputFiles = new ArrayList<>();
         for (File file : files) {
             // Map file to implementation of ClientInputFile
