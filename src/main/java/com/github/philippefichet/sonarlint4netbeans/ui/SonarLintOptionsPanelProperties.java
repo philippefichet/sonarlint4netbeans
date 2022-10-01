@@ -33,6 +33,8 @@ public class SonarLintOptionsPanelProperties extends javax.swing.JPanel {
 
     /**
      * Creates new form SonarLintOptionsPanelProperties
+     * @param initialExtraProperties Initial value of the extra properties
+     * @param listener listener of change of value of the extra properties
      */
     public SonarLintOptionsPanelProperties(Map<String, String> initialExtraProperties, SonarLintOptionsPanelPropertiesListener listener) {
         initComponents();

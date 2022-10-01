@@ -102,7 +102,7 @@ public interface SonarLintEngine {
 
     /**
      * Retrieve preferences
-     *
+     * @param project project to retrieve preferences
      * @return preferences
      */
     public Preferences getPreferences(Project project);
@@ -110,14 +110,24 @@ public interface SonarLintEngine {
     /**
      * Retrieve excluded rules
      *
+     * @param project project to search excluded rules
      * @return excluded rules
      */
     public Collection<RuleKey> getExcludedRules(Project project);
 
     /**
+     * Retrieve included rules
+     *
+     * @param project project to search included rules
+     * @return  included rules
+     */
+    public Collection<RuleKey> getIncludedRules(Project project);
+
+    /**
      * Exclude one rule
      *
-     * @param ruleKey rule to exclude
+     * @param ruleKey rules to exclude
+     * @param project the project targeted by the exclusion of the rules
      */
     public void excludeRuleKeys(List<RuleKey> ruleKey, Project project);
 
@@ -125,6 +135,7 @@ public interface SonarLintEngine {
      * set rules to include
      *
      * @param ruleKeys rules to include
+     * @param project the project targeted by the inclusion of the rules
      */
     public void includeRuleKeys(List<RuleKey> ruleKeys, Project project);
 
@@ -132,6 +143,7 @@ public interface SonarLintEngine {
      * include one rule
      *
      * @param ruleKey rule to include
+     * @param project the project targeted by the inclusion of the rule
      */
     public void includeRuleKey(RuleKey ruleKey, Project project);
 
@@ -139,6 +151,7 @@ public interface SonarLintEngine {
      * exclude one rule
      *
      * @param ruleKey rule to exclude
+     * @param project the project targeted by the rule's exclusion
      */
     public void excludeRuleKey(RuleKey ruleKey, Project project);
 
@@ -146,6 +159,7 @@ public interface SonarLintEngine {
      * Check if rule must be exclude
      *
      * @param ruleDetails rule details
+     * @param project project to search excluded rule
      * @return true if rule must be exclude, false otherwise
      */
     public boolean isExcluded(RuleDetails ruleDetails, Project project);
@@ -177,11 +191,13 @@ public interface SonarLintEngine {
      * @param ruleKey rule key (ex: java:S108)
      * @param parameterName paramater name of rule
      * @param parameterValue paramater value
+     * @param project Project for which the value of the rule's parameters must be saved
      */
     public void setRuleParameter(String ruleKey, String parameterName, String parameterValue, Project project);
 
     /**
      * Retrieve all rules with customized parameter value
+     * @param project Project whose parameter values must be retrieved
      * @return All rules with customized parameter value
      */
     public Map<RuleKey, Map<String, String>> getRuleParameters(Project project);
@@ -189,30 +205,40 @@ public interface SonarLintEngine {
     /**
      * Remove parameter value on rule by parameter name
      * @param ruleKey rule key (ex: java:S108)
-     * @param parameterName paramater name of rule
+     * @param parameterName Name of the rule parameter
+     * @param project Project whose parameter value should be removed
      */
     public void removeRuleParameter(String ruleKey, String parameterName, Project project);
 
     /**
      * Retrieve parameter value on rule only if changed
      * @param ruleKey rule key (ex: java:S108)
+     * @param parameterName Name of the rule parameter
+     * @param project Project whose parameter value should be retrieved
      * @return value of rule parameter or empty if not value changed
      */
     public Optional<String> getRuleParameter(String ruleKey, String parameterName, Project project);
 
     /**
-     * Retrieve all extra properties for a project
-     * @param project Project to retrieve all extra properties
-     * @return all extra properties for a project
+     * Retrieve merged global and project extra properties
+     * @param project Project to merge with global extra properties
+     * @return merged global and project extra properties
      */
-    public Map<String, String> getAllExtraProperties(Project project);
+    public Map<String, String> getMergedExtraProperties(Project project);
 
     /**
-     * Change all extra properties for a project
+     * Retrieve extra properties
+     * @param project Project to retrieve all extra properties
+     * @return extra properties
+     */
+    public Map<String, String> getExtraProperties(Project project);
+
+    /**
+     * Change extra properties for a project
      * @param extraProperties all extra properties to set for a project
      * @param project Project to change all extra properties
      */
-    public void setAllExtraProperties(Map<String, String> extraProperties, Project project);
+    public void setExtraProperties(Map<String, String> extraProperties, Project project);
 
     /**
      * Stop the engine

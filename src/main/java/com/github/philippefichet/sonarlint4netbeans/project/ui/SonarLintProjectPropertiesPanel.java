@@ -36,14 +36,17 @@ public class SonarLintProjectPropertiesPanel extends javax.swing.JPanel {
     private final Map<String, String> extraProperties = new HashMap<>();
     /**
      * Creates new form SonarLintProjectPropertiesPanel
+     * @param sonarLintEngine SonarLintEngine instance dealing with the retrieval or modification of properties
+     * @param project Targeted project for retrieval or modification of properties
+     * @param category category of properties to customize the project
      */
     public SonarLintProjectPropertiesPanel(SonarLintEngine sonarLintEngine, Project project, ProjectCustomizer.Category category) {
         category.setOkButtonListener((ActionEvent e) -> 
-            sonarLintEngine.setAllExtraProperties(extraProperties, project)
+            sonarLintEngine.setExtraProperties(extraProperties, project)
         );
         initComponents();
         SonarLintOptionsPanelProperties sonarLintOptionsPanelProperties = new SonarLintOptionsPanelProperties(
-            sonarLintEngine.getAllExtraProperties(project), 
+            sonarLintEngine.getExtraProperties(project), 
             (Map<String, String> newExtraProperties) -> {
                 extraProperties.clear();
                 extraProperties.putAll(newExtraProperties);

@@ -27,8 +27,15 @@ It requests netbeans in version 13.0 or higher and Java in version 11 or higher.
 
 == Release 2.x to 3.x
 
+=== Plugins
+
 SonarLint no longer uses URLs to find plugins but file paths. +
 You have to update the path to the plugins you added in Tools -> Options -> Miscelaneous -> SonarLint -> Plugins. +
+
+=== Analyse properties
+
+Now global properties and project properties are merged on files belonging to a project. +
+`${projectDir}` is now replaced by the absolute path of the project for files belonging to it. +
 
 == Release 1.x to 2.x
 
@@ -60,6 +67,11 @@ When a rule has no settings, this icon image:docs/icon-settings-empty.png[] is p
 
 .Sonar rule details window with name filter
 image::docs/SonarRuleDetailsWindowWithNameFilter.jpg[]
+
+== Analyse properties (global or by project)
+
+Properties can be added to the analysis by SonarLint, either globally or by project.+ 
+
 
 == Add or update plugins from configuration
 

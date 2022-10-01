@@ -52,6 +52,9 @@ public class SonarLintOptionsPanelPlugins extends javax.swing.JPanel {
 
     /**
      * Creates new form SonarLintOptionsPanelPlugins
+     * @param basePlugin List of plugins provided as standard
+     * @param additionnalPlugins List of plugins added by the user
+     * @param listener listener to modify the list of plugins
      */
     public SonarLintOptionsPanelPlugins(Set<String> basePlugin, Map<String, String> additionnalPlugins, SonarLintOptionsPanelPluginsListener listener) {
         StringJoiner basePluginJoiner = new StringJoiner(", ");

@@ -19,17 +19,29 @@
  */
 package com.github.philippefichet.sonarlint4netbeans;
 
-import java.net.URI;
+import java.io.File;
+import org.mockito.Mockito;
+import org.netbeans.api.project.Project;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
-@FunctionalInterface
-public interface ClientInputFileListener {
-    /**
-     * Event when content retrieve from a FSClientInputFile
-     * @param uri URI to client input file
-     */
-    public void consume(URI uri);
+public final class ProjectMockedBuilder {
+    private FileObject fileObject;
+    
+    public ProjectMockedBuilder projectDirectory(File file)
+    {
+        fileObject = FileUtil.toFileObject(file);
+        return this;
+    }
+    
+    public Project build() {
+        Project projectMocked = Mockito.mock(Project.class);
+        Mockito.when(projectMocked.getProjectDirectory())
+            .thenReturn(fileObject);
+        return projectMocked;
+    }
 }

@@ -104,4 +104,9 @@ public class FSClientInputFile implements ClientInputFile {
             }
         }
     }
+
+    @Override
+    public String toString() {
+        return "FSClientInputFile{" + "path=" + path + ", relativePath=" + relativePath + ", isTest=" + isTest + ", encoding=" + encoding + '}';
+    }
 }

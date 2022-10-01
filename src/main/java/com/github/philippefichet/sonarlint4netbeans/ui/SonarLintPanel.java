@@ -63,7 +63,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
 
         SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
         additionnalPlugins.putAll(sonarLintEngine.getAdditionnalPlugins());
-        extraProperties.putAll(sonarLintEngine.getAllExtraProperties(project));
+        extraProperties.putAll(sonarLintEngine.getExtraProperties(project));
         rulesDefaultTableModel.addTableModelListener(e -> {
             this.changedListener.changed();
             int column = e.getColumn();
@@ -184,7 +184,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         optionPanel.removeAll();
         optionPanel.add(
             new SonarLintOptionsPanelProperties(
-                sonarLintEngine.getAllExtraProperties(project),
+                sonarLintEngine.getExtraProperties(project),
                 (Map<String, String> extraProperties) -> {
                     this.extraProperties.clear();
                     this.extraProperties.putAll(extraProperties);
@@ -342,7 +342,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         if (project == SonarLintEngine.GLOBAL_SETTINGS_PROJECT && nodeJSPathToSave != null && nodeJSVersionToSave != null) {
             sonarLintEngine.setNodeJSPathAndVersion(nodeJSPathToSave, nodeJSVersionToSave);
         }
-        sonarLintEngine.setAllExtraProperties(extraProperties, project);
+        sonarLintEngine.setExtraProperties(extraProperties, project);
         sonarLintEngine.setAdditionnalPlugins(additionnalPlugins);
     }
 

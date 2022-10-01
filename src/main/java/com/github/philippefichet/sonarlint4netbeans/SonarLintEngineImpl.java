@@ -38,6 +38,7 @@ import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 import org.netbeans.api.project.Project;
 import org.openide.util.Lookup;
 import org.sonarsource.sonarlint.core.StandaloneSonarLintEngineImpl;
@@ -236,6 +237,17 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
     }
 
     @Override
+    public List<RuleKey> getIncludedRules(Project project)
+    {
+        Collection<RuleKey> excludedRules = getExcludedRules(project);
+        return getAllRuleDetails()
+            .stream()
+                .map(srd -> RuleKey.parse(srd.getKey()))
+                .filter(k -> !excludedRules.contains(k))
+                .collect(Collectors.toList());
+    }
+
+    @Override
     public void excludeRuleKeys(List<RuleKey> ruleKeys, Project project) {
         Collection<RuleKey> excludedRules = getExcludedRules(project);
         excludedRules.addAll(ruleKeys);
@@ -399,7 +411,25 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
     }
 
     @Override
-    public Map<String, String> getAllExtraProperties(Project project) {
+    public Map<String, String> getMergedExtraProperties(Project project) {
+        Map<String, String> globalExtraProperties = 
+            gson.fromJson(
+                getSonarLintDataManager().getGlobalSettingsPreferences().get(PREFIX_RUNTIME_EXTRA_PROPERTIES_PREFERENCE, "{}"),
+                Map.class
+            );
+        if (project != SonarLintEngine.GLOBAL_SETTINGS_PROJECT) {
+            globalExtraProperties.putAll(
+                gson.fromJson(
+                    getSonarLintDataManager().getPreferences(project).get(PREFIX_RUNTIME_EXTRA_PROPERTIES_PREFERENCE, "{}"),
+                    Map.class
+                )
+            );
+        }
+        return globalExtraProperties;
+    }
+
+    @Override
+    public Map<String, String> getExtraProperties(Project project) {
         return gson.fromJson(
             getPreferences(project).get(PREFIX_RUNTIME_EXTRA_PROPERTIES_PREFERENCE, "{}"),
             Map.class
@@ -407,7 +437,7 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
     }
 
     @Override
-    public void setAllExtraProperties(Map<String, String> extraProperties, Project project) {
+    public void setExtraProperties(Map<String, String> extraProperties, Project project) {
         getPreferences(project).put(PREFIX_RUNTIME_EXTRA_PROPERTIES_PREFERENCE, gson.toJson(extraProperties));
     }
 

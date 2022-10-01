@@ -49,8 +49,14 @@ import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
 public class SonarLintRuleSettings extends javax.swing.JDialog {
 
     private final SonarLintRuleSettingsListener sonarLintRuleSettingsListener;
+
     /**
      * Creates new form SonarLintRuleParameters
+     * @param sonarLintOptions SonarLint Global Integration Option
+     * @param sonarLintEngine SonarLintEngine instance dealing with the retrieval or modification of information
+     * @param ruleKey Key of the rule used to display descriptions and parameters
+     * @param sonarLintRuleSettingsListener Listener for changing the value of rule parameters
+     * @param project Targeted project for information retrieval or modification of information
      */
     public SonarLintRuleSettings(
         SonarLintOptions sonarLintOptions,

@@ -34,8 +34,8 @@ public interface SonarLintOptionsPanelOptionsListener {
     public void nodeJSOptionsChanged(String nodeJSPath, Version nodeJSVersion);
 
     /**
-     * Called when tes rules configuration is changed
-     * @param applyDifferentRulesOnTestFiles 
+     * Called when test rules configuration is changed
+     * @param applyDifferentRulesOnTestFiles new value of test rules configuration
      */
     public void testRulesOptionsChanged(Boolean applyDifferentRulesOnTestFiles);
 }

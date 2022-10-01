@@ -34,6 +34,9 @@ public class SonarLintProjectCustomizerPanel extends javax.swing.JPanel {
 
     /**
      * Creates new form SonarLintProjectCustomizerPanel
+     * @param sonarLintDataManager SonarLintDataManager instance dealing with the retrieval or modification of preferences
+     * @param project Targeted project for retrieval or modification of informations
+     * @param category category of properties to customize the project
      */
     public SonarLintProjectCustomizerPanel(SonarLintDataManager sonarLintDataManager, Project project, ProjectCustomizer.Category category) {
         initComponents();
