@@ -41,6 +41,9 @@ public class SonarLintProjectCustomizerRulesPanel extends javax.swing.JPanel imp
 
     /**
      * Creates new form SonarLintProjectCustomizerPanel
+     * @param sonarLintEngine SonarLintEngine instance dealing with the retrieval or modification of properties
+     * @param project Targeted project for retrieval or modification of rules
+     * @param category category of properties to customize the project
      */
     public SonarLintProjectCustomizerRulesPanel(SonarLintEngine sonarLintEngine, Project project, ProjectCustomizer.Category category) {
         category.setOkButtonListener((ActionEvent e) -> 

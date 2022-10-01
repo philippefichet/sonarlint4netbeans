@@ -53,6 +53,8 @@ public class SonarLintOptionsPanelOptions extends javax.swing.JPanel {
 
     /**
      * Creates new form SonarLintOptionsPanelOptionsJPanel
+     * @param engine SonarLintEngine instance dealing with the retrieval or modification of information
+     * @param listener modification listener managed by this panel
      */
     public SonarLintOptionsPanelOptions(
         SonarLintEngine engine,

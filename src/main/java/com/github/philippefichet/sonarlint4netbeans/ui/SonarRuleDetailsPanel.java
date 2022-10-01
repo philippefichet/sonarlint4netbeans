@@ -52,6 +52,8 @@ public class SonarRuleDetailsPanel extends javax.swing.JPanel {
 
     /**
      * Creates new form SonarRuleDetailsPanel
+     * @param sonarLintEngine SonarLintEngine instance dealing with the retrieval or modification of information
+     * @param project Targeted project for information retrieval or modification
      */
     public SonarRuleDetailsPanel(SonarLintEngine sonarLintEngine, Project project) {
         this.sonarLintEngine = sonarLintEngine;

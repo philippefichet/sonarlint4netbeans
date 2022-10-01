@@ -172,7 +172,8 @@ public final class SonarLintUtils {
 
     /**
      * Retrieve classpath path (like com/.../../xx.png) of rule type icon
-     * @param type
+     * @param type issue type
+     * @param useSuffixForDarkLAF use "_dark" suffix if current LAF is dark
      * @return URL of PNG image severity if exist
      */
     public static String getRuleTypePathIconInClasspath(String type, boolean useSuffixForDarkLAF)
@@ -213,7 +214,7 @@ public final class SonarLintUtils {
 
     /**
      * Retrieve URL of PNG image severity if exist
-     * @param severity
+     * @param severity Severity from which the URL of the PNG image must be retrieved
      * @return URL of PNG image severity if exist
      */
     public static Optional<URL> ruleSeverityToURL(String severity)
@@ -223,7 +224,7 @@ public final class SonarLintUtils {
 
     /**
      * Retrieve ImageIcon of PNG image severity if exist
-     * @param severity
+     * @param severity Severity of which the icon must be recovered
      * @return ImageIcon of PNG image severity if exist
      */
     public static Optional<ImageIcon> ruleSeverityToImageIcon(String severity)
@@ -288,7 +289,7 @@ public final class SonarLintUtils {
 
     /**
      * Retrive stylesheet for HTML rule detail description
-     * @param sonarLintOptions
+     * @param sonarLintOptions SonarLint global integration option used to retrieve the stylesheet to apply
      * @return Stylesheet for HTML rule detail description
      */
     public static String toRuleDetailsStyleSheet(SonarLintOptions sonarLintOptions)
@@ -395,10 +396,10 @@ public final class SonarLintUtils {
 
     /**
      * Extract all parameters of rule with customized or defaut value
-     * @param sonarLintEngine
+     * @param sonarLintEngine instance of SonarLintEngine retrieving the parameters of the rule
      * @param ruleKey rule key ("java:S115", ...)
      * @param project project use to extract rule parameters
-     * @return 
+     * @return all parameters of rule with customized or defaut value
      */
     public static Map<StandaloneRuleParam, String> extractRuleParameters(SonarLintEngine sonarLintEngine, String ruleKey, Project project)
     {
@@ -448,18 +449,18 @@ public final class SonarLintUtils {
 
     /**
      * 
-     * @param files
-     * @param listener
-     * @param clientInputFileInputStreamEvent
-     * @return
-     * @throws IOException 
+     * @param files List of files to analyze
+     * @param listener Issue listener
+     * @param clientInputFileInputStreamEvent Listener for consumption of the URI of the analyzed files
+     * @param sonarLintAnalyzerCancelableTask task checking if the analysis is cancelled
+     * @return Summary of the analysis
      */
     public static AnalysisResults analyze(
         List<File> files,
         IssueListener listener,
         ClientInputFileListener clientInputFileInputStreamEvent,
         SonarLintAnalyzerCancelableTask sonarLintAnalyzerCancelableTask
-    ) throws IOException {
+    ) {
         SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
         if (sonarLintEngine == null) {
             return new AnalysisResults();
@@ -607,9 +608,9 @@ public final class SonarLintUtils {
     
     /**
      * Cut start URI too long
-     * @param uri
-     * @param maximalLength 
-     * @return 
+     * @param uri URI to truncate if too long
+     * @param maximalLength maximal size wanted
+     * @return String URI truncate if too long, String inital URI otherwise
      */
     public static final String toTruncateURI(URI uri, int maximalLength)
     {

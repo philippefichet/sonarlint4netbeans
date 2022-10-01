@@ -33,6 +33,7 @@ public class SonarLintOptionsPanelAnalyzers extends javax.swing.JPanel {
 
     /**
      * Creates new form SonarLintOptionsPanelAnalyzers
+     * @param sonarLintEngine instance of SonarLintEngine used to retrieve information from plugin
      */
     public SonarLintOptionsPanelAnalyzers(SonarLintEngine sonarLintEngine) {
         sonarLintEngine.whenInitialized(engine -> {

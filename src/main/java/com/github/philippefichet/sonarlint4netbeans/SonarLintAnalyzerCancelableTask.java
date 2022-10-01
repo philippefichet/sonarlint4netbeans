@@ -21,7 +21,6 @@ package com.github.philippefichet.sonarlint4netbeans;
 
 import com.github.philippefichet.sonarlint4netbeans.ui.SonarLintAnalyzerOutlineContainer;
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
@@ -31,7 +30,6 @@ import java.util.stream.Collectors;
 import org.netbeans.api.progress.ProgressHandle;
 import org.openide.nodes.Node;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
@@ -120,8 +118,6 @@ public class SonarLintAnalyzerCancelableTask implements Runnable, Cancellable {
             }
         } catch (CanceledException ex) {
             LOG.info("SonarLint analyze canceled");
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         }
         sonarLintAnalyzerContainer.ending();
         handle.finish();

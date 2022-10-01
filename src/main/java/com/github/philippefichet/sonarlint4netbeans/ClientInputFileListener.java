@@ -29,7 +29,7 @@ import java.net.URI;
 public interface ClientInputFileListener {
     /**
      * Event when content retrieve from a FSClientInputFile
-     * @param uri 
+     * @param uri URI to client input file
      */
     public void consume(URI uri);
 }

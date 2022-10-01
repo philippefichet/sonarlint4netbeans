@@ -57,6 +57,10 @@ public class SonarLintRuleListPanel extends javax.swing.JPanel {
 
     /**
      * Creates new form SonarLintRuleListPanel
+     * @param sonarLintRuleListPanelListener Listener to change the activation of a rule
+     * @param sonarLintRuleSettingsListener Listener for changing the value of rule parameters
+     * @param sonarLintEngine SonarLintEngine instance dealing with the retrieval or modification of information
+     * @param project Targeted project for retrieval or modification of information
      */
     public SonarLintRuleListPanel(
         SonarLintRuleListPanelListener sonarLintRuleListPanelListener,
