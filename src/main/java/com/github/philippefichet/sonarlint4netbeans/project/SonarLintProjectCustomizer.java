@@ -83,6 +83,7 @@ public class SonarLintProjectCustomizer implements ProjectCustomizer.CompositeCa
             )
         );
     }
+
     @Override
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup lookup) {
         Project project = lookup.lookup(Project.class);
