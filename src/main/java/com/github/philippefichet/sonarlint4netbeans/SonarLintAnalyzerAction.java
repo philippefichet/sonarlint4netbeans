@@ -44,6 +44,8 @@ import org.openide.windows.WindowManager;
 @ActionReferences({
     @ActionReference(path = "Projects/org-netbeans-modules-maven/Actions", position = 1310),
     @ActionReference(path = "Projects/org-netbeans-modules-gradle/Actions", position = 1310),
+    @ActionReference(path = "Projects/org-netbeans-modules-cnd-makeproject/Actions", position = 1310),
+    @ActionReference(path = "Projects/org-netbeans-modules-cpplite/Actions", position = 1310),
     @ActionReference(path = "Projects/package/Actions", position = 1310),
     @ActionReference(path = "UI/ToolActions/Files", position = 400),
 })
