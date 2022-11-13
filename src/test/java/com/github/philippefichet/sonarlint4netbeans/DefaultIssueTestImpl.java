@@ -24,8 +24,10 @@ import org.assertj.core.groups.Tuple;
 import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
 import org.sonarsource.sonarlint.core.analysis.api.Flow;
 import org.sonarsource.sonarlint.core.analysis.api.QuickFix;
-import org.sonarsource.sonarlint.core.analysis.api.TextRange;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
+import org.sonarsource.sonarlint.core.commons.RuleType;
+import org.sonarsource.sonarlint.core.commons.TextRange;
 
 /**
  *
@@ -33,8 +35,8 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
  */
 public class DefaultIssueTestImpl implements Issue {
 
-    private final String severity;
-    private final String type;
+    private final IssueSeverity severity;
+    private final RuleType type;
     private final String ruleKey;
     private final Integer startLine;
     private final Integer endLine;
@@ -42,7 +44,7 @@ public class DefaultIssueTestImpl implements Issue {
     private final Integer endLineOffset;
     private final ClientInputFile clientInputFile;
 
-    public DefaultIssueTestImpl(String severity, String type, String ruleKey, Integer startLine, Integer endLine, Integer startLineOffset, Integer endLineOffset, ClientInputFile clientInputFile) {
+    public DefaultIssueTestImpl(IssueSeverity severity, RuleType type, String ruleKey, Integer startLine, Integer endLine, Integer startLineOffset, Integer endLineOffset, ClientInputFile clientInputFile) {
         this.severity = severity;
         this.type = type;
         this.ruleKey = ruleKey;
@@ -54,12 +56,12 @@ public class DefaultIssueTestImpl implements Issue {
     }
 
     @Override
-    public String getSeverity() {
+    public IssueSeverity getSeverity() {
         return severity;
     }
 
     @Override
-    public String getType() {
+    public RuleType getType() {
         return type;
     }
 
@@ -138,23 +140,22 @@ public class DefaultIssueTestImpl implements Issue {
 
     public static class Builder
     {
-        private String severity;
-        private String type;
+        private IssueSeverity severity;
+        private RuleType type;
         private String ruleKey;
-        private String ruleName;
         private Integer startLine;
         private Integer endLine;
         private Integer startLineOffset;
         private Integer endLineOffset;
         private ClientInputFile clientInputFile;
 
-        public Builder severity(String severity)
+        public Builder severity(IssueSeverity severity)
         {
             this.severity = severity;
             return this;
         }
 
-        public Builder type(String type)
+        public Builder type(RuleType type)
         {
             this.type = type;
             return this;
@@ -163,12 +164,6 @@ public class DefaultIssueTestImpl implements Issue {
         public Builder ruleKey(String ruleKey)
         {
             this.ruleKey = ruleKey;
-            return this;
-        }
-        
-        public Builder ruleName(String ruleName)
-        {
-            this.ruleName = ruleName;
             return this;
         }
 

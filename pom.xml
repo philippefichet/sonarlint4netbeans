@@ -254,22 +254,22 @@
         <dependency>
             <groupId>org.sonarsource.sonarlint.core</groupId>
             <artifactId>sonarlint-core</artifactId>
-            <version>8.3.0.45095</version>
+            <version>8.11.0.56591</version>
         </dependency>
         <dependency>
             <groupId>org.sonarsource.javascript</groupId>
             <artifactId>nodejs-utils</artifactId>
-            <version>9.0.0.17505</version>
+            <version>9.9.0.19492</version>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.9.0</version>
+            <version>2.9.1</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.9</version>
+            <version>1.10.0</version>
         </dependency>
         <dependency>
             <groupId>org.netbeans.api</groupId>
@@ -466,12 +466,12 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <org.netbeans.version>RELEASE130</org.netbeans.version>
         <aspectj.version>1.9.7</aspectj.version>
-        <assertj.version>3.22.0</assertj.version>
+        <assertj.version>3.23.1</assertj.version>
         <org.mockito.version>4.4.0</org.mockito.version>
-        <io.qameta.allure.version>2.17.3</io.qameta.allure.version>
-        <junit-jupiter.version>5.9.0</junit-jupiter.version>
+        <io.qameta.allure.version>2.20.1</io.qameta.allure.version>
+        <junit-jupiter.version>5.9.1</junit-jupiter.version>
         <!-- like as allure -->
-        <org.slf4j.version>1.7.32</org.slf4j.version>
+        <org.slf4j.version>1.7.36</org.slf4j.version>
         <!-- false by default -->
         <hasNodeJSRuntime>false</hasNodeJSRuntime>
         <sonar.organization>philippefichet</sonar.organization>

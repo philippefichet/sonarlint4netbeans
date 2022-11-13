@@ -26,8 +26,8 @@ import java.awt.event.MouseEvent;
 import java.util.Optional;
 import javax.swing.JList;
 import org.netbeans.api.project.Project;
-import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
+import org.sonarsource.sonarlint.core.commons.RuleKey;
 
 /**
  *

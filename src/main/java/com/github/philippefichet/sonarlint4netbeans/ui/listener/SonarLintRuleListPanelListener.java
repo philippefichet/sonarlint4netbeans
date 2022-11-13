@@ -19,7 +19,7 @@
  */
 package com.github.philippefichet.sonarlint4netbeans.ui.listener;
 
-import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
+import org.sonarsource.sonarlint.core.commons.RuleKey;
 
 /**
  * Interface to notify when a rule is enable or disable in SonarLintRuleListPanel

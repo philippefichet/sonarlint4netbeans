@@ -31,6 +31,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
+import org.sonarsource.sonarlint.core.commons.RuleType;
 
 /**
  *
@@ -54,16 +56,16 @@ public class SonarLintEngineImplPhpPluginTest {
                 SonarLintEngineTestConfiguration.builder()
                 .description("sonarlin-example.php with rule php:S101 but without php:S1105 to check php plugin")
                 .requirePlugin("php")
+                .excludeRules("php:S1105", "php:S1808", "php:S1779")
                 .includeRules("php:S101")
-                .excludeRules("php:S1105")
                 .addClientInputFile(new File("./src/test/resources/sonarlint-example.php"))
                 .build(),
                 Arrays.asList(
                     new DefaultIssueTestImpl.Builder()
-                    .severity("MINOR")
-                    .type("CODE_SMELL")
+                    .severity(IssueSeverity.MINOR)
+                    .type(RuleType.CODE_SMELL)
+                    // "Class names should comply with a naming convention"
                     .ruleKey("php:S101")
-                    .ruleName("Class names should comply with a naming convention")
                     .startLine(2)
                     .startLineOffset(10)
                     .endLine(2)

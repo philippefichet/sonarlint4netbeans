@@ -67,7 +67,7 @@ public class SonarLintRuleTableModel extends DefaultTableModel {
             !engine.isExcluded(ruleDetail, project),
             hasParams(ruleDetail),
             ruleDetail.getKey(),
-            ruleDetail.getSeverity(),
+            ruleDetail.getDefaultSeverity().name(),
             ruleDetail.getName()}
         ).collect(Collectors.toList()).forEach(this::addRow);
     }

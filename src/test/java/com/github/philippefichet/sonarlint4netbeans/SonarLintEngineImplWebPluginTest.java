@@ -31,6 +31,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
+import org.sonarsource.sonarlint.core.commons.RuleType;
 
 /**
  *
@@ -59,20 +61,20 @@ public class SonarLintEngineImplWebPluginTest {
                 .build(),
                 Arrays.asList(
                     new DefaultIssueTestImpl.Builder()
-                    .severity("MAJOR")
-                    .type("BUG")
+                    .severity(IssueSeverity.MAJOR)
+                    .type(RuleType.BUG)
+                    // "\"<html>\" element should have a language attribute"
                     .ruleKey("Web:S5254")
-                    .ruleName("\"<html>\" element should have a language attribute")
                     .startLine(20)
                     .startLineOffset(0)
                     .endLine(20)
                     .endLineOffset(6)
                     .build(),
                     new DefaultIssueTestImpl.Builder()
-                    .severity("MINOR")
-                    .type("BUG")
+                    .severity(IssueSeverity.MINOR)
+                    .type(RuleType.BUG)
+                    // "\"<strong>\" and \"<em>\" tags should be used"
                     .ruleKey("Web:BoldAndItalicTagsCheck")
-                    .ruleName("\"<strong>\" and \"<em>\" tags should be used")
                     .startLine(27)
                     .startLineOffset(8)
                     .endLine(27)

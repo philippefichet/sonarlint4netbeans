@@ -27,6 +27,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.DefaultClientIssue;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 
 /**
  *
@@ -34,18 +35,13 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
  */
 public class SonarLintAnalyserIssueSeverityChildren extends Children.Keys<String> {
 
-    private static final String SEVERITY_BLOCKER = "BLOCKER";
-    private static final String SEVERITY_CRITICAL = "CRITICAL";
-    private static final String SEVERITY_INFO = "INFO";
-    private static final String SEVERITY_MAJOR = "MAJOR";
-    private static final String SEVERITY_MINOR = "MINOR";
     private final java.util.Map<String, SonarLintAnalyserIssueSeverityNode> nodeInstancies = new HashMap<>();
     private int issueCount = 0;
 
     public void addIssue(Issue issue, String ruleName) {
         if (issue instanceof DefaultClientIssue) {
             issueCount++;
-            nodeInstancies.computeIfAbsent(issue.getSeverity(), SonarLintAnalyserIssueSeverityNode::new)
+            nodeInstancies.computeIfAbsent(issue.getSeverity().name(), SonarLintAnalyserIssueSeverityNode::new)
                 .addIssue((DefaultClientIssue)issue, ruleName);
             setKeys(orderKeysBySeverity(nodeInstancies.keySet()));
         }
@@ -55,27 +51,29 @@ public class SonarLintAnalyserIssueSeverityChildren extends Children.Keys<String
     {
         List<String> copyKeySet = new ArrayList<>(keySet);
         List<String> keys = new ArrayList<>(keySet.size());
-        if (copyKeySet.contains(SEVERITY_BLOCKER)) {
-            keys.add(SEVERITY_BLOCKER);
-            copyKeySet.remove(SEVERITY_BLOCKER);
+        if (copyKeySet.contains(IssueSeverity.BLOCKER.name())) {
+            keys.add(IssueSeverity.BLOCKER.name());
+            copyKeySet.remove(IssueSeverity.BLOCKER.name());
         }
-        if (copyKeySet.contains(SEVERITY_CRITICAL)) {
-            keys.add(SEVERITY_CRITICAL);
-            copyKeySet.remove(SEVERITY_CRITICAL);
+        if (copyKeySet.contains(IssueSeverity.CRITICAL.name())) {
+            keys.add(IssueSeverity.CRITICAL.name());
+            copyKeySet.remove(IssueSeverity.CRITICAL.name());
         }
-        if (copyKeySet.contains(SEVERITY_MAJOR)) {
-            keys.add(SEVERITY_MAJOR);
-            copyKeySet.remove(SEVERITY_MAJOR);
+        if (copyKeySet.contains(IssueSeverity.MAJOR.name())) {
+            keys.add(IssueSeverity.MAJOR.name());
+            copyKeySet.remove(IssueSeverity.MAJOR.name());
         }
-        if (copyKeySet.contains(SEVERITY_INFO)) {
-            keys.add(SEVERITY_INFO);
-            copyKeySet.remove(SEVERITY_INFO);
+        if (copyKeySet.contains(IssueSeverity.INFO.name())) {
+            keys.add(IssueSeverity.INFO.name());
+            copyKeySet.remove(IssueSeverity.INFO.name());
         }
-        if (copyKeySet.contains(SEVERITY_MINOR)) {
-            keys.add(SEVERITY_MINOR);
-            copyKeySet.remove(SEVERITY_MINOR);
+        if (copyKeySet.contains(IssueSeverity.MINOR.name())) {
+            keys.add(IssueSeverity.MINOR.name());
+            copyKeySet.remove(IssueSeverity.MINOR.name());
         }
-        keys.addAll(copyKeySet);
+        for (String issueSeverity : copyKeySet) {
+            keys.add(issueSeverity);
+        }
         return keys;
     }
 

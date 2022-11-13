@@ -23,6 +23,7 @@ import java.util.Map;
 import org.apache.commons.text.StringEscapeUtils;
 import org.openide.text.Annotation;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 /**
  *
  * @author FICHET Philippe
@@ -40,9 +41,9 @@ public class SonarLintAnnotation extends Annotation {
     private final String shortDescription;
     private final String ruleKey;
     private final String ruleName;
-    private final String severity;
+    private final IssueSeverity severity;
 
-    public SonarLintAnnotation(String ruleKey, String ruleName, Map<StandaloneRuleParam, String> ruleParams, String severity, long startOffest, int length) {
+    public SonarLintAnnotation(String ruleKey, String ruleName, Map<StandaloneRuleParam, String> ruleParams, IssueSeverity severity, long startOffest, int length) {
         super();
         this.startOffest = startOffest;
         this.length = length;
@@ -85,7 +86,7 @@ public class SonarLintAnnotation extends Annotation {
 
     @Override
     public String getAnnotationType() {
-        switch(severity) {
+        switch(severity.name()) {
             case "INFO":
                 return ANNOTATION_TYPE_INFO;
             case "MINOR":
@@ -114,7 +115,7 @@ public class SonarLintAnnotation extends Annotation {
         return ruleName;
     }
     
-    public String getSeverity() {
+    public IssueSeverity getSeverity() {
         return severity;
     }
 }

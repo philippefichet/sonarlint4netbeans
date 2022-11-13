@@ -88,7 +88,7 @@ public class SonarLintAnalyserIssueNode extends AbstractNode {
         severityPropertySet.setName("severity");
         severityPropertySet.setDisplayName("Severity");
         severityPropertySet.setShortDescription("Severity");
-        severityPropertySet.put(new SeverityProperty(issue.getSeverity()));
+        severityPropertySet.put(new SeverityProperty(issue.getSeverity().name()));
     }
 
     public static final class LocationProperty extends PropertySupport.ReadOnly<String> {
@@ -123,7 +123,7 @@ public class SonarLintAnalyserIssueNode extends AbstractNode {
         private final String value;
         public TypeProperty(DefaultClientIssue issue) {
             super("type", String.class, "Type", "Type");
-            value = issue.getType();
+            value = issue.getType().name();
         }
 
         @Override

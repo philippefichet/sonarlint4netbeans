@@ -24,6 +24,7 @@ import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Sheet;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.DefaultClientIssue;
+import org.sonarsource.sonarlint.core.commons.RuleType;
 
 /**
  *
@@ -33,7 +34,7 @@ public class SonarLintAnalyserIssueSeverityRuleKeyNode extends AbstractNode {
 
     private final String ruleKey;
     private final String ruleName;
-    private final String type;
+    private final RuleType type;
     private final SonarLintAnalyserIssueChildren children;
     private final Sheet.Set ruleNamePropertySet = new Sheet.Set();
     private final Sheet.Set typePropertySet = new Sheet.Set();
@@ -62,7 +63,7 @@ public class SonarLintAnalyserIssueSeverityRuleKeyNode extends AbstractNode {
         severityPropertySet.setName("severity");
         severityPropertySet.setDisplayName("Severity");
         severityPropertySet.setShortDescription("Severity");
-        severityPropertySet.put(new SeverityProperty(issue.getSeverity()));
+        severityPropertySet.put(new SeverityProperty(issue.getSeverity().name()));
         updateDisplayName();
         setIconBaseWithExtension(
             SonarLintUtils.getRuleTypePathIconInClasspath(type, false)

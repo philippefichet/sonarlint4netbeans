@@ -33,7 +33,7 @@ import javax.swing.JProgressBar;
 import javax.swing.event.ListSelectionEvent;
 import org.netbeans.api.project.Project;
 import org.openide.util.Lookup;
-import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
+import org.sonarsource.sonarlint.core.commons.RuleKey;
 import org.sonarsource.sonarlint.core.commons.Version;
 
 public final class SonarLintPanel extends javax.swing.JPanel {

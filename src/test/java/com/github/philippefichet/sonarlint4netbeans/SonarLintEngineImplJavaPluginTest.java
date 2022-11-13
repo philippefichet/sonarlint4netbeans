@@ -30,6 +30,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
+import org.sonarsource.sonarlint.core.commons.RuleType;
 
 /**
  *
@@ -58,10 +60,10 @@ final class SonarLintEngineImplJavaPluginTest {
                 .build(),
                 Arrays.asList(
                     new DefaultIssueTestImpl.Builder()
-                    .severity("CRITICAL")
-                    .type("CODE_SMELL")
+                    .severity(IssueSeverity.CRITICAL)
+                    .type(RuleType.CODE_SMELL)
+                    // "Constant names should comply with a naming convention"
                     .ruleKey("java:S115")
-                    .ruleName("Constant names should comply with a naming convention")
                     .startLine(25)
                     .startLineOffset(31)
                     .endLine(25)
@@ -79,10 +81,10 @@ final class SonarLintEngineImplJavaPluginTest {
                 .build(),
                 Arrays.asList(
                     new DefaultIssueTestImpl.Builder()
-                    .severity("INFO")
-                    .type("CODE_SMELL")
+                    .severity(IssueSeverity.INFO)
+                    .type(RuleType.CODE_SMELL)
+                    // "Deprecated code should be removed"
                     .ruleKey("java:S1133")
-                    .ruleName("Deprecated code should be removed")
                     .startLine(17)
                     .startLineOffset(16)
                     .endLine(17)
@@ -100,10 +102,10 @@ final class SonarLintEngineImplJavaPluginTest {
                 .build(),
                 Arrays.asList(
                     new DefaultIssueTestImpl.Builder()
-                    .severity("CRITICAL")
-                    .type("CODE_SMELL")
+                    .severity(IssueSeverity.CRITICAL)
+                    .type(RuleType.CODE_SMELL)
+                    // "Constant names should comply with a naming convention"
                     .ruleKey("java:S115")
-                    .ruleName("Constant names should comply with a naming convention")
                     .startLine(25)
                     .startLineOffset(31)
                     .endLine(25)

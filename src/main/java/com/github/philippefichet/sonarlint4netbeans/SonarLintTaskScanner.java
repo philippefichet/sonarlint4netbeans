@@ -74,8 +74,9 @@ public class SonarLintTaskScanner extends FileTaskScanner implements PropertyCha
                     Optional<StandaloneRuleDetails> ruleDetails = sonarLintEngine.getRuleDetails(issue.getRuleKey());
                     return Task.create(
                         fileObject,
-                        "nb-sonarlint-" + issue.getSeverity().toLowerCase(),
-                        issue.getRuleKey() + " = " + ruleDetails.map(StandaloneRuleDetails::getName).orElse("unknown"), startLine == null ? 1 : startLine
+                        "nb-sonarlint-" + issue.getSeverity().name().toLowerCase(),
+                        issue.getRuleKey() + " = " + ruleDetails.map(StandaloneRuleDetails::getName).orElse("unknown"),
+                        startLine == null ? 1 : startLine
                     );
                 })
                 .collect(Collectors.toList());

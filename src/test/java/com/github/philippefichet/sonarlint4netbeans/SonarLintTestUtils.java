@@ -41,14 +41,14 @@ import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.sonar.api.utils.ZipUtils;
-import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
+import org.sonarsource.sonarlint.core.commons.RuleKey;
 
 /**
  *
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
 public final class SonarLintTestUtils {
-    private static final String NODEJS_VERSION = "14.15.4";
+    private static final String NODEJS_VERSION = "14.17.0";
     private SonarLintTestUtils() {
     }
 
@@ -82,7 +82,7 @@ public final class SonarLintTestUtils {
         // Download
         Path targetNodeJSZip = Paths.get("./target/" + nodejsFileName + "." + nodejsFileExtension);
         if (!targetNodeJSZip.toFile().exists()) {
-            InputStream in = new URL("https://nodejs.org/dist/v14.15.4/" + nodejsFileName + "." + nodejsFileExtension).openStream();
+            InputStream in = new URL("https://nodejs.org/dist/v" + NODEJS_VERSION + "/" + nodejsFileName + "." + nodejsFileExtension).openStream();
             Files.copy(in, targetNodeJSZip, StandardCopyOption.REPLACE_EXISTING);
         }
         // extract

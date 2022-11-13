@@ -63,10 +63,12 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
-import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
+import org.sonarsource.sonarlint.core.commons.RuleKey;
+import org.sonarsource.sonarlint.core.commons.RuleType;
 import org.sonarsource.sonarlint.core.commons.Version;
 
 /**
@@ -117,7 +119,11 @@ class SonarLintUtilsTest {
             List<Issue> expectedIssues = getExpectedIssueForNewClassFile();
             SonarLintEngine engine = Lookup.getDefault().lookup(SonarLintEngine.class);
             engine.waitingInitialization();
-            engine.getAllRuleDetails().forEach(d -> engine.excludeRuleKey(RuleKey.parse(d.getKey()), SonarLintEngine.GLOBAL_SETTINGS_PROJECT));
+            engine.excludeRuleKeys(
+                engine.getAllRuleDetails().stream().map(r -> RuleKey.parse(r.getKey())).collect(Collectors.toList()),
+                SonarLintEngine.GLOBAL_SETTINGS_PROJECT
+            );
+            //engine.getAllRuleDetails().forEach(d -> engine.excludeRuleKey(RuleKey.parse(d.getKey()), ));
             // check and activate required rules
             String[] requiredRuleKeys = new String[] {"java:S2168", "java:S1186", "java:S115", "java:S1134", "java:S1133", "java:S100"};
             for (String requiredRuleKey : requiredRuleKeys) {
@@ -467,20 +473,20 @@ class SonarLintUtilsTest {
             List<Issue> actualIssues = new ArrayList<>();
             List<Issue> expectedIssues = Arrays.asList(
                 new DefaultIssueTestImpl.Builder()
-                .severity("CRITICAL")
-                .type("CODE_SMELL")
+                .severity(IssueSeverity.CRITICAL)
+                .type(RuleType.CODE_SMELL)
+                // "Methods should not be empty"
                 .ruleKey("java:S1186")
-                .ruleName("Methods should not be empty")
                 .startLine(17)
                 .startLineOffset(16)
                 .endLine(17)
                 .endLineOffset(32)
                 .build(),
                 new DefaultIssueTestImpl.Builder()
-                .severity("CRITICAL")
-                .type("CODE_SMELL")
+                .severity(IssueSeverity.CRITICAL)
+                .type(RuleType.CODE_SMELL)
+                // "Methods should not be empty"
                 .ruleKey("java:S1186")
-                .ruleName("Methods should not be empty")
                 .startLine(19)
                 .startLineOffset(16)
                 .endLine(19)
@@ -650,70 +656,70 @@ class SonarLintUtilsTest {
     {
         return Arrays.asList(
             new DefaultIssueTestImpl.Builder()
-            .severity("CRITICAL")
-            .type("CODE_SMELL")
+            .severity(IssueSeverity.CRITICAL)
+            .type(RuleType.CODE_SMELL)
+            // "Constant names should comply with a naming convention"
             .ruleKey("java:S115")
-            .ruleName("Constant names should comply with a naming convention")
             .startLine(10)
             .startLineOffset(31)
             .endLine(10)
             .endLineOffset(56)
             .build(),
             new DefaultIssueTestImpl.Builder()
-            .severity("CRITICAL")
-            .type("CODE_SMELL")
+            .severity(IssueSeverity.CRITICAL)
+            .type(RuleType.CODE_SMELL)
+            // "Methods should not be empty"
             .ruleKey("java:S1186")
-            .ruleName("Methods should not be empty")
             .startLine(17)
             .startLineOffset(16)
             .endLine(17)
             .endLineOffset(32)
             .build(),
             new DefaultIssueTestImpl.Builder()
-            .severity("CRITICAL")
-            .type("CODE_SMELL")
+            .severity(IssueSeverity.CRITICAL)
+            .type(RuleType.CODE_SMELL)
+            // "Methods should not be empty"
             .ruleKey("java:S1186")
-            .ruleName("Methods should not be empty")
             .startLine(19)
             .startLineOffset(16)
             .endLine(19)
             .endLineOffset(47)
             .build(),
             new DefaultIssueTestImpl.Builder()
-            .severity("INFO")
-            .type("CODE_SMELL")
+            .severity(IssueSeverity.INFO)
+            .type(RuleType.CODE_SMELL)
+            // "Deprecated code should be removed"
             .ruleKey("java:S1133")
-            .ruleName("Deprecated code should be removed")
             .startLine(17)
             .startLineOffset(16)
             .endLine(17)
             .endLineOffset(32)
             .build(),
             new DefaultIssueTestImpl.Builder()
-            .severity("MINOR")
-            .type("CODE_SMELL")
+            .severity(IssueSeverity.MINOR)
+            .type(RuleType.CODE_SMELL)
+            // "Method names should comply with a naming convention"
             .ruleKey("java:S100")
-            .ruleName("Method names should comply with a naming convention")
             .startLine(19)
             .startLineOffset(16)
             .endLine(19)
             .endLineOffset(47)
             .build(),
             new DefaultIssueTestImpl.Builder()
-            .severity("MAJOR")
-            .type("CODE_SMELL")
+            .severity(IssueSeverity.MAJOR)
+            .type(RuleType.CODE_SMELL)
+            // "Track uses of \"FIXME\" tags")
             .ruleKey("java:S1134")
-            .ruleName("Track uses of \"FIXME\" tags")
             .startLine(21)
             .startLineOffset(0)
             .endLine(21)
             .endLineOffset(18)
             .build(),
             new DefaultIssueTestImpl.Builder()
-            .severity("BLOCKER")
-            .type("BUG")
+            .severity(IssueSeverity.BLOCKER)
+            .type(RuleType.BUG)
+            // "Double-checked locking should not be used"
             .ruleKey("java:S2168")
-            .ruleName("Double-checked locking should not be used")
             .startLine(24)
             .startLineOffset(12)
             .endLine(24)
