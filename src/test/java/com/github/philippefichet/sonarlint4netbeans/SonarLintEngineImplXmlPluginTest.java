@@ -31,6 +31,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
+import org.sonarsource.sonarlint.core.commons.RuleType;
 
 /**
  *
@@ -59,10 +61,10 @@ public class SonarLintEngineImplXmlPluginTest {
                 .build(),
                 Arrays.asList(
                     new DefaultIssueTestImpl.Builder()
-                    .severity("MAJOR")
-                    .type("CODE_SMELL")
+                    .severity(IssueSeverity.MAJOR)
+                    .type(RuleType.CODE_SMELL)
+                    // "Track uses of \"FIXME\" tags"
                     .ruleKey("xml:S1134")
-                    .ruleName("Track uses of \"FIXME\" tags")
                     .startLine(22)
                     .startLineOffset(0)
                     .endLine(23)

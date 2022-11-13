@@ -63,12 +63,14 @@ import org.sonarsource.nodejs.NodeCommandException;
 import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
 import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
-import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
+import org.sonarsource.sonarlint.core.commons.RuleKey;
+import org.sonarsource.sonarlint.core.commons.RuleType;
 import org.sonarsource.sonarlint.core.commons.Version;
 import org.sonarsource.sonarlint.core.commons.progress.ClientProgressMonitor;
 
@@ -176,12 +178,12 @@ public final class SonarLintUtils {
      * @param useSuffixForDarkLAF use "_dark" suffix if current LAF is dark
      * @return URL of PNG image severity if exist
      */
-    public static String getRuleTypePathIconInClasspath(String type, boolean useSuffixForDarkLAF)
+    public static String getRuleTypePathIconInClasspath(RuleType type, boolean useSuffixForDarkLAF)
     {
         if (useSuffixForDarkLAF && isDarkLaF()) {
-            return "com/github/philippefichet/sonarlint4netbeans/resources/sonarlint-type-" + type.toLowerCase() + "-16px_dark.png";
+            return "com/github/philippefichet/sonarlint4netbeans/resources/sonarlint-type-" + type.name().toLowerCase() + "-16px_dark.png";
         } else {
-            return "com/github/philippefichet/sonarlint4netbeans/resources/sonarlint-type-" + type.toLowerCase() + "-16px.png";
+            return "com/github/philippefichet/sonarlint4netbeans/resources/sonarlint-type-" + type.name().toLowerCase() + "-16px.png";
         }
     }
 
@@ -191,7 +193,7 @@ public final class SonarLintUtils {
      * @param useSuffixForDarkLAF to use "_dark" prefix in dark LAF
      * @return URL of PNG image type if exist
      */
-    public static Optional<URL> ruleTypePathIconInClasspathToURL(String type, boolean useSuffixForDarkLAF)
+    public static Optional<URL> ruleTypePathIconInClasspathToURL(RuleType type, boolean useSuffixForDarkLAF)
     {
         return Optional.ofNullable(
             SonarLintUtils.class.getClassLoader().getResource(getRuleTypePathIconInClasspath(type, useSuffixForDarkLAF))
@@ -217,9 +219,9 @@ public final class SonarLintUtils {
      * @param severity Severity from which the URL of the PNG image must be retrieved
      * @return URL of PNG image severity if exist
      */
-    public static Optional<URL> ruleSeverityToURL(String severity)
+    public static Optional<URL> ruleSeverityToURL(IssueSeverity severity)
     {
-        return Optional.ofNullable(SonarLintUtils.class.getClassLoader().getResource("com/github/philippefichet/sonarlint4netbeans/resources/sonarlint-" + severity.toLowerCase() + ".png"));
+        return Optional.ofNullable(SonarLintUtils.class.getClassLoader().getResource("com/github/philippefichet/sonarlint4netbeans/resources/sonarlint-" + severity.name().toLowerCase() + ".png"));
     }
 
     /**
@@ -227,9 +229,9 @@ public final class SonarLintUtils {
      * @param severity Severity of which the icon must be recovered
      * @return ImageIcon of PNG image severity if exist
      */
-    public static Optional<ImageIcon> ruleSeverityToImageIcon(String severity)
+    public static Optional<ImageIcon> ruleSeverityToImageIcon(IssueSeverity severity)
     {
-        return ruleSeverityToURL(severity).map(resource -> new ImageIcon(resource, severity));
+        return ruleSeverityToURL(severity).map(resource -> new ImageIcon(resource, severity.name().toLowerCase()));
     }
 
     public static String toURL(RuleDetails ruleDetails)
@@ -315,13 +317,13 @@ public final class SonarLintUtils {
             .append(ruleDetails.getKey())
             .append("</td>");
 
-        SonarLintUtils.ruleSeverityToURL(ruleDetails.getSeverity())
+        SonarLintUtils.ruleSeverityToURL(ruleDetails.getDefaultSeverity())
             .ifPresent(
                 severityURL -> 
                     sb.append("<td><img class=\"rule-type-severity-and-tags-container-severity\" src=\"")
                         .append(severityURL.toString())
                         .append("\"/></td><td>")
-                        .append(ruleDetails.getSeverity())
+                        .append(ruleDetails.getDefaultSeverity().name())
                         .append("</td>")
             );
 

@@ -82,7 +82,7 @@ public final class SonarLintListCellRenderer extends JPanel implements ListCellR
             } else {
                 modifyParameters.setIcon(iconModifyParameters);
             }
-            Optional<ImageIcon> toImageIcon = SonarLintUtils.ruleSeverityToImageIcon(optionalRuleDetails.get().getSeverity());
+            Optional<ImageIcon> toImageIcon = SonarLintUtils.ruleSeverityToImageIcon(optionalRuleDetails.get().getDefaultSeverity());
             if (toImageIcon.isPresent()) {
                 defaultListCellRenderer.setIcon(toImageIcon.get());
             }

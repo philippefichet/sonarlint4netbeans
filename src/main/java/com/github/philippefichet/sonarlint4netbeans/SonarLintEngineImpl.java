@@ -45,13 +45,13 @@ import org.sonarsource.sonarlint.core.StandaloneSonarLintEngineImpl;
 import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
 import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
-import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneGlobalConfiguration;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
 import org.sonarsource.sonarlint.core.commons.Language;
+import org.sonarsource.sonarlint.core.commons.RuleKey;
 import org.sonarsource.sonarlint.core.commons.Version;
 import org.sonarsource.sonarlint.core.commons.log.ClientLogOutput;
 import org.sonarsource.sonarlint.core.commons.progress.ClientProgressMonitor;
@@ -65,15 +65,15 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
     private static final Logger LOG = Logger.getLogger(SonarLintEngineImpl.class.getName());
 
     // https://search.maven.org/artifact/org.sonarsource.java/sonar-java-plugin/
-    private static final String SONAR_JAVA_PLUGIN_VERSION = "7.4.0.27839";
+    private static final String SONAR_JAVA_PLUGIN_VERSION = "7.15.0.30507";
     // https://search.maven.org/artifact/org.sonarsource.javascript/sonar-javascript-plugin/
-    private static final String SONAR_JAVASCRIPT_PLUGIN_VERSION = "8.6.0.16913";
+    private static final String SONAR_JAVASCRIPT_PLUGIN_VERSION = "9.10.0.19937";
     // https://search.maven.org/artifact/org.sonarsource.php/sonar-php-plugin/
-    private static final String SONAR_PHP_PLUGIN_VERSION = "3.21.2.8292";
+    private static final String SONAR_PHP_PLUGIN_VERSION = "3.25.0.9077";
     // https://search.maven.org/artifact/org.sonarsource.html/sonar-html-plugin/
     private static final String SONAR_HTML_PLUGIN_VERSION = "3.6.0.3106";
     // https://search.maven.org/artifact/org.sonarsource.xml/sonar-xml-plugin/
-    private static final String SONAR_XML_PLUGIN_VERSION = "2.5.0.3376";
+    private static final String SONAR_XML_PLUGIN_VERSION = "2.6.1.3686";
     private static final String PREFIX_PREFERENCE_RULE_PARAMETER = "rules.parameters.";
     private static final String PREFIX_EXCLUDE_RULE = "excludedRules";
     private static final String PREFIX_RUNTIME_EXTRA_PROPERTIES_PREFERENCE = "extraProperties";

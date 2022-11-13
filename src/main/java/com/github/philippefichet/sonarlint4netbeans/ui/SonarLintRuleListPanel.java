@@ -45,8 +45,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.api.project.Project;
 import org.openide.util.Lookup;
-import org.sonarsource.sonarlint.core.client.api.common.RuleKey;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
+import org.sonarsource.sonarlint.core.commons.RuleKey;
 
 /**
  * Panel to cnofigure sonarlint rules

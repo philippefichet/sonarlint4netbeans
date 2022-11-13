@@ -26,6 +26,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 
 /**
  *
@@ -37,7 +38,7 @@ public class SonarLintSeverityTableCellRenderer implements TableCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         String severity = String.valueOf(value);
-        Optional<ImageIcon> toImageIcon = SonarLintUtils.ruleSeverityToImageIcon(severity);
+        Optional<ImageIcon> toImageIcon = SonarLintUtils.ruleSeverityToImageIcon(IssueSeverity.valueOf(severity));
         if (toImageIcon.isPresent()) {
             defaultTableCellRenderer.setIcon(toImageIcon.get());
         }
