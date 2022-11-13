@@ -24,6 +24,7 @@ It requests netbeans in version 13.0 or higher and Java in version 11 or higher.
 - Custom "Sonar Rule Details" window with CSS
 - Enable or disabled test rules on test files
 - Severity icons
+- Partial Support on C/C++ project (show xref:README-CFamily.adoc[README-CFamily])
 
 == Release 2.x to 3.x
 

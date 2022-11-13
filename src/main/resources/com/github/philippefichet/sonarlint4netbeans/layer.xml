@@ -8,6 +8,22 @@
             </file>
         </folder>
         <folder name="text">
+            <folder name="x-h">
+                <file name="com-github-philippefichet-sonarlint4netbeans-SonarLintParserResultTaskFactory.instance">
+                </file>
+            </folder>
+            <folder name="x-c">
+                <file name="com-github-philippefichet-sonarlint4netbeans-SonarLintParserResultTaskFactory.instance">
+                </file>
+            </folder>
+            <folder name="x-h++">
+                <file name="com-github-philippefichet-sonarlint4netbeans-SonarLintParserResultTaskFactory.instance">
+                </file>
+            </folder>
+            <folder name="x-c++">
+                <file name="com-github-philippefichet-sonarlint4netbeans-SonarLintParserResultTaskFactory.instance">
+                </file>
+            </folder>
             <folder name="x-java">
                 <file name="com-github-philippefichet-sonarlint4netbeans-SonarLintParserResultTaskFactory.instance">
                 </file>
