@@ -178,6 +178,28 @@ public class SonarLintEngineImplJavascriptPluginTest {
                     .build()
                 )
             ),
+            Arguments.of(
+                SonarLintEngineTestConfiguration.builder()
+                .description("sonarlint-example.css with rule css:S1116 to check one issue on line \"4\"")
+                .requirePlugin("javascript")
+                .requireNodeJS()
+                .includeRules("css:S1116")
+                .addClientInputFile(new File("./src/test/resources/sonarlint-example.css"))
+                .build(),
+                Arrays.asList(
+                    // api variable
+                    new DefaultIssueTestImpl.Builder()
+                    .severity(IssueSeverity.MINOR)
+                    .type(RuleType.CODE_SMELL)
+                    // "Extra semicolons should be removed"
+                    .ruleKey("css:S1116")
+                    .startLine(4)
+                    .startLineOffset(0)
+                    .endLine(4)
+                    .endLineOffset(20)
+                    .build()
+                )
+            ),
         };
     }
 

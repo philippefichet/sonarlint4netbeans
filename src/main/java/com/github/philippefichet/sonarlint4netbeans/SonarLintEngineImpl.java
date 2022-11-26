@@ -67,7 +67,7 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
     // https://search.maven.org/artifact/org.sonarsource.java/sonar-java-plugin/
     private static final String SONAR_JAVA_PLUGIN_VERSION = "7.15.0.30507";
     // https://search.maven.org/artifact/org.sonarsource.javascript/sonar-javascript-plugin/
-    private static final String SONAR_JAVASCRIPT_PLUGIN_VERSION = "9.10.0.19937";
+    private static final String SONAR_JAVASCRIPT_PLUGIN_VERSION = "9.11.1.20218";
     // https://search.maven.org/artifact/org.sonarsource.php/sonar-php-plugin/
     private static final String SONAR_PHP_PLUGIN_VERSION = "3.25.0.9077";
     // https://search.maven.org/artifact/org.sonarsource.html/sonar-html-plugin/
