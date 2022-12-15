@@ -713,7 +713,7 @@ class SonarLintUtilsTest {
             .startLine(21)
             .startLineOffset(0)
             .endLine(21)
-            .endLineOffset(18)
+            .endLineOffset(17)
             .build(),
             new DefaultIssueTestImpl.Builder()
             .severity(IssueSeverity.BLOCKER)
