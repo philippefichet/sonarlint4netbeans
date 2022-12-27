@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.philippefichet</groupId>
     <artifactId>sonarlint4netbeans</artifactId>
-    <version>3.0.0</version>
+    <version>3.0.1</version>
     <packaging>nbm</packaging>
     <name>SonarLint for Netbeans</name>
     <description>SonarLint integration for Netbeans</description>
