@@ -37,10 +37,6 @@ public class SonarLintAnalyserIssueChildren extends Children.Keys<Issue> {
     private final java.util.Map<Issue, SonarLintAnalyserIssueNode> nodeInstancies = new HashMap<>();
     private final SonarLintAnalyserIssueComparator issueComparator = new SonarLintAnalyserIssueComparator();
 
-    public SonarLintAnalyserIssueChildren() {
-        
-    }
-
     public void addIssue(DefaultClientIssue issue, String ruleName) {
         nodeInstancies.put(issue, new SonarLintAnalyserIssueNode(issue, ruleName));
         List<Issue> keySet = new ArrayList<>(nodeInstancies.keySet());

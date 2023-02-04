@@ -28,6 +28,9 @@ import org.sonarsource.sonarlint.core.client.api.common.PluginDetails;
  *
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
+@SuppressWarnings({
+    "java:S1450" // "Private fields used as local variables in methods" disabled because managed by netbeans
+})
 public class SonarLintOptionsPanelAnalyzers extends javax.swing.JPanel {
     private SonarLintAnalyzersTableModel analyzerDefaultTableModel = new SonarLintAnalyzersTableModel();
 

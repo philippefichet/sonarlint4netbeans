@@ -19,35 +19,26 @@
  */
 package com.github.philippefichet.sonarlint4netbeans.treenode;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
+import java.lang.reflect.InvocationTargetException;
+import org.openide.nodes.PropertySupport;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.DefaultClientIssue;
 
 /**
  *
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
-public class SonarLintAnalyserIssueSeverityRuleKeyChildren extends Children.Keys<String> {
+public class LocationProperty extends PropertySupport.ReadOnly<String> {
+    public static final String NAME = "location";
+    public static final String DISPLAY_NAME = "Location";
+    private final String value;
 
-    private final java.util.Map<String, SonarLintAnalyserIssueSeverityRuleKeyNode> nodeInstancies = new HashMap<>();
-
-    public void addIssue(DefaultClientIssue issue, String ruleName) {
-        String ruleKey = issue.getRuleKey();
-        nodeInstancies.computeIfAbsent(ruleKey, k -> new SonarLintAnalyserIssueSeverityRuleKeyNode(issue, ruleName))
-            .addIssue(issue, ruleName);
-        ArrayList<String> keys = new ArrayList<>(nodeInstancies.keySet());
-        Collections.sort(keys);
-        setKeys(keys);
+    public LocationProperty(DefaultClientIssue issue) {
+        super(NAME, String.class, DISPLAY_NAME, DISPLAY_NAME);
+        value = "start at line " + issue.getStartLine() + " and column " + issue.getStartLineOffset() + " to end at line " + issue.getEndLine() + " and column" + issue.getEndLineOffset();
     }
 
-    
     @Override
-    protected Node[] createNodes(String ruleKey) {
-        return new Node[] {
-            nodeInstancies.get(ruleKey)
-        };
+    public String getValue() throws IllegalAccessException, InvocationTargetException {
+        return value;
     }
 }

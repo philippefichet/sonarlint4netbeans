@@ -47,7 +47,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
     private String nodeJSPathToSave;
     private Version nodeJSVersionToSave;
     private Boolean applyDifferentRulesOnTestFiles = null;
-    private final AtomicBoolean loadingPanel = new AtomicBoolean(true);
+    private final AtomicBoolean showLoadingPanel = new AtomicBoolean(true);
 
     private final SonarLintRuleTableModel rulesDefaultTableModel = new SonarLintRuleTableModel();
 
@@ -77,7 +77,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
             }
         });
         categoriesList.addListSelectionListener((ListSelectionEvent e) -> {
-            if (!loadingPanel.get()) {
+            if (!showLoadingPanel.get()) {
                 showPanelFromCategory(sonarLintEngine, categoriesList.getSelectedValue());
             }
         });
@@ -87,7 +87,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
     private void whenInitialized(SonarLintEngine engine)
     {
         engine.whenRestarted(this::whenRestarted);
-        loadingPanel.set(false);
+        showLoadingPanel.set(false);
         String category = categoriesList.getSelectedValue();
         if (category == null) {
             categoriesList.setSelectedIndex(0);
@@ -120,7 +120,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
     private void whenRestarted(SonarLintEngine engine)
     {
         engine.whenInitialized(this::whenInitialized);
-        loadingPanel.set(true);
+        showLoadingPanel.set(true);
         showLoadingPanel();
     }
 
@@ -171,9 +171,8 @@ public final class SonarLintPanel extends javax.swing.JPanel {
                 this.changedListener.changed();
                 ruleKeyChanged.put(ruleKey, enabled);
             },
-            (String ruleKeyChanged, String parameterName, String parameterValue) -> {
-                SonarLintUtils.changeRuleParameterValue(sonarLintEngine, project, ruleKeyChanged, parameterName, parameterValue);
-            },
+            (String ruleKey, String parameterName, String parameterValue) ->
+                SonarLintUtils.changeRuleParameterValue(sonarLintEngine, project, ruleKey, parameterName, parameterValue),
             sonarLintEngine,
             project
         );
@@ -185,9 +184,9 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         optionPanel.add(
             new SonarLintOptionsPanelProperties(
                 sonarLintEngine.getExtraProperties(project),
-                (Map<String, String> extraProperties) -> {
+                (Map<String, String> changedExtraProperties) -> {
                     this.extraProperties.clear();
-                    this.extraProperties.putAll(extraProperties);
+                    this.extraProperties.putAll(changedExtraProperties);
                     this.changedListener.changed();
                 }
             )
@@ -200,9 +199,9 @@ public final class SonarLintPanel extends javax.swing.JPanel {
             new SonarLintOptionsPanelPlugins(
                 sonarLintEngine.getBasePlugins(),
                 sonarLintEngine.getAdditionnalPlugins(),
-                (Map<String, String> additionnalPlugins) -> {
+                (Map<String, String> newAdditionnalPlugins) -> {
                     this.additionnalPlugins.clear();
-                    this.additionnalPlugins.putAll(additionnalPlugins);
+                    this.additionnalPlugins.putAll(newAdditionnalPlugins);
                     this.changedListener.changed();
                 }
             )
@@ -322,8 +321,11 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    @SuppressWarnings({
+        "java:S125" // "Sections of code should not be commented out" disabled to keep example
+    })
     void load() {
-        // TODO read settings and initialize GUI
+        // Read settings and initialize GUI
         // Example:
         // someCheckBox.setSelected(Preferences.userNodeForPackage(SonarLintPanel.class).getBoolean("someFlag", false));
         // or for org.openide.util with API spec. version >= 7.4:
@@ -347,7 +349,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
     }
 
     boolean valid() {
-        // TODO check whether form is consistent and complete
+        // Check whether form is consistent and complete
         return true;
     }
 

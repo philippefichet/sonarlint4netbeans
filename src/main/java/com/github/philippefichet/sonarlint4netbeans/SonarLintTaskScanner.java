@@ -44,7 +44,6 @@ import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetail
 public class SonarLintTaskScanner extends FileTaskScanner implements PropertyChangeListener {
 
     private static final Logger LOG = Logger.getLogger(SonarLintTaskScanner.class.getCanonicalName());
-    private Callback callback;
 
     public SonarLintTaskScanner(String displayName, String description) {
         super(displayName, description, "Miscellaneous/SonarLint");
@@ -88,11 +87,12 @@ public class SonarLintTaskScanner extends FileTaskScanner implements PropertyCha
 
     @Override
     public void attach(Callback callback) {
-        this.callback = callback;
+        // Do nothing
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
+        // Do nothing
     }
 
 }

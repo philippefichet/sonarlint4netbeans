@@ -137,9 +137,8 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
         standaloneSonarLintEngineImpl = null;
         consumerRestarted.forEach(consumer -> consumer.accept(this));
         consumerRestarted.clear();
-        new Thread(() -> {
-            createInternalEngine(oldStandaloneSonarLintEngineImpl);
-        }).start();
+        new Thread(() -> createInternalEngine(oldStandaloneSonarLintEngineImpl))
+            .start();
     }
 
     private void createInternalEngine(StandaloneSonarLintEngineImpl oldStandaloneSonarLintEngineImpl) {
@@ -151,11 +150,11 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
             try {
                 allPlugins.put(key, Paths.get(url).toRealPath());
             } catch (NoSuchFileException ex) {
-                LOG.warning("Additional plugin \"" + key + "\" with path \"" + url + "\" not exists");
+                LOG.log(Level.WARNING, "Additional plugin \"{0}\" with path \"{1}\" not exists", new Object[]{key, url});
             } catch (InvalidPathException ex) {
-                LOG.warning("Additional plugin \"" + key + "\" has mal formed path : " + url);
+                LOG.log(Level.WARNING, "Additional plugin \"{0}\" has mal formed path : {1}", new Object[]{key, url});
             } catch (IOException ex) {
-                LOG.warning("Additional plugin \"" + key + "\" has an error with path : " + url + " : " + ex.getMessage());
+                LOG.log(Level.WARNING, "Additional plugin \"{0}\" has an error with path : {1} : {2}", new Object[]{key, url, ex.getMessage()});
             }
         });
         

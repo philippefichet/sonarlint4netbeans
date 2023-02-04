@@ -26,6 +26,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.font.TextAttribute;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.swing.DefaultListCellRenderer;
@@ -96,13 +97,13 @@ public final class SonarLintListCellRenderer extends JPanel implements ListCellR
             }
 
             Font font = defaultListCellRenderer.getFont();
-            Map attributes = font.getAttributes();
+            @SuppressWarnings({
+                "java:S6411" // "Types used as keys in Maps should implement Comparable" disabled because legacy Swing code
+            })
+            Map<TextAttribute, Object> attributes = new HashMap<>();
             if (hasCustomParamValue) {
                 attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
                 attributes.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_BOLD);
-            } else {
-                attributes.remove(TextAttribute.UNDERLINE);
-                attributes.remove(TextAttribute.WEIGHT);
             }
             defaultListCellRenderer.setFont(font.deriveFont(attributes));
         }

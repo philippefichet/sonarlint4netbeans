@@ -52,17 +52,17 @@ public class SonarLintAnalyserIssueSeverityRuleKeyNode extends AbstractNode {
         this.ruleKey = issue.getRuleKey();
         this.ruleName = ruleName;
         this.type = issue.getType();
-        ruleNamePropertySet.setName("ruleName");
-        ruleNamePropertySet.setDisplayName("Rule name");
-        ruleNamePropertySet.setShortDescription("Rule name");
-        ruleNamePropertySet.put(new SonarLintAnalyserIssueNode.RuleNameProperty(ruleName));
-        typePropertySet.setName("type");
-        typePropertySet.setDisplayName("Type");
-        typePropertySet.setShortDescription("Type");
-        typePropertySet.put(new SonarLintAnalyserIssueNode.TypeProperty(issue));
-        severityPropertySet.setName("severity");
-        severityPropertySet.setDisplayName("Severity");
-        severityPropertySet.setShortDescription("Severity");
+        ruleNamePropertySet.setName(RuleNameProperty.NAME);
+        ruleNamePropertySet.setDisplayName(RuleNameProperty.DISPLAY_NAME);
+        ruleNamePropertySet.setShortDescription(RuleNameProperty.DISPLAY_NAME);
+        ruleNamePropertySet.put(new RuleNameProperty(ruleName));
+        typePropertySet.setName(TypeProperty.NAME);
+        typePropertySet.setDisplayName(TypeProperty.DISPLAY_NAME);
+        typePropertySet.setShortDescription(TypeProperty.DISPLAY_NAME);
+        typePropertySet.put(new TypeProperty(issue));
+        severityPropertySet.setName(SeverityProperty.NAME);
+        severityPropertySet.setDisplayName(SeverityProperty.DISPLAY_NAME);
+        severityPropertySet.setShortDescription(SeverityProperty.DISPLAY_NAME);
         severityPropertySet.put(new SeverityProperty(issue.getSeverity().name()));
         updateDisplayName();
         setIconBaseWithExtension(

@@ -21,7 +21,6 @@ package com.github.philippefichet.sonarlint4netbeans.ui;
 
 import com.github.philippefichet.sonarlint4netbeans.SonarLintAnalyzerCancelableTask;
 import java.awt.Dimension;
-import java.util.logging.Logger;
 import javax.swing.JTabbedPane;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.openide.awt.TabbedPaneFactory;
@@ -53,7 +52,6 @@ import org.openide.windows.TopComponent;
 })
 public final class SonarLintAnalyzerActionTopComponent extends TopComponent {
 
-    private static final Logger LOG = Logger.getLogger(SonarLintAnalyzerActionTopComponent.class.getName());
     private final RequestProcessor rp = new RequestProcessor(SonarLintAnalyzerActionTopComponent.class);
     private final JTabbedPane tabs;
 
@@ -88,24 +86,24 @@ public final class SonarLintAnalyzerActionTopComponent extends TopComponent {
     // End of variables declaration//GEN-END:variables
     @Override
     public void componentOpened() {
-        // TODO add custom code on component opening
+        // Add custom code on component opening
     }
 
     @Override
     public void componentClosed() {
-        // TODO add custom code on component closing
+        // Add custom code on component closing
     }
 
     void writeProperties(java.util.Properties p) {
         // better to version settings since initial version as advocated at
         // http://wiki.apidesign.org/wiki/PropertyFiles
         p.setProperty("version", "1.0");
-        // TODO store your settings
+        // Store your settings, like as "p.setProperty("version", "1.0");"
     }
 
     void readProperties(java.util.Properties p) {
-        String version = p.getProperty("version");
-        // TODO read your settings according to their version
+        // Read your settings according to their version
+        // Like as "String version = p.getProperty("version");"
     }
 
     public void addDeepSonarLintAnalyze(Node[] nodes)

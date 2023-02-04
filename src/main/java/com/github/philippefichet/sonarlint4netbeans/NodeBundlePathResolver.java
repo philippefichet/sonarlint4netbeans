@@ -20,8 +20,9 @@
 package com.github.philippefichet.sonarlint4netbeans;
 
 import java.util.Arrays;
-import java.util.function.BiFunction;
+import java.util.function.BinaryOperator;
 import java.util.function.Supplier;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.sonarsource.nodejs.BundlePathResolver;
 
@@ -37,7 +38,7 @@ public class NodeBundlePathResolver implements BundlePathResolver
     private final Supplier<String> pathToSearchSupplier;
     private String[] pathToSearch;
     private final String pathSeparator;
-    private final BiFunction<String, String, String> checkFileExist;
+    private final BinaryOperator<String> checkFileExist;
 
     /**
      * 
@@ -45,18 +46,22 @@ public class NodeBundlePathResolver implements BundlePathResolver
      * @param pathSeparator path separator used with pathToSearchSupplier
      * @param checkFileExist bi function to check file exist with pathToSearchSupplier x relativePath (in resolve method)
      */
-    public NodeBundlePathResolver(Supplier<String> pathToSearchSupplier, String pathSeparator, BiFunction<String, String, String> checkFileExist) {
+    public NodeBundlePathResolver(
+        Supplier<String> pathToSearchSupplier,
+        String pathSeparator,
+        BinaryOperator<String> checkFileExist
+    ) {
         this.pathToSearchSupplier = pathToSearchSupplier;
         this.pathSeparator = pathSeparator;
         this.checkFileExist = checkFileExist;
-        LOG.fine("NodeBundlePathResolver pathSeparator \"" + pathSeparator + "\"");
+        LOG.log(Level.FINE, "NodeBundlePathResolver pathSeparator \"{0}\"", pathSeparator);
     }
 
     @Override
     public String resolve(String relativePath) {
         if (pathToSearch == null) {
             pathToSearch = pathToSearchSupplier.get().split(pathSeparator);
-            LOG.fine("NodeBundlePathResolver pathToSearch \"" + Arrays.toString(pathToSearch) + "\"");
+            LOG.log(Level.FINE, "NodeBundlePathResolver pathToSearch \"{0}\"", Arrays.toString(pathToSearch));
         }
         String node = relativePath.equals(REDIRECT_NODE_RELATIVE_PATH) ? NODE_COMMAND_NAME : relativePath;
         for (String pathSearch : pathToSearch) {

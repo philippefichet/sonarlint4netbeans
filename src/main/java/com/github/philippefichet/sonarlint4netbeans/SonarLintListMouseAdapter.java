@@ -78,9 +78,9 @@ public class SonarLintListMouseAdapter extends MouseAdapter {
                             sonarLintOptions,
                             sonarLintEngine,
                             sonarLintAllRules.getSelectedValue(),
-                            (String ruleKey, String parameterName, String parameterValue) -> {
-                                SonarLintUtils.changeRuleParameterValue(sonarLintEngine, project, ruleKey, parameterName, parameterValue);
-                            },
+                            (String ruleKey, String parameterName, String parameterValue) ->
+                                SonarLintUtils.changeRuleParameterValue(sonarLintEngine, project, ruleKey, parameterName, parameterValue)
+                            ,
                             project
                         );
                         sonarLintRuleParameters.setVisible(true);

@@ -43,6 +43,9 @@ import org.sonarsource.sonarlint.core.commons.Version;
  *
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
+@SuppressWarnings({
+    "java:S1450" // "Private fields used as local variables in methods" disabled because managed by netbeans
+})
 public class SonarLintOptionsPanelOptions extends javax.swing.JPanel {
 
     private String nodeJSPathToSave = null;
@@ -168,7 +171,7 @@ public class SonarLintOptionsPanelOptions extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     private void initComponentsBehaviors() {
-        Consumer<String> checkNodeJS = (path) -> {
+        Consumer<String> checkNodeJS = (String path) -> {
             nodeJSPathToSave = null;
             nodeJSVersionToSave = null;
             nodeJSVersionField.setText("");

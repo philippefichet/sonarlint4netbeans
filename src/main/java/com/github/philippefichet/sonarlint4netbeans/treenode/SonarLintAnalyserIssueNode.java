@@ -23,12 +23,10 @@ import com.github.philippefichet.sonarlint4netbeans.SonarLintAnalyzerOpenIssueIn
 import com.github.philippefichet.sonarlint4netbeans.SonarLintDataManager;
 import java.awt.Image;
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -73,63 +71,22 @@ public class SonarLintAnalyserIssueNode extends AbstractNode {
             setDisplayName(prefixDisplayName + "Unkown file");
             file = null;
         }
-        ruleNamePropertySet.setName("ruleName");
-        ruleNamePropertySet.setDisplayName("Rule name");
-        ruleNamePropertySet.setShortDescription("Rule name");
+        ruleNamePropertySet.setName(RuleNameProperty.NAME);
+        ruleNamePropertySet.setDisplayName(RuleNameProperty.DISPLAY_NAME);
+        ruleNamePropertySet.setShortDescription(RuleNameProperty.DISPLAY_NAME);
         ruleNamePropertySet.put(new RuleNameProperty(ruleName));
-        locationPropertySet.setName("location");
-        locationPropertySet.setDisplayName("Location");
-        locationPropertySet.setShortDescription("Location");
+        locationPropertySet.setName(LocationProperty.NAME);
+        locationPropertySet.setDisplayName(LocationProperty.DISPLAY_NAME);
+        locationPropertySet.setShortDescription(LocationProperty.DISPLAY_NAME);
         locationPropertySet.put(new LocationProperty(issue));
-        typePropertySet.setName("type");
-        typePropertySet.setDisplayName("Type");
-        typePropertySet.setShortDescription("Type");
+        typePropertySet.setName(TypeProperty.NAME);
+        typePropertySet.setDisplayName(TypeProperty.DISPLAY_NAME);
+        typePropertySet.setShortDescription(TypeProperty.DISPLAY_NAME);
         typePropertySet.put(new TypeProperty(issue));
-        severityPropertySet.setName("severity");
-        severityPropertySet.setDisplayName("Severity");
-        severityPropertySet.setShortDescription("Severity");
+        severityPropertySet.setName(SeverityProperty.NAME);
+        severityPropertySet.setDisplayName(SeverityProperty.DISPLAY_NAME);
+        severityPropertySet.setShortDescription(SeverityProperty.DISPLAY_NAME);
         severityPropertySet.put(new SeverityProperty(issue.getSeverity().name()));
-    }
-
-    public static final class LocationProperty extends PropertySupport.ReadOnly<String> {
-        private final String value;
-        public LocationProperty(DefaultClientIssue issue) {
-            super("location", String.class, "Location", "Location");
-            value = "start at line " + issue.getStartLine() + " and column " + issue.getStartLineOffset() + " to end at line " + issue.getEndLine() + " and column" + issue.getEndLineOffset();
-        }
-
-        @Override
-        public String getValue() throws IllegalAccessException, InvocationTargetException {
-            return value;
-        }
-    }
-
-    public static final class RuleNameProperty extends PropertySupport.ReadOnly<String>
-    {
-        private final String ruleName;
-        
-        public RuleNameProperty(String ruleName) {
-            super("ruleName", String.class, "ruleName", "ruleName");
-            this.ruleName = ruleName;
-        }
-
-        @Override
-        public String getValue() throws IllegalAccessException, InvocationTargetException {
-            return ruleName;
-        }
-    }
-
-    public static final class TypeProperty extends PropertySupport.ReadOnly<String> {
-        private final String value;
-        public TypeProperty(DefaultClientIssue issue) {
-            super("type", String.class, "Type", "Type");
-            value = issue.getType().name();
-        }
-
-        @Override
-        public String getValue() throws IllegalAccessException, InvocationTargetException {
-            return value;
-        }
     }
 
     @Override
