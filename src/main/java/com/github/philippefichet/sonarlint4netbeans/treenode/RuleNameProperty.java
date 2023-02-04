@@ -1,5 +1,4 @@
 /*
- * sonarlint4netbeans: SonarLint integration for Apache Netbeans
  * Copyright (C) 2022 Philippe FICHET.
  *
  * This library is free software; you can redistribute it and/or
@@ -26,18 +25,18 @@ import org.openide.nodes.PropertySupport;
  *
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
-public final class SeverityProperty extends PropertySupport.ReadOnly<String> {
-    public static final String NAME = "severity";
-    public static final String DISPLAY_NAME = "Severity";
+public final class RuleNameProperty extends PropertySupport.ReadOnly<String> {
+    public static final String NAME = "ruleName";
+    public static final String DISPLAY_NAME = "Rule name";
+    private final String ruleName;
 
-    private final String value;
-    public SeverityProperty(String severity) {
+    public RuleNameProperty(String ruleName) {
         super(NAME, String.class, DISPLAY_NAME, DISPLAY_NAME);
-        value = severity;
+        this.ruleName = ruleName;
     }
 
     @Override
     public String getValue() throws IllegalAccessException, InvocationTargetException {
-        return value;
+        return ruleName;
     }
 }

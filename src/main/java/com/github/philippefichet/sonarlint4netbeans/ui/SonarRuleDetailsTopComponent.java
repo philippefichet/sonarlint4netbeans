@@ -111,23 +111,25 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
     // End of variables declaration//GEN-END:variables
     @Override
     public void componentOpened() {
-        // TODO add custom code on component opening
+        // Add custom code on component opening
     }
 
     @Override
     public void componentClosed() {
-        // TODO add custom code on component closing
+        // Add custom code on component closing
     }
 
     /**
      * Require by @ConvertAsProperties
      * @param p properties instance used to add custom properties
      */
+    @SuppressWarnings({
+        "java:S125" // "Sections of code should not be commented out" disabled to keep example
+    })
     void writeProperties(java.util.Properties p) {
         // better to version settings since initial version as advocated at
         // http://wiki.apidesign.org/wiki/PropertyFiles
-        p.setProperty("version", "1.0");
-        // TODO store your settings
+        // Store your settings, like as "p.setProperty("version", "1.0");
     }
 
     /**
@@ -135,8 +137,8 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
      * @param p properties instance used to read custom properties
      */
     void readProperties(java.util.Properties p) {
-        String version = p.getProperty("version");
-        // TODO read your settings according to their version
+        // Read your settings according to their version
+        // Like as "String version = p.getProperty("version");"
     }
 
     public void setSonarRuleKeyFilter(String sonarRuleKeyFilter, Project project)

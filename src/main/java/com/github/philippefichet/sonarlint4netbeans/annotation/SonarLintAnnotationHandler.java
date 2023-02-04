@@ -41,6 +41,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
+import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 
 /**
  *
@@ -125,18 +126,17 @@ public final class SonarLintAnnotationHandler {
             int endOffset = nbEndLineOffset + endLineOffset;
             int length = endOffset - startOffset;
             standaloneSonarLintEngine.getRuleDetails(sue.getRuleKey()).ifPresent(
-                (ruleDetails) -> {
-                    currentAnnocationOnFileObject.add(
-                        new SonarLintAnnotation(
-                            sue.getRuleKey(),
-                            ruleDetails.getName(),
-                            SonarLintUtils.extractRuleParameters(standaloneSonarLintEngine, sue.getRuleKey(), projectForAnalyse),
-                            sue.getSeverity(),
-                            startOffset,
-                            length
-                        )
-                    );
-                }
+                (StandaloneRuleDetails  ruleDetails) ->
+                currentAnnocationOnFileObject.add(
+                    new SonarLintAnnotation(
+                        sue.getRuleKey(),
+                        ruleDetails.getName(),
+                        SonarLintUtils.extractRuleParameters(standaloneSonarLintEngine, sue.getRuleKey(), projectForAnalyse),
+                        sue.getSeverity(),
+                        startOffset,
+                        length
+                    )
+                )
             );
         });
 

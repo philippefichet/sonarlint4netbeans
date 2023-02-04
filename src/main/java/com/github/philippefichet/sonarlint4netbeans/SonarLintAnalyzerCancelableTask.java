@@ -104,12 +104,12 @@ public class SonarLintAnalyzerCancelableTask implements Runnable, Cancellable {
         try {
             AnalysisResults analyze = SonarLintUtils.analyze(
                 files,
-                (Issue issue) -> {
+                (Issue issue) ->
                     sonarLintEngine.getRuleDetails(issue.getRuleKey()).ifPresent((StandaloneRuleDetails ruleDetails) -> {
                         String ruleName = ruleDetails.getName();
                         sonarLintAnalyzerContainer.handle(issue, ruleName);
-                    });
-                },
+                    })
+                ,
                 clientInputFileInputStreamEvent,
                 this
             );

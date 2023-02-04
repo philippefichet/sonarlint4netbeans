@@ -1,5 +1,4 @@
 /*
- * sonarlint4netbeans: SonarLint integration for Apache Netbeans
  * Copyright (C) 2022 Philippe FICHET.
  *
  * This library is free software; you can redistribute it and/or
@@ -17,27 +16,31 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package com.github.philippefichet.sonarlint4netbeans.treenode;
+package com.github.philippefichet.sonarlint4netbeans.ui;
 
-import java.lang.reflect.InvocationTargetException;
-import org.openide.nodes.PropertySupport;
+import java.awt.Desktop;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
-public final class SeverityProperty extends PropertySupport.ReadOnly<String> {
-    public static final String NAME = "severity";
-    public static final String DISPLAY_NAME = "Severity";
-
-    private final String value;
-    public SeverityProperty(String severity) {
-        super(NAME, String.class, DISPLAY_NAME, DISPLAY_NAME);
-        value = severity;
-    }
+public class DesktopHyperlinkListener implements HyperlinkListener {
 
     @Override
-    public String getValue() throws IllegalAccessException, InvocationTargetException {
-        return value;
+    public void hyperlinkUpdate(HyperlinkEvent e) {
+        if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+            try {
+                Desktop.getDesktop().browse(e.getURL().toURI());
+            } catch (URISyntaxException | IOException ex) {
+                ErrorManager.getDefault().log("Unable to open browser on URL: " + e.getURL());
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 }

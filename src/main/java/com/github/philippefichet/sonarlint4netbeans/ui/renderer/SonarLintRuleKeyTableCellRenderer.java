@@ -23,6 +23,7 @@ import com.github.philippefichet.sonarlint4netbeans.SonarLintEngine;
 import java.awt.Component;
 import java.awt.Font;
 import java.awt.font.TextAttribute;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.swing.JLabel;
@@ -62,13 +63,13 @@ public class SonarLintRuleKeyTableCellRenderer implements TableCellRenderer {
             }
 
             Font font = cell.getFont();
-            Map attributes = font.getAttributes();
+            @SuppressWarnings({
+                "java:S6411" // "Types used as keys in Maps should implement Comparable" disabled because legacy Swing code
+            })
+            Map<TextAttribute, Object> attributes = new HashMap<>();
             if (hasCustomParamValue) {
                 attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
                 attributes.put(TextAttribute.WEIGHT, TextAttribute.WEIGHT_BOLD);
-            } else {
-                attributes.remove(TextAttribute.UNDERLINE);
-                attributes.remove(TextAttribute.WEIGHT);
             }
             cell.setFont(font.deriveFont(attributes));
         }

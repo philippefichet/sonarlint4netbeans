@@ -29,6 +29,9 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer;
  * Panel to choose project scope for rule settings
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
+@SuppressWarnings({
+    "java:S1450" // "Private fields used as local variables in methods" disabled because managed by netbeans
+})
 public class SonarLintProjectCustomizerPanel extends javax.swing.JPanel {
     private SonarLintProjectPreferenceScope scope = SonarLintProjectPreferenceScope.GLOBAL;
 

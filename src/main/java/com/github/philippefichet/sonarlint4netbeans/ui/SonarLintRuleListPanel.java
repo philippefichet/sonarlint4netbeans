@@ -69,7 +69,8 @@ public class SonarLintRuleListPanel extends javax.swing.JPanel {
         Project project
     ) {
         initComponents();
-        sonarLintEngine.whenInitialized(engine -> {
+        sonarLintEngine.whenInitialized(
+            engine ->
             rulesDefaultTableModel.addTableModelListener(e -> {
                 int column = e.getColumn();
                 if (column == 0) {
@@ -80,8 +81,8 @@ public class SonarLintRuleListPanel extends javax.swing.JPanel {
                     Object valueAt = rulesDefaultTableModel.getValueAt(firstRow, column);
                     sonarLintRuleListPanelListener.ruleChanged(ruleKey, (Boolean) valueAt);
                 }
-            });
-        });
+            })
+        );
 
         JPanel languageKeyContainer = new JPanel(new FlowLayout());
         JButton resetSelectedRule = new JButton("Restore to default");

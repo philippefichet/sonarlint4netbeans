@@ -52,9 +52,8 @@ public class SonarLintProjectCustomizerRulesPanel extends javax.swing.JPanel imp
         initComponents();
         sonarLintPanel = new SonarLintRuleListPanel(
             ruleKeyChanged::put,
-            (String ruleKeyChanged, String parameterName, String parameterValue) -> {
-                SonarLintUtils.changeRuleParameterValue(sonarLintEngine, project, ruleKeyChanged, parameterName, parameterValue);
-            },
+            (String ruleKey, String parameterName, String parameterValue) ->
+            SonarLintUtils.changeRuleParameterValue(sonarLintEngine, project, ruleKey, parameterName, parameterValue),
             sonarLintEngine,
             project);
         add(sonarLintPanel, BorderLayout.CENTER);

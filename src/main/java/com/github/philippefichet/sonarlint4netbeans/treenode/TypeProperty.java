@@ -1,5 +1,4 @@
 /*
- * sonarlint4netbeans: SonarLint integration for Apache Netbeans
  * Copyright (C) 2022 Philippe FICHET.
  *
  * This library is free software; you can redistribute it and/or
@@ -19,35 +18,26 @@
  */
 package com.github.philippefichet.sonarlint4netbeans.treenode;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
+import java.lang.reflect.InvocationTargetException;
+import org.openide.nodes.PropertySupport;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.DefaultClientIssue;
 
 /**
  *
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
-public class SonarLintAnalyserIssueSeverityRuleKeyChildren extends Children.Keys<String> {
+public final class TypeProperty extends PropertySupport.ReadOnly<String> {
+    public static final String NAME = "type";
+    public static final String DISPLAY_NAME = "Type";
 
-    private final java.util.Map<String, SonarLintAnalyserIssueSeverityRuleKeyNode> nodeInstancies = new HashMap<>();
-
-    public void addIssue(DefaultClientIssue issue, String ruleName) {
-        String ruleKey = issue.getRuleKey();
-        nodeInstancies.computeIfAbsent(ruleKey, k -> new SonarLintAnalyserIssueSeverityRuleKeyNode(issue, ruleName))
-            .addIssue(issue, ruleName);
-        ArrayList<String> keys = new ArrayList<>(nodeInstancies.keySet());
-        Collections.sort(keys);
-        setKeys(keys);
+    private final String value;
+    public TypeProperty(DefaultClientIssue issue) {
+        super(NAME, String.class, DISPLAY_NAME, DISPLAY_NAME);
+        value = issue.getType().name();
     }
 
-    
     @Override
-    protected Node[] createNodes(String ruleKey) {
-        return new Node[] {
-            nodeInstancies.get(ruleKey)
-        };
+    public String getValue() throws IllegalAccessException, InvocationTargetException {
+        return value;
     }
 }

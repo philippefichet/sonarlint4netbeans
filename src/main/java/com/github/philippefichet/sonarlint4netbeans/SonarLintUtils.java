@@ -81,6 +81,8 @@ import org.sonarsource.sonarlint.core.commons.progress.ClientProgressMonitor;
 public final class SonarLintUtils {
 
     private static final Logger LOG = Logger.getLogger(SonarLintUtils.class.getCanonicalName());
+    private static final String HTML_END_END_TD_BEGIN_TD = "\"/></td><td>";
+    private static final String HTML_END_TD = "</td>";
 
     private SonarLintUtils() {
     }
@@ -286,6 +288,7 @@ public final class SonarLintUtils {
             null,
             null
         );
+        LOG.fine(() -> "Analyze result for file \"" + fileObject.getPath() + "\" : " + analyze);
         return issues;
     }
 
@@ -315,16 +318,16 @@ public final class SonarLintUtils {
         sb.append("<tr>\n");
         sb.append("<td>")
             .append(ruleDetails.getKey())
-            .append("</td>");
+            .append(HTML_END_TD);
 
         SonarLintUtils.ruleSeverityToURL(ruleDetails.getDefaultSeverity())
             .ifPresent(
                 severityURL -> 
                     sb.append("<td><img class=\"rule-type-severity-and-tags-container-severity\" src=\"")
                         .append(severityURL.toString())
-                        .append("\"/></td><td>")
+                        .append(HTML_END_END_TD_BEGIN_TD)
                         .append(ruleDetails.getDefaultSeverity().name())
-                        .append("</td>")
+                        .append(HTML_END_TD)
             );
 
         SonarLintUtils.ruleTypePathIconInClasspathToURL(ruleDetails.getType(), true)
@@ -332,9 +335,9 @@ public final class SonarLintUtils {
                 typeURL -> 
                     sb.append("<td><img class=\"rule-type-severity-and-tags-container-type\" src=\"")
                         .append(typeURL.toString())
-                        .append("\"/></td><td>")
+                        .append(HTML_END_END_TD_BEGIN_TD)
                         .append(ruleDetails.getType())
-                        .append("</td>")
+                        .append(HTML_END_TD)
             );
 
         String[] tags = ruleDetails.getTags();
@@ -346,9 +349,9 @@ public final class SonarLintUtils {
             }
             sb.append("<td><img class=\"rule-type-severity-and-tags-container-tags\" src=\"")
                 .append(tagsPathIconInClasspathToURL(true))
-                .append("\"/></td><td>")
+                .append(HTML_END_END_TD_BEGIN_TD)
                 .append(tagsJoiner.toString())
-                .append("</td>");
+                .append(HTML_END_TD);
         }
         sb.append("</tr>\n");
         sb.append("</table>\n");
@@ -696,12 +699,12 @@ public final class SonarLintUtils {
                     }
                 }
             } else {
-                LOG.warning("Error while read environment variables, exit code " + waitFor);
+                LOG.log(Level.WARNING, "Error while read environment variables, exit code {0}", waitFor);
             }
         } catch (IOException ex) {
-            LOG.warning("Error while found environment variables : " + ex.getMessage());
+            LOG.log(Level.WARNING, "Error while found environment variables : {0}", ex.getMessage());
         } catch (InterruptedException ex) {
-            LOG.warning("Interruped while found environment variables : " + ex.getMessage());
+            LOG.log(Level.WARNING, "Interruped while found environment variables : {0}", ex.getMessage());
             Thread.currentThread().interrupt();
         }
         return Optional.empty();
