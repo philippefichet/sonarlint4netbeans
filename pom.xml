@@ -186,14 +186,6 @@
                     <encoding>UTF-8</encoding>
                     <classifier>source</classifier>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
