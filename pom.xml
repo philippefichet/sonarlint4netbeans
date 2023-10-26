@@ -80,7 +80,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.1.2</version>
+                <version>3.2.1</version>
                 <configuration>
                     <testFailureIgnore>false</testFailureIgnore>
                     <argLine>
@@ -458,7 +458,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <org.netbeans.version>RELEASE130</org.netbeans.version>
         <aspectj.version>1.9.20.1</aspectj.version>
-        <assertj.version>3.24.2</assertj.version>
+        <assertj.version>3.23.1</assertj.version>
         <org.mockito.version>4.8.1</org.mockito.version>
         <io.qameta.allure.version>2.24.0</io.qameta.allure.version>
         <junit-jupiter.version>5.10.0</junit-jupiter.version>
