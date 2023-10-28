@@ -64,16 +64,16 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
 
     private static final Logger LOG = Logger.getLogger(SonarLintEngineImpl.class.getName());
 
-    // https://search.maven.org/artifact/org.sonarsource.java/sonar-java-plugin/
-    private static final String SONAR_JAVA_PLUGIN_VERSION = "7.15.0.30507";
-    // https://search.maven.org/artifact/org.sonarsource.javascript/sonar-javascript-plugin/
-    private static final String SONAR_JAVASCRIPT_PLUGIN_VERSION = "9.11.1.20218";
-    // https://search.maven.org/artifact/org.sonarsource.php/sonar-php-plugin/
-    private static final String SONAR_PHP_PLUGIN_VERSION = "3.25.0.9077";
-    // https://search.maven.org/artifact/org.sonarsource.html/sonar-html-plugin/
-    private static final String SONAR_HTML_PLUGIN_VERSION = "3.6.0.3106";
-    // https://search.maven.org/artifact/org.sonarsource.xml/sonar-xml-plugin/
-    private static final String SONAR_XML_PLUGIN_VERSION = "2.6.1.3686";
+    // https://central.sonatype.com/artifact/org.sonarsource.java/sonar-java-plugin
+    private static final String SONAR_JAVA_PLUGIN_VERSION = "7.24.0.32100";
+    // https://central.sonatype.com/artifact/org.sonarsource.javascript/sonar-javascript-plugin
+    private static final String SONAR_JAVASCRIPT_PLUGIN_VERSION = "10.7.0.22914";
+    // https://central.sonatype.com/artifact/org.sonarsource.php/sonar-php-plugin
+    private static final String SONAR_PHP_PLUGIN_VERSION = "3.32.0.10180";
+    // https://central.sonatype.com/artifact/org.sonarsource.html/sonar-html-plugin
+    private static final String SONAR_HTML_PLUGIN_VERSION = "3.9.0.3600";
+    // https://central.sonatype.com/artifact/org.sonarsource.xml/sonar-xml-plugin
+    private static final String SONAR_XML_PLUGIN_VERSION = "2.10.0.4108";
     private static final String PREFIX_PREFERENCE_RULE_PARAMETER = "rules.parameters.";
     private static final String PREFIX_EXCLUDE_RULE = "excludedRules";
     private static final String PREFIX_RUNTIME_EXTRA_PROPERTIES_PREFERENCE = "extraProperties";
