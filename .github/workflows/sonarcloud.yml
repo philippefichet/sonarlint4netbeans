@@ -35,4 +35,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         # -Dsonar.java.fileByFile=true to avoid "ECJ Unable to resolve type XXX"
-        run: mvn -B verify sonar:sonar -Dsonar.projectKey=philippefichet_sonarlint4netbeans -Dsonar.java.fileByFile=true
+        run: mvn -B verify sonar:sonar -Dsonar.projectKey=philippefichet_sonarlint4netbeans -Dsonar.java.fileByFile=true 
