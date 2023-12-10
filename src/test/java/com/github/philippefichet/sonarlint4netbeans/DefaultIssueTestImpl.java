@@ -20,14 +20,18 @@
 package com.github.philippefichet.sonarlint4netbeans;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.assertj.core.groups.Tuple;
 import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
 import org.sonarsource.sonarlint.core.analysis.api.Flow;
 import org.sonarsource.sonarlint.core.analysis.api.QuickFix;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
+import org.sonarsource.sonarlint.core.commons.CleanCodeAttribute;
+import org.sonarsource.sonarlint.core.commons.ImpactSeverity;
 import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 import org.sonarsource.sonarlint.core.commons.RuleType;
+import org.sonarsource.sonarlint.core.commons.SoftwareQuality;
 import org.sonarsource.sonarlint.core.commons.TextRange;
 import org.sonarsource.sonarlint.core.commons.VulnerabilityProbability;
 
@@ -131,8 +135,28 @@ public class DefaultIssueTestImpl implements Issue {
     }
 
     @Override
+    public String toString() {
+        return "DefaultIssueTestImpl{" + "severity=" + severity + ", type=" + type + ", ruleKey=" + ruleKey + ", startLine=" + startLine + ", endLine=" + endLine + ", startLineOffset=" + startLineOffset + ", endLineOffset=" + endLineOffset + ", clientInputFile=" + clientInputFile + '}';
+    }
+
+    @Override
     public List<QuickFix> quickFixes() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Optional<CleanCodeAttribute> getCleanCodeAttribute() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public Map<SoftwareQuality, ImpactSeverity> getImpacts() {
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+    }
+
+    @Override
+    public String toString() {
+        return "DefaultIssueTestImpl{" + "severity=" + severity + ", type=" + type + ", ruleKey=" + ruleKey + ", startLine=" + startLine + ", endLine=" + endLine + ", startLineOffset=" + startLineOffset + ", endLineOffset=" + endLineOffset + ", clientInputFile=" + clientInputFile + '}';
     }
 
     @Override
@@ -143,11 +167,6 @@ public class DefaultIssueTestImpl implements Issue {
     @Override
     public Optional<VulnerabilityProbability> getVulnerabilityProbability() {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
-    }
-
-    @Override
-    public String toString() {
-        return "DefaultIssueTestImpl{" + "severity=" + severity + ", type=" + type + ", ruleKey=" + ruleKey + ", startLine=" + startLine + ", endLine=" + endLine + ", startLineOffset=" + startLineOffset + ", endLineOffset=" + endLineOffset + ", clientInputFile=" + clientInputFile + '}';
     }
 
 
