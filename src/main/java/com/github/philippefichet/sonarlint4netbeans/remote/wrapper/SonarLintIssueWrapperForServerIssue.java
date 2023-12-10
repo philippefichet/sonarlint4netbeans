@@ -20,14 +20,18 @@ package com.github.philippefichet.sonarlint4netbeans.remote.wrapper;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
 import org.sonarsource.sonarlint.core.analysis.api.Flow;
 import org.sonarsource.sonarlint.core.analysis.api.QuickFix;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
+import org.sonarsource.sonarlint.core.commons.CleanCodeAttribute;
+import org.sonarsource.sonarlint.core.commons.ImpactSeverity;
 import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 import org.sonarsource.sonarlint.core.commons.RuleType;
+import org.sonarsource.sonarlint.core.commons.SoftwareQuality;
 import org.sonarsource.sonarlint.core.commons.TextRange;
 import org.sonarsource.sonarlint.core.commons.VulnerabilityProbability;
 import org.sonarsource.sonarlint.core.serverconnection.issues.LineLevelServerIssue;
@@ -146,4 +150,18 @@ public class SonarLintIssueWrapperForServerIssue implements Issue {
         }
         return null;
     }
+
+    @Override
+    public Optional<CleanCodeAttribute> getCleanCodeAttribute() {
+        // TODO
+        return Optional.empty();
+    }
+
+    @Override
+    public Map<SoftwareQuality, ImpactSeverity> getImpacts() {
+        // TODO
+        return Collections.emptyMap();
+    }
+    
+    
 }

@@ -25,7 +25,7 @@ import java.net.http.HttpResponse;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.sonarsource.sonarlint.core.commons.http.HttpClient;
+import org.sonarsource.sonarlint.core.http.HttpClient;
 
 /**
  *

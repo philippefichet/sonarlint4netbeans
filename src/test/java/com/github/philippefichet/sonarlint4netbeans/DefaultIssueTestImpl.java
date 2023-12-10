@@ -155,11 +155,6 @@ public class DefaultIssueTestImpl implements Issue {
     }
 
     @Override
-    public String toString() {
-        return "DefaultIssueTestImpl{" + "severity=" + severity + ", type=" + type + ", ruleKey=" + ruleKey + ", startLine=" + startLine + ", endLine=" + endLine + ", startLineOffset=" + startLineOffset + ", endLineOffset=" + endLineOffset + ", clientInputFile=" + clientInputFile + '}';
-    }
-
-    @Override
     public Optional<String> getRuleDescriptionContextKey() {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
@@ -168,7 +163,6 @@ public class DefaultIssueTestImpl implements Issue {
     public Optional<VulnerabilityProbability> getVulnerabilityProbability() {
         throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
-
 
     public static class Builder
     {

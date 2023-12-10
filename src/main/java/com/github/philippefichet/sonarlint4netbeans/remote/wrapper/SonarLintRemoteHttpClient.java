@@ -23,13 +23,16 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.http.WebSocket;
 import java.util.Base64;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.sonarsource.sonarlint.core.commons.http.HttpClient;
-import org.sonarsource.sonarlint.core.commons.http.HttpConnectionListener;
+import org.sonarsource.sonarlint.core.http.HttpClient;
+import org.sonarsource.sonarlint.core.http.HttpClient.AsyncRequest;
+import org.sonarsource.sonarlint.core.http.HttpClient.Response;
+import org.sonarsource.sonarlint.core.http.HttpConnectionListener;
 
 /**
  *
@@ -92,6 +95,12 @@ public class SonarLintRemoteHttpClient implements HttpClient {
                     .build(),
                 HttpResponse.BodyHandlers.ofInputStream()
             ).thenApply((HttpResponse<InputStream> send) -> new SonarLintRemoteHttpResponse(url, send, responseReadByteConsumer));
+    }
+
+    @Override
+    public WebSocket createWebSocketConnection(String string, Consumer<String> cnsmr, Runnable r) {
+        // TODO ?
+        throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
     }
 
     @Override
