@@ -49,7 +49,7 @@
             <plugin>
                 <groupId>org.apache.netbeans.utilities</groupId>
                 <artifactId>nbm-maven-plugin</artifactId>
-                <version>4.7</version>
+                <version>4.8</version>
                 <extensions>true</extensions>
                 <configuration>
                     <licenseName>Lesser GPL 2.1</licenseName>
@@ -254,7 +254,23 @@
         <dependency>
             <groupId>org.sonarsource.sonarlint.core</groupId>
             <artifactId>sonarlint-core</artifactId>
-            <version>8.11.0.56591</version>
+            <version>8.15.0.65216</version>
+        </dependency>
+        <!-- to connected engine -->
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
+            <version>1.8.20</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${org.slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>${org.slf4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.sonarsource.javascript</groupId>
@@ -314,6 +330,11 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-projectapi</artifactId>
+            <version>${org.netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-projectuiapi-base</artifactId>
             <version>${org.netbeans.version}</version>
         </dependency>
         <dependency>
@@ -411,6 +432,12 @@
             <artifactId>org-netbeans-modules-keyring</artifactId>
             <version>${org.netbeans.version}</version>
         </dependency>
+        <!-- TODO Voir pour gérer directement git -->
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-libs-git</artifactId>
+            <version>${org.netbeans.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -449,12 +476,6 @@
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${org.slf4j.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <version>${org.slf4j.version}</version>
             <scope>test</scope>
@@ -483,5 +504,7 @@
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <!-- For most test result detail -->
         <surefire.reportFormat>plain</surefire.reportFormat>
+        <!-- to use friends org.netbeans.modules.git -->
+        <maven.nbm.verify>warn</maven.nbm.verify>
     </properties>
 </project>

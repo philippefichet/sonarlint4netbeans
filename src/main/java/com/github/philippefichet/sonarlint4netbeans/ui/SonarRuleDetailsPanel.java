@@ -53,6 +53,8 @@ public class SonarRuleDetailsPanel extends javax.swing.JPanel {
     private final SonarLintEngine sonarLintEngine;
     private final Project project;
 
+    // TODO See later to manage the remote case and limit interaction
+
     /**
      * Creates new form SonarRuleDetailsPanel
      * @param sonarLintEngine SonarLintEngine instance dealing with the retrieval or modification of information

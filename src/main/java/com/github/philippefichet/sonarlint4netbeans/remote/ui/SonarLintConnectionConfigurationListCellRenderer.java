@@ -18,7 +18,7 @@
  */
 package com.github.philippefichet.sonarlint4netbeans.remote.ui;
 
-import com.github.philippefichet.sonarlint4netbeans.remote.SonarLintConnectionConfiguration;
+import com.github.philippefichet.sonarlint4netbeans.remote.configuration.SonarLintRemoteConnectionConfiguration;
 import java.awt.Component;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
@@ -40,7 +40,7 @@ public class SonarLintConnectionConfigurationListCellRenderer extends DefaultLis
     ) {
         DefaultListCellRenderer listCellRendererComponent = (DefaultListCellRenderer)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         if (value != null) {
-            listCellRendererComponent.setText(((SonarLintConnectionConfiguration)value).getConnectionId());
+            listCellRendererComponent.setText(((SonarLintRemoteConnectionConfiguration)value).getConnectionId());
         }
         return listCellRendererComponent;
     }

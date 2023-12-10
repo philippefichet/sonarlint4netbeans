@@ -120,6 +120,11 @@ public final class SonarLintAnnotationHandler {
                 endLineOffset = 0;
             }
 
+            if (startLineOffset == null || endLineOffset == null) {
+                startLineOffset = 0;
+                endLineOffset = 0;
+            }
+
             int nbStartLineOffset = NbDocument.findLineOffset(editorCookie.getDocument(), startLine - 1);
             int startOffset = nbStartLineOffset + startLineOffset;
             int nbEndLineOffset = NbDocument.findLineOffset(editorCookie.getDocument(), endLine - 1);

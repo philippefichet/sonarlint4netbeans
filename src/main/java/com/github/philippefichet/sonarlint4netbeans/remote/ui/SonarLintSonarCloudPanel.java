@@ -18,8 +18,10 @@
  */
 package com.github.philippefichet.sonarlint4netbeans.remote.ui;
 
-import com.github.philippefichet.sonarlint4netbeans.remote.SonarLintConnectionConfiguration;
-import com.github.philippefichet.sonarlint4netbeans.remote.SonarLintConnectionConfigurationManagement;
+import com.github.philippefichet.sonarlint4netbeans.remote.configuration.SonarLintRemoteConnectionConfiguration;
+import com.github.philippefichet.sonarlint4netbeans.remote.configuration.SonarLintRemoteConnectionConfigurationManagement;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import org.openide.util.Lookup;
 
 /**
@@ -31,6 +33,8 @@ import org.openide.util.Lookup;
 })
 public class SonarLintSonarCloudPanel extends javax.swing.JPanel {
 
+    private String oldBaseURL;
+    
     /**
      * Creates new form SonarLintSonarCloudPanel
      */
@@ -38,6 +42,21 @@ public class SonarLintSonarCloudPanel extends javax.swing.JPanel {
         initComponents();
         connectionCnfigurationComboBox.setRenderer(new SonarLintConnectionConfigurationListCellRenderer());
         initConnectionCnfigurationComboBox();
+        isSonarCloudCheckBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (isSonarCloudCheckBox.isSelected()) {
+                    oldBaseURL = baseURLTextField.getText();
+                    baseURLTextField.setText("https://sonarcloud.io");
+                    baseURLTextField.setEditable(false);
+                    baseURLTextField.setEnabled(false);
+                } else {
+                    baseURLTextField.setText(oldBaseURL);
+                    baseURLTextField.setEditable(true);
+                    baseURLTextField.setEnabled(true);
+                }
+            }
+        });
     }
     
     private void initConnectionCnfigurationComboBox()
@@ -70,12 +89,8 @@ public class SonarLintSonarCloudPanel extends javax.swing.JPanel {
         baseURLTextField = new javax.swing.JTextField();
         isSonarCloudLabel = new javax.swing.JLabel();
         isSonarCloudCheckBox = new javax.swing.JCheckBox();
-        projectKeyLabel = new javax.swing.JLabel();
-        projectKeyTextField = new javax.swing.JTextField();
-        organizationLabel = new javax.swing.JLabel();
-        organizationTextField = new javax.swing.JTextField();
         authTokenLabel = new javax.swing.JLabel();
-        authTokenTextField = new javax.swing.JTextField();
+        authTokenPasswordField = new javax.swing.JPasswordField();
         connectionSavePanel = new javax.swing.JPanel();
         saveConfiguration = new javax.swing.JButton();
 
@@ -133,7 +148,7 @@ public class SonarLintSonarCloudPanel extends javax.swing.JPanel {
         connectionEditPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SonarLintSonarCloudPanel.class, "SonarLintSonarCloudPanel.connectionEditPanel.border.title"))); // NOI18N
         connectionEditPanel.setLayout(new java.awt.BorderLayout(5, 5));
 
-        connectionEditDataPanel.setLayout(new java.awt.GridLayout(6, 2, 5, 5));
+        connectionEditDataPanel.setLayout(new java.awt.GridLayout(4, 2, 5, 5));
 
         org.openide.awt.Mnemonics.setLocalizedText(connectionIdLabel, org.openide.util.NbBundle.getMessage(SonarLintSonarCloudPanel.class, "SonarLintSonarCloudPanel.connectionIdLabel.text")); // NOI18N
         connectionEditDataPanel.add(connectionIdLabel);
@@ -153,23 +168,11 @@ public class SonarLintSonarCloudPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(isSonarCloudCheckBox, org.openide.util.NbBundle.getMessage(SonarLintSonarCloudPanel.class, "SonarLintSonarCloudPanel.isSonarCloudCheckBox.text")); // NOI18N
         connectionEditDataPanel.add(isSonarCloudCheckBox);
 
-        org.openide.awt.Mnemonics.setLocalizedText(projectKeyLabel, org.openide.util.NbBundle.getMessage(SonarLintSonarCloudPanel.class, "SonarLintSonarCloudPanel.projectKeyLabel.text")); // NOI18N
-        connectionEditDataPanel.add(projectKeyLabel);
-
-        projectKeyTextField.setText(org.openide.util.NbBundle.getMessage(SonarLintSonarCloudPanel.class, "SonarLintSonarCloudPanel.projectKeyTextField.text")); // NOI18N
-        connectionEditDataPanel.add(projectKeyTextField);
-
-        org.openide.awt.Mnemonics.setLocalizedText(organizationLabel, org.openide.util.NbBundle.getMessage(SonarLintSonarCloudPanel.class, "SonarLintSonarCloudPanel.organizationLabel.text")); // NOI18N
-        connectionEditDataPanel.add(organizationLabel);
-
-        organizationTextField.setText(org.openide.util.NbBundle.getMessage(SonarLintSonarCloudPanel.class, "SonarLintSonarCloudPanel.organizationTextField.text")); // NOI18N
-        connectionEditDataPanel.add(organizationTextField);
-
         org.openide.awt.Mnemonics.setLocalizedText(authTokenLabel, org.openide.util.NbBundle.getMessage(SonarLintSonarCloudPanel.class, "SonarLintSonarCloudPanel.authTokenLabel.text")); // NOI18N
         connectionEditDataPanel.add(authTokenLabel);
 
-        authTokenTextField.setText(org.openide.util.NbBundle.getMessage(SonarLintSonarCloudPanel.class, "SonarLintSonarCloudPanel.authTokenTextField.text")); // NOI18N
-        connectionEditDataPanel.add(authTokenTextField);
+        authTokenPasswordField.setText(org.openide.util.NbBundle.getMessage(SonarLintSonarCloudPanel.class, "SonarLintSonarCloudPanel.authTokenPasswordField.text")); // NOI18N
+        connectionEditDataPanel.add(authTokenPasswordField);
 
         connectionEditPanel.add(connectionEditDataPanel, java.awt.BorderLayout.NORTH);
 
@@ -202,50 +205,45 @@ public class SonarLintSonarCloudPanel extends javax.swing.JPanel {
         add(connectionEditPanel, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
-    private SonarLintConnectionConfigurationManagement getSonarLintConnectionConfigurationManagement()
+    private SonarLintRemoteConnectionConfigurationManagement getSonarLintConnectionConfigurationManagement()
     {
-        return Lookup.getDefault().lookup(SonarLintConnectionConfigurationManagement.class);
+        return Lookup.getDefault().lookup(SonarLintRemoteConnectionConfigurationManagement.class);
     }
     
     private void saveConfigurationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveConfigurationActionPerformed
         String connectionId = connectionIdTextField.getText();
-        getSonarLintConnectionConfigurationManagement().saveSonarLintConnectionConfiguration(
-            new SonarLintConnectionConfiguration(
+        getSonarLintConnectionConfigurationManagement().saveSonarLintConnectionConfiguration(new SonarLintRemoteConnectionConfiguration(
                 connectionId,
-                projectKeyTextField.getText(),
                 baseURLTextField.getText(),
-                isSonarCloudCheckBox.isSelected(),
-                organizationTextField.getText()
+                isSonarCloudCheckBox.isSelected()
             )
         );
         getSonarLintConnectionConfigurationManagement().saveAuthTokenFromConnectionId(
             connectionId,
-            authTokenTextField.getText()
+            new String(authTokenPasswordField.getPassword())
         );
         initConnectionCnfigurationComboBox();
     }//GEN-LAST:event_saveConfigurationActionPerformed
 
     private void editConnectionConfiguration(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editConnectionConfiguration
-        SonarLintConnectionConfiguration sonarLintConnectionConfiguration = 
-            (SonarLintConnectionConfiguration)connectionCnfigurationComboBox.getSelectedItem();
+        SonarLintRemoteConnectionConfiguration sonarLintConnectionConfiguration = 
+            (SonarLintRemoteConnectionConfiguration)connectionCnfigurationComboBox.getSelectedItem();
         String connectionId = sonarLintConnectionConfiguration.getConnectionId();
         if (sonarLintConnectionConfiguration != null) {
             connectionIdTextField.setText(connectionId);
-            projectKeyTextField.setText(sonarLintConnectionConfiguration.getProjectKey());
             baseURLTextField.setText(sonarLintConnectionConfiguration.getBaseURL());
             isSonarCloudCheckBox.setSelected(sonarLintConnectionConfiguration.isIsSonarCloud());
-            organizationTextField.setText(sonarLintConnectionConfiguration.getOrganization());
             getSonarLintConnectionConfigurationManagement()
                 .getAuthTokenFromConnectionId(connectionId)
-                .ifPresent(authTokenTextField::setText);
+                .ifPresent(authTokenPasswordField::setText);
         }
     }//GEN-LAST:event_editConnectionConfiguration
 
     private void removeConnectionConfiguration(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeConnectionConfiguration
-        SonarLintConnectionConfiguration sonarLintConnectionConfiguration = 
-                    (SonarLintConnectionConfiguration)connectionCnfigurationComboBox.getSelectedItem();
+        SonarLintRemoteConnectionConfiguration sonarLintConnectionConfiguration = 
+                    (SonarLintRemoteConnectionConfiguration)connectionCnfigurationComboBox.getSelectedItem();
         if (sonarLintConnectionConfiguration != null) {
-            SonarLintConnectionConfigurationManagement sonarLintConnectionConfigurationManagement = getSonarLintConnectionConfigurationManagement();
+            SonarLintRemoteConnectionConfigurationManagement sonarLintConnectionConfigurationManagement = getSonarLintConnectionConfigurationManagement();
             sonarLintConnectionConfigurationManagement.deleteAuthTokenFromConnectionId(sonarLintConnectionConfiguration.getConnectionId());
             sonarLintConnectionConfigurationManagement.deleteSonarLintConnectionConfigurationFromConnectionId(sonarLintConnectionConfiguration.getConnectionId());
             initConnectionCnfigurationComboBox();
@@ -255,10 +253,10 @@ public class SonarLintSonarCloudPanel extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel authTokenLabel;
-    private javax.swing.JTextField authTokenTextField;
+    private javax.swing.JPasswordField authTokenPasswordField;
     private javax.swing.JLabel baseURLLabel;
     private javax.swing.JTextField baseURLTextField;
-    private javax.swing.JComboBox<SonarLintConnectionConfiguration> connectionCnfigurationComboBox;
+    private javax.swing.JComboBox<SonarLintRemoteConnectionConfiguration> connectionCnfigurationComboBox;
     private javax.swing.JPanel connectionEditDataPanel;
     private javax.swing.JPanel connectionEditPanel;
     private javax.swing.JLabel connectionIdLabel;
@@ -270,10 +268,6 @@ public class SonarLintSonarCloudPanel extends javax.swing.JPanel {
     private javax.swing.JLabel isSonarCloudLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JLabel organizationLabel;
-    private javax.swing.JTextField organizationTextField;
-    private javax.swing.JLabel projectKeyLabel;
-    private javax.swing.JTextField projectKeyTextField;
     private javax.swing.JButton removeConnectionConfiguration;
     private javax.swing.JButton saveConfiguration;
     // End of variables declaration//GEN-END:variables

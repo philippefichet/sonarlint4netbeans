@@ -16,7 +16,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package com.github.philippefichet.sonarlint4netbeans.remote;
+package com.github.philippefichet.sonarlint4netbeans.remote.configuration;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -33,15 +33,15 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
-@ServiceProvider(service = SonarLintConnectionConfigurationManagement.class)
-public class SonarLintConnectionConfigurationManagement {
+@ServiceProvider(service = SonarLintRemoteConnectionConfigurationManagement.class)
+public class SonarLintRemoteConnectionConfigurationManagement {
 
     private final Gson gson = new Gson();
 
     /**
      * Default constructor for Lookup
      */
-    public SonarLintConnectionConfigurationManagement()
+    public SonarLintRemoteConnectionConfigurationManagement()
     {
 /*
         Project project = Lookup.getDefault().lookup(Project.class);
@@ -58,13 +58,13 @@ public class SonarLintConnectionConfigurationManagement {
 
     public Optional<String> getAuthTokenFromConnectionId(String connectionId) {
         return Optional.ofNullable(
-        Keyring.read(SonarLintConnectionConfiguration.class.getCanonicalName() + ".auth-token." + connectionId)
+        Keyring.read(SonarLintRemoteConnectionConfiguration.class.getCanonicalName() + ".auth-token." + connectionId)
         ).map(String::new);
     }
 
     public void saveAuthTokenFromConnectionId(String connectionId, String token) {
         Keyring.save(
-            SonarLintConnectionConfiguration.class.getCanonicalName() + ".auth-token." + connectionId,
+            SonarLintRemoteConnectionConfiguration.class.getCanonicalName() + ".auth-token." + connectionId,
             token.toCharArray(),
             "Auth token for SonarLint Remote connectionId \"" + connectionId + "\""
         );
@@ -72,18 +72,18 @@ public class SonarLintConnectionConfigurationManagement {
 
     public void deleteAuthTokenFromConnectionId(String connectionId) {
         Keyring.delete(
-            SonarLintConnectionConfiguration.class.getCanonicalName() + ".auth-token." + connectionId
+            SonarLintRemoteConnectionConfiguration.class.getCanonicalName() + ".auth-token." + connectionId
         );
     }
 
-    public Optional<SonarLintConnectionConfiguration> getSonarLintConnectionConfigurationFromConnectionId(String connectionId) {
+    public Optional<SonarLintRemoteConnectionConfiguration> getSonarLintConnectionConfigurationFromConnectionId(String connectionId) {
         return getAllSonarLintConnectionConfigurations().stream()
             .filter(c -> c.getConnectionId().equals(connectionId))
             .findFirst();
     }
 
     public void deleteSonarLintConnectionConfigurationFromConnectionId(String connectionId) {
-        Preferences preferences = NbPreferences.forModule(SonarLintConnectionConfiguration.class);
+        Preferences preferences = NbPreferences.forModule(SonarLintRemoteConnectionConfiguration.class);
         preferences.put(
             "connections",
             gson.toJson(
@@ -95,16 +95,16 @@ public class SonarLintConnectionConfigurationManagement {
         );
     }
 
-    public List<SonarLintConnectionConfiguration> getAllSonarLintConnectionConfigurations() {
-        Preferences preferences = NbPreferences.forModule(SonarLintConnectionConfiguration.class);
+    public List<SonarLintRemoteConnectionConfiguration> getAllSonarLintConnectionConfigurations() {
+        Preferences preferences = NbPreferences.forModule(SonarLintRemoteConnectionConfiguration.class);
         return gson.fromJson(
             preferences.get("connections", "[]"),
-            new TypeToken<List<SonarLintConnectionConfiguration>>() {}.getType()
+            new TypeToken<List<SonarLintRemoteConnectionConfiguration>>() {}.getType()
         );
     }
 
-    public void saveSonarLintConnectionConfiguration(SonarLintConnectionConfiguration sonarLintConnectionConfiguration) {
-        Preferences preferences = NbPreferences.forModule(SonarLintConnectionConfiguration.class);
+    public void saveSonarLintConnectionConfiguration(SonarLintRemoteConnectionConfiguration sonarLintConnectionConfiguration) {
+        Preferences preferences = NbPreferences.forModule(SonarLintRemoteConnectionConfiguration.class);
         preferences.put(
             "connections",
             gson.toJson(

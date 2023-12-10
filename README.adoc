@@ -1,5 +1,7 @@
-:toc:
+:toc: left
 :toclevels: 5
+:sectnums: 8
+:icons: font
 
 = sonarlint4netbeans
 

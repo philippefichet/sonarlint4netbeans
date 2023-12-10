@@ -19,6 +19,7 @@
  */
 package com.github.philippefichet.sonarlint4netbeans;
 
+import com.github.philippefichet.sonarlint4netbeans.junit.jupiter.extension.SonarLintLookupMockedExtension;
 import com.github.philippefichet.sonarlint4netbeans.project.SonarLintProjectPreferenceScope;
 import java.net.MalformedURLException;
 import java.util.Map;

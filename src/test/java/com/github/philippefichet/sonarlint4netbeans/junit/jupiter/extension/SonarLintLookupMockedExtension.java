@@ -17,8 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package com.github.philippefichet.sonarlint4netbeans;
+package com.github.philippefichet.sonarlint4netbeans.junit.jupiter.extension;
 
+import com.github.philippefichet.sonarlint4netbeans.Predicates;
 import com.github.philippefichet.sonarlint4netbeans.assertj.SonarLintArgumentMatchers;
 import java.lang.reflect.Method;
 import java.util.HashMap;

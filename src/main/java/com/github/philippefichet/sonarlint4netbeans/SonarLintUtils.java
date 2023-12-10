@@ -19,6 +19,10 @@
  */
 package com.github.philippefichet.sonarlint4netbeans;
 
+import com.github.philippefichet.sonarlint4netbeans.project.SonarLintProjectPreferenceScope;
+import com.github.philippefichet.sonarlint4netbeans.remote.SonarLintRemoteEngine;
+import com.github.philippefichet.sonarlint4netbeans.remote.configuration.SonarLintRemoteProjectConfiguration;
+import com.github.philippefichet.sonarlint4netbeans.remote.wrapper.SonarLintIssueWrapperForServerIssue;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -65,6 +69,7 @@ import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
+import org.sonarsource.sonarlint.core.client.api.connected.ConnectedAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneAnalysisConfiguration;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
@@ -72,7 +77,9 @@ import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 import org.sonarsource.sonarlint.core.commons.RuleKey;
 import org.sonarsource.sonarlint.core.commons.RuleType;
 import org.sonarsource.sonarlint.core.commons.Version;
+import org.sonarsource.sonarlint.core.commons.log.ClientLogOutput;
 import org.sonarsource.sonarlint.core.commons.progress.ClientProgressMonitor;
+import org.sonarsource.sonarlint.core.serverconnection.issues.ServerIssue;
 
 /**
  *
@@ -243,38 +250,104 @@ public final class SonarLintUtils {
     }
 
     public static List<Issue> analyze(FileObject fileObject, String contentToAnalyze) throws IOException {
+        // TODO scope remote = changement de moteur
+        FileObject configRoot = FileUtil.getConfigRoot();
+        System.out.println("configRoot = " + configRoot);
         SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
         if (sonarLintEngine == null) {
             return Collections.emptyList();
         }
-        SonarLintDataManager dataManager = Lookup.getDefault().lookup(SonarLintDataManager.class);
-        Project projectForRules = SonarLintDataManagerUtils.getProjectForAnalyse(dataManager, fileObject);
-        SonarLintOptions sonarlintOptions = Lookup.getDefault().lookup(SonarLintOptions.class);
-        boolean useTestRules = sonarlintOptions == null || sonarlintOptions.applyDifferentRulesOnTestFiles();
-
-        String sonarLintHome = System.getProperty("user.home") + File.separator + ".sonarlint4netbeans";
-        List<Issue> issues = new ArrayList<>();
-        List<RuleKey> excludedRules = new ArrayList<>(sonarLintEngine.getExcludedRules(projectForRules));
-        List<RuleKey> includedRules = new ArrayList<>(sonarLintEngine.getIncludedRules(projectForRules));
+        
         File toFile = FileUtil.toFile(fileObject);
         if (toFile == null) {
             return Collections.emptyList();
         }
-        Path path = toFile.toPath();
-        List<ClientInputFile> files = new ArrayList<>();
+        SonarLintOptions sonarlintOptions = Lookup.getDefault().lookup(SonarLintOptions.class);
+        SonarLintDataManager dataManager = Lookup.getDefault().lookup(SonarLintDataManager.class);
+        boolean useTestRules = sonarlintOptions == null || sonarlintOptions.applyDifferentRulesOnTestFiles();
+        Project project = dataManager.getProject(fileObject).orElse(SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
+        Path path = project == null
+            ? toFile.toPath()
+            : FileUtil.toFile(project.getProjectDirectory()).toPath();
+        List<ClientInputFile> clientInputFiles = new ArrayList<>();
         boolean applyTestRules = useTestRules && dataManager.isTest(toFile);
-        files.add(new FSClientInputFile(
-            contentToAnalyze == null ? new String(Files.readAllBytes(path)) : contentToAnalyze,
-            path.toAbsolutePath(),
-            path.toFile().getName(),
+        String relativizeToFile = path.relativize(toFile.toPath()).toString();
+        clientInputFiles.add(new FSClientInputFile(
+            contentToAnalyze == null ? new String(Files.readAllBytes(toFile.toPath())) : contentToAnalyze,
+            toFile.toPath().toAbsolutePath(),
+            relativizeToFile,
             applyTestRules,
             FileEncodingQuery.getEncoding(fileObject))
         );
 
+        SonarLintProjectPreferenceScope preferencesScope = dataManager.getPreferencesScope(project);
+        String sonarLintHome = System.getProperty("user.home") + File.separator + ".sonarlint4netbeans";
+        if (preferencesScope == SonarLintProjectPreferenceScope.REMOTE) {
+            SonarLintRemoteEngine remoteEngine = Lookup.getDefault().lookup(SonarLintRemoteEngine.class);
+            SonarLintRemoteProjectConfiguration sonarLintRemoteProjectConfiguration = SonarLintRemoteProjectConfiguration.fromProject(project);
+            ConnectedAnalysisConfiguration build = ConnectedAnalysisConfiguration.builder()
+                .setProjectKey(sonarLintRemoteProjectConfiguration.getProjectKey())
+                .addInputFiles(clientInputFiles)
+                .setBaseDir(new File(sonarLintHome).toPath())
+                // TODO Remove dependency with sonarLintEngine
+                .putAllExtraProperties(getMergedExtraPropertiesAndReplaceVariables(sonarLintEngine, project))
+                .build();
+            List<Issue> listener = new ArrayList<>();
+            AnalysisResults remoteAnalyze = remoteEngine.analyze(
+                sonarLintRemoteProjectConfiguration,
+                build,
+                listener::add,
+                (String formattedMessage, ClientLogOutput.Level level) -> {
+                    System.out.println(level + " | " + formattedMessage);
+                },
+                new ClientProgressMonitor() {
+                    @Override
+                    public boolean isCanceled() {
+                        return false;
+                    }
+
+                    @Override
+                    public void setMessage(String msg) {
+                        LOG.info("ClientProgressMonitor.setMessage(\"" + msg + "\")");
+                    }
+
+                    @Override
+                    public void setFraction(float fraction) {
+                        LOG.info("ClientProgressMonitor.setFraction(" + fraction + ")");
+                    }
+
+                    @Override
+                    public void setIndeterminate(boolean indeterminate) {
+                        LOG.info("ClientProgressMonitor.setIndeterminate(" + indeterminate + ")");
+                    }
+                }
+            );
+
+            List<ServerIssue> serverIssues = remoteEngine.getServerIssues(sonarLintRemoteProjectConfiguration, relativizeToFile);
+            serverIssues.stream()
+                .map(
+                    s ->
+                        new SonarLintIssueWrapperForServerIssue(
+                        clientInputFiles.get(0),
+                        s,
+                            sonarLintEngine.getRuleDetails(s.getRuleKey())
+                    )
+                )
+                .forEach(listener::add);
+            LOG.fine(() -> "Analyze (Remote) result for file \"" + fileObject.getPath() + "\" : " + remoteAnalyze);
+            
+            return listener;
+        }
+
+        Project projectForRules = SonarLintDataManagerUtils.getProjectForAnalyse(dataManager, fileObject);
+        List<Issue> issues = new ArrayList<>();
+        List<RuleKey> excludedRules = new ArrayList<>(sonarLintEngine.getExcludedRules(projectForRules));
+        List<RuleKey> includedRules = new ArrayList<>(sonarLintEngine.getIncludedRules(projectForRules));
+
         StandaloneAnalysisConfiguration standaloneAnalysisConfiguration =
             StandaloneAnalysisConfiguration.builder()
             .setBaseDir(new File(sonarLintHome).toPath())
-            .addInputFiles(files)
+            .addInputFiles(clientInputFiles)
             .addExcludedRules(excludedRules)
             .addIncludedRules(includedRules)
             .addRuleParameters(sonarLintEngine.getRuleParameters(projectForRules))
@@ -466,6 +539,7 @@ public final class SonarLintUtils {
         ClientInputFileListener clientInputFileInputStreamEvent,
         SonarLintAnalyzerCancelableTask sonarLintAnalyzerCancelableTask
     ) {
+        // TODO pas besoin du moteur ici tant que la séparation en fichier n'est pas fait
         SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
         if (sonarLintEngine == null) {
             return new AnalysisResults();
@@ -508,10 +582,8 @@ public final class SonarLintUtils {
                 projectForRules = SonarLintDataManagerUtils.getProjectForAnalyse(dataManager, FileUtil.toFileObject(projectFiles.get(0)));
             }
         }
-
         String sonarLintHome = System.getProperty("user.home") + File.separator + ".sonarlint4netbeans";
-        List<RuleKey> excludedRules = new ArrayList<>(sonarLintEngine.getExcludedRules(projectForRules));
-        List<RuleKey> includedRules = new ArrayList<>(sonarLintEngine.getIncludedRules(projectForRules));
+
         List<FSClientInputFile> clientInputFiles = new ArrayList<>();
         for (File file : files) {
             // Map file to implementation of ClientInputFile
@@ -533,6 +605,48 @@ public final class SonarLintUtils {
                 LOG.warning("Error during getEncoding from \"" + file.getAbsolutePath() + "\": " + ex.getMessage());
             }
         }
+        
+        SonarLintProjectPreferenceScope preferencesScope = dataManager.getPreferencesScope(project);
+        if (preferencesScope == SonarLintProjectPreferenceScope.REMOTE) {
+            SonarLintRemoteEngine remoteEngine = Lookup.getDefault().lookup(SonarLintRemoteEngine.class);
+            SonarLintRemoteProjectConfiguration sonarLintRemoteProjectConfiguration = SonarLintRemoteProjectConfiguration.fromProject(project);
+            ConnectedAnalysisConfiguration build = ConnectedAnalysisConfiguration.builder()
+                .setProjectKey(sonarLintRemoteProjectConfiguration.getProjectKey())
+                .addInputFiles(clientInputFiles)
+                // TODO supprimer le lien avec sonarLintEngine
+                .putAllExtraProperties(getMergedExtraPropertiesAndReplaceVariables(sonarLintEngine, project))
+                .build();
+            return remoteEngine.analyze(
+                sonarLintRemoteProjectConfiguration,
+                build,
+                listener,
+                null,
+                new ClientProgressMonitor() {
+                    @Override
+                    public boolean isCanceled() {
+                        return sonarLintAnalyzerCancelableTask != null && sonarLintAnalyzerCancelableTask.isCanceled();
+                    }
+
+                    @Override
+                    public void setMessage(String msg) {
+                        LOG.info("ClientProgressMonitor.setMessage(\"" + msg + "\")");
+                    }
+
+                    @Override
+                    public void setFraction(float fraction) {
+                        LOG.info("ClientProgressMonitor.setFraction(" + fraction + ")");
+                    }
+
+                    @Override
+                    public void setIndeterminate(boolean indeterminate) {
+                        LOG.info("ClientProgressMonitor.setIndeterminate(" + indeterminate + ")");
+                    }
+                }
+            );
+        }
+
+        List<RuleKey> excludedRules = new ArrayList<>(sonarLintEngine.getExcludedRules(projectForRules));
+        List<RuleKey> includedRules = new ArrayList<>(sonarLintEngine.getIncludedRules(projectForRules));
 
         StandaloneAnalysisConfiguration standaloneAnalysisConfiguration =
             StandaloneAnalysisConfiguration.builder()
@@ -745,5 +859,4 @@ public final class SonarLintUtils {
             Logger.getLogger(SonarLintUtils.class.getName()).log(Level.INFO, "Cannot use default installation of Node.js: " + ex.getMessage());
         }
     }
-
 }

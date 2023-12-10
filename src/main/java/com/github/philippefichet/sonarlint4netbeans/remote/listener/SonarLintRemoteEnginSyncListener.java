@@ -1,6 +1,5 @@
 /*
- * sonarlint4netbeans: SonarLint integration for Apache Netbeans
- * Copyright (C) 2022 Philippe FICHET.
+ * Copyright (C) 2023 Philippe FICHET.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,15 +16,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package com.github.philippefichet.sonarlint4netbeans.project;
+package com.github.philippefichet.sonarlint4netbeans.remote.listener;
 
 /**
- * List of project scope types
+ *
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
-public enum SonarLintProjectPreferenceScope {
-    PROJECT,
-    GLOBAL,
-    REMOTE,
-    ;
+@FunctionalInterface
+public interface SonarLintRemoteEnginSyncListener {
+    public enum Status {
+        NOT_STARTED,
+        RUNNING,
+        FINISH,
+        CANCELLED,
+    }
+    void consume(Status status, String message);
 }

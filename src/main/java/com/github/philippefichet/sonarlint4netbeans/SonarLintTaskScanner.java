@@ -47,7 +47,6 @@ public class SonarLintTaskScanner extends FileTaskScanner implements PropertyCha
 
     public SonarLintTaskScanner(String displayName, String description) {
         super(displayName, description, "Miscellaneous/SonarLint");
-
     }
 
     public static SonarLintTaskScanner create() {

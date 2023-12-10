@@ -16,33 +16,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package com.github.philippefichet.sonarlint4netbeans.remote;
+package com.github.philippefichet.sonarlint4netbeans.remote.configuration;
 
 /**
  *
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
-public class SonarLintConnectionConfiguration {
+public class SonarLintRemoteConnectionConfiguration {
     private final String connectionId;
-    private final String projectKey;
     private final String baseURL;
     private final boolean isSonarCloud;
-    private final String organization;
 
-    public SonarLintConnectionConfiguration(String connectionId, String projectKey, String baseURL, boolean isSonarCloud, String organization) {
+    public SonarLintRemoteConnectionConfiguration(String connectionId, String baseURL, boolean isSonarCloud) {
         this.connectionId = connectionId;
-        this.projectKey = projectKey;
         this.baseURL = baseURL;
         this.isSonarCloud = isSonarCloud;
-        this.organization = organization;
     }
 
     public String getConnectionId() {
         return connectionId;
-    }
-
-    public String getProjectKey() {
-        return projectKey;
     }
 
     public String getBaseURL() {
@@ -51,10 +43,6 @@ public class SonarLintConnectionConfiguration {
 
     public boolean isIsSonarCloud() {
         return isSonarCloud;
-    }
-
-    public String getOrganization() {
-        return organization;
     }
 
 }
