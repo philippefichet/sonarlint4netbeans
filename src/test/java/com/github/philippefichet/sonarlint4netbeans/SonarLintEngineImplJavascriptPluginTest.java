@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.condition.DisabledIfSystemProperty;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -39,6 +40,11 @@ import org.sonarsource.sonarlint.core.commons.RuleType;
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
 @Tag("javascript")
+@DisabledIfSystemProperty(
+    named = "sonarlint4netbeans.test.skip.javascript",
+    matches = "true",
+    disabledReason = "Disabled because BundleUtils.extractFromClasspath(bundle, deployLocation); in BundleImpl  is too slow (~60s.)"
+)
 public class SonarLintEngineImplJavascriptPluginTest {
 
     @RegisterExtension
