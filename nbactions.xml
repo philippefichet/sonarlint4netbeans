@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+        <action>
+            <actionName>CUSTOM-surefire-report:report-only</actionName>
+            <displayName>surefire-report:report-only</displayName>
+            <goals>
+                <goal>surefire-report:report-only</goal>
+            </goals>
+        </action>
+    </actions>

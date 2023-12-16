@@ -833,7 +833,11 @@ class SonarLintUtilsTest {
     @Test
     @DisplayName("Check to search default nodeJS installation")
     @Tag("runtime")
-    @EnabledIfSystemProperty(named = "hasNodeJSRuntime", matches = "true", disabledReason = "This test require a nodeJS runtime")
+    @EnabledIfSystemProperty(
+        named = "hasNodeJSRuntime",
+        matches = "true",
+        disabledReason = "Disabled because test require a NodeJS runtime installed"
+    )
     void tryToSearchDefaultNodeJS() throws IOException {
         BiConsumer<Path, Version> biConsumerMocked = Mockito.mock(BiConsumer.class);
         SonarLintUtils.tryToSearchDefaultNodeJS(
