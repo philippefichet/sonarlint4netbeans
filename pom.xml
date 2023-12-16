@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project 
+    xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+>
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.philippefichet</groupId>
     <artifactId>sonarlint4netbeans</artifactId>
@@ -76,20 +80,19 @@
                     <target>11</target>
                 </configuration>
             </plugin>
-            <!-- Show https://docs.qameta.io/allure/ to understand configuration -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>3.2.2</version>
                 <configuration>
-                    <testFailureIgnore>false</testFailureIgnore>
-                    <argLine>
-                        @{argLine} -Djava.util.logging.config.file=./src/test/resources/logging.properties -Dfile.encoding=UTF-8 -javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"
-                    </argLine>
                     <systemProperties>
                         <property>
-                            <name>allure.results.directory</name>
-                            <value>${project.build.directory}/allure-results</value>
+                            <name>java.util.logging.config.file</name>
+                            <value>./src/test/resources/logging.properties</value>
+                        </property>
+                        <property>
+                            <name>file.encoding</name>
+                            <value>UTF-8</value>
                         </property>
                         <property>
                             <name>junit.jupiter.extensions.autodetection.enabled</name>
@@ -99,15 +102,38 @@
                             <name>hasNodeJSRuntime</name>
                             <value>${hasNodeJSRuntime}</value>
                         </property>
+                        <property>
+                            <name>sonarlint4netbeans.test.skip.javascript</name>
+                            <value>${sonarlint4netbeans.test.skip.javascript}</value>
+                        </property>
                     </systemProperties>
+                    <!-- https://maven.apache.org/surefire/maven-surefire-plugin/examples/junit-platform.html#surefire-extensions-and-reports-configuration-for-displayname -->
+                    <!-- Surefire Extensions and Reports Configuration for @DisplayName -->
+                    <statelessTestsetReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
+                        <disable>false</disable>
+                        <version>3.0</version>
+                        <usePhrasedFileName>false</usePhrasedFileName>
+                        <usePhrasedTestSuiteClassName>true</usePhrasedTestSuiteClassName>
+                        <usePhrasedTestCaseClassName>true</usePhrasedTestCaseClassName>
+                        <usePhrasedTestCaseMethodName>true</usePhrasedTestCaseMethodName>
+                    </statelessTestsetReporter>
+                    <consoleOutputReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5ConsoleOutputReporter">
+                        <disable>false</disable>
+                        <encoding>UTF-8</encoding>
+                        <usePhrasedFileName>false</usePhrasedFileName>
+                    </consoleOutputReporter>
+                    <statelessTestsetInfoReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5StatelessTestsetInfoReporter">
+                        <disable>false</disable>
+                        <usePhrasedFileName>false</usePhrasedFileName>
+                        <usePhrasedClassNameInRunning>true</usePhrasedClassNameInRunning>
+                        <usePhrasedClassNameInTestCaseSummary>true</usePhrasedClassNameInTestCaseSummary>
+                    </statelessTestsetInfoReporter>
                 </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.aspectj</groupId>
-                        <artifactId>aspectjweaver</artifactId>
-                        <version>${aspectj.version}</version>
-                    </dependency>
-                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>3.2.2</version>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
@@ -153,15 +179,6 @@
                         <version>1.2.0</version>
                     </dependency>
                 </dependencies>
-            </plugin>
-            <!-- https://docs.qameta.io/allure/ -->
-            <plugin>
-                <groupId>io.qameta.allure</groupId>
-                <artifactId>allure-maven</artifactId>
-                <version>2.12.0</version>
-                <configuration>
-                    <reportVersion>${io.qameta.allure.version}</reportVersion>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -225,20 +242,20 @@
                 </configuration>
             </plugin>
             <plugin>
-              <groupId>org.owasp</groupId>
-              <artifactId>dependency-check-maven</artifactId>
-              <version>8.4.0</version>
-              <configuration>
-                  <nodeAnalyzerEnabled>false</nodeAnalyzerEnabled>
-                  <yarnAuditAnalyzerEnabled>false</yarnAuditAnalyzerEnabled>
-              </configuration>
-              <executions>
-                  <execution>
-                      <goals>
-                          <goal>check</goal>
-                      </goals>
-                  </execution>
-              </executions>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>8.4.0</version>
+                <configuration>
+                    <nodeAnalyzerEnabled>false</nodeAnalyzerEnabled>
+                    <yarnAuditAnalyzerEnabled>false</yarnAuditAnalyzerEnabled>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.sonarsource.scanner.maven</groupId>
@@ -451,21 +468,12 @@
             <version>${org.slf4j.version}</version>
             <scope>test</scope>
         </dependency>
-        <!-- https://docs.qameta.io/allure/ -->
-        <dependency>
-            <groupId>io.qameta.allure</groupId>
-            <artifactId>allure-junit5</artifactId>
-            <version>${io.qameta.allure.version}</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <org.netbeans.version>RELEASE130</org.netbeans.version>
-        <aspectj.version>1.9.20.1</aspectj.version>
         <assertj.version>3.23.1</assertj.version>
         <org.mockito.version>4.8.1</org.mockito.version>
-        <io.qameta.allure.version>2.24.0</io.qameta.allure.version>
         <junit-jupiter.version>5.10.0</junit-jupiter.version>
         <!-- like as allure -->
         <org.slf4j.version>1.7.36</org.slf4j.version>
