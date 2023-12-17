@@ -252,7 +252,6 @@ public final class SonarLintUtils {
     public static List<Issue> analyze(FileObject fileObject, String contentToAnalyze) throws IOException {
         // TODO scope remote = changement de moteur
         FileObject configRoot = FileUtil.getConfigRoot();
-        System.out.println("configRoot = " + configRoot);
         SonarLintEngine sonarLintEngine = Lookup.getDefault().lookup(SonarLintEngine.class);
         if (sonarLintEngine == null) {
             return Collections.emptyList();
@@ -267,7 +266,7 @@ public final class SonarLintUtils {
         boolean useTestRules = sonarlintOptions == null || sonarlintOptions.applyDifferentRulesOnTestFiles();
         Project project = dataManager.getProject(fileObject).orElse(SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
         Path path = project == null
-            ? toFile.toPath()
+            ? toFile.getParentFile().toPath()
             : FileUtil.toFile(project.getProjectDirectory()).toPath();
         List<ClientInputFile> clientInputFiles = new ArrayList<>();
         boolean applyTestRules = useTestRules && dataManager.isTest(toFile);
@@ -354,13 +353,16 @@ public final class SonarLintUtils {
             .putAllExtraProperties(getMergedExtraPropertiesAndReplaceVariables(sonarLintEngine, dataManager.getProject(fileObject).orElse(SonarLintEngine.GLOBAL_SETTINGS_PROJECT)))
             .build();
 
-
+        LOG.info("Start analyze ...");
         AnalysisResults analyze = sonarLintEngine.analyze(
             standaloneAnalysisConfiguration,
             issues::add,
-            null,
+            // TODO create Output
+            (String formattedMessage, ClientLogOutput.Level level) ->
+            LOG.info("[" + level.name() + "] " + formattedMessage),
             null
         );
+        LOG.info("End analyze");
         LOG.fine(() -> "Analyze result for file \"" + fileObject.getPath() + "\" : " + analyze);
         return issues;
     }

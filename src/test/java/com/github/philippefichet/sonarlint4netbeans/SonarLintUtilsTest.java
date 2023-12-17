@@ -254,9 +254,13 @@ class SonarLintUtilsTest {
             SonarLintEngine sonarLintEngine = SonarLintTestUtils.getCleanSonarLintEngine();
             String ruleKeyString = "java:S115";
             Project project = mockedFirstProjectWithGlobalScope;
-            sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey()), SonarLintEngine.GLOBAL_SETTINGS_PROJECT));
+            List<RuleKey> allRuleKey = sonarLintEngine.getAllRuleDetails()
+                .stream()
+                .map( (StandaloneRuleDetails standaloneRuleDetails) -> RuleKey.parse(standaloneRuleDetails.getKey()))
+                .collect(Collectors.toList());
+            sonarLintEngine.excludeRuleKeys(allRuleKey, SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
             sonarLintEngine.includeRuleKey(RuleKey.parse(ruleKeyString), SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
-            sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey()), project));
+            sonarLintEngine.excludeRuleKeys(allRuleKey, project);
             sonarLintEngine.includeRuleKey(RuleKey.parse(ruleKeyString), project);
             File sonarlintFileDemo = FileUtil.normalizeFile(new File("./src/test/resources/SonarLintFileDemo.java").getAbsoluteFile());
             File sonarlintFileDemoOnFakeProject = FileUtil.normalizeFile(new File("./src/test/resources/fakeproject/SonarLintFileDemo.java").getAbsoluteFile());
@@ -264,6 +268,8 @@ class SonarLintUtilsTest {
             FileObject toFileObjectOnFakeProject = FileUtil.toFileObject(sonarlintFileDemoOnFakeProject);
             Mockito.when(sonarlintDataMangerMocked.getProject(toFileObjectOnFakeProject))
                 .thenReturn(Optional.of(project));
+            Mockito.when(project.getProjectDirectory())
+                .thenReturn(FileUtil.toFileObject(sonarlintFileDemoOnFakeProject.getParentFile()));
             List<Issue> issues = new ArrayList<>();
             List<Issue> issuesOnFakeProject = new ArrayList<>();
             sonarLintEngine.setRuleParameter(ruleKeyString, "format", "^.+$", project);
@@ -277,10 +283,22 @@ class SonarLintUtilsTest {
                 new String(Files.readAllBytes(sonarlintFileDemoOnFakeProject.toPath()))
             ));
             // Then
+            Tuple expectedIssue = new DefaultIssueTestImpl.Builder()
+                .severity(IssueSeverity.CRITICAL)
+                .type(RuleType.CODE_SMELL)
+                // "Constant names should comply with a naming convention"
+                .ruleKey("java:S115")
+                .startLine(25)
+                .startLineOffset(31)
+                .endLine(25)
+                .endLineOffset(56)
+                .buildTuple();
             Assertions.assertThat(issues)
-                .hasSize(1);
+                .extracting(DefaultIssueTestImpl::toTuple)
+                .containsExactly(expectedIssue);
             Assertions.assertThat(issuesOnFakeProject)
-                .hasSize(1);
+                .extracting(DefaultIssueTestImpl::toTuple)
+                .containsExactly(expectedIssue);
         }
 
         @Test
@@ -299,6 +317,8 @@ class SonarLintUtilsTest {
             FileObject toFileObjectOnFakeProject = FileUtil.toFileObject(sonarlintFileDemoOnFakeProject);
             Mockito.when(sonarlintDataMangerMocked.getProject(toFileObjectOnFakeProject))
                 .thenReturn(Optional.of(mockedProjectWithProjectScope));
+            Mockito.when(mockedProjectWithProjectScope.getProjectDirectory())
+                .thenReturn(FileUtil.toFileObject(sonarlintFileDemoOnFakeProject.getParentFile()));
             List<Issue> issues = new ArrayList<>();
             List<Issue> issuesOnFakeProject = new ArrayList<>();
             sonarLintEngine.setRuleParameter(ruleKeyString, "format", "^.+$", mockedProjectWithProjectScope);
@@ -312,10 +332,21 @@ class SonarLintUtilsTest {
                 new String(Files.readAllBytes(sonarlintFileDemoOnFakeProject.toPath()))
             ));
             // Then
+            Tuple expectedIssue = new DefaultIssueTestImpl.Builder()
+                .severity(IssueSeverity.CRITICAL)
+                .type(RuleType.CODE_SMELL)
+                // "Constant names should comply with a naming convention"
+                .ruleKey("java:S115")
+                .startLine(25)
+                .startLineOffset(31)
+                .endLine(25)
+                .endLineOffset(56)
+                .buildTuple();
             Assertions.assertThat(issues)
-                .hasSize(1);
+                .extracting(DefaultIssueTestImpl::toTuple)
+                .containsExactly(expectedIssue);
             Assertions.assertThat(issuesOnFakeProject)
-                .isEqualTo(Collections.emptyList());
+                .isEmpty();
         }
 
         @Test
@@ -392,10 +423,16 @@ class SonarLintUtilsTest {
             FileObject toFileObject = FileUtil.toFileObject(sonarlintFileDemo);
             FileObject toFileObjectOnFakeProject = FileUtil.toFileObject(sonarlintFileDemoOnFakeProject);
             FileObject toFileObjectOnFakeProject2 = FileUtil.toFileObject(sonarlintFileDemoOnFakeProject2);
+
             Mockito.when(sonarlintDataMangerMocked.getProject(toFileObjectOnFakeProject))
                 .thenReturn(Optional.of(mockedProjectWithProjectScope));
+            Mockito.when(mockedProjectWithProjectScope.getProjectDirectory())
+                .thenReturn(FileUtil.toFileObject(sonarlintFileDemo.getParentFile()));
+
             Mockito.when(sonarlintDataMangerMocked.getProject(toFileObjectOnFakeProject2))
                 .thenReturn(Optional.of(mockedFirstProjectWithGlobalScope));
+            Mockito.when(mockedFirstProjectWithGlobalScope.getProjectDirectory())
+                .thenReturn(FileUtil.toFileObject(sonarlintFileDemoOnFakeProject2.getParentFile()));
             List<Issue> issues = new ArrayList<>();
             List<Issue> issuesOnFakeProject = new ArrayList<>();
             List<Issue> issuesOnFakeProject2 = new ArrayList<>();
