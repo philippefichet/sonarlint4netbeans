@@ -1,4 +1,5 @@
 /*
+ * sonarlint4netbeans: SonarLint integration for Apache Netbeans
  * Copyright (C) 2023 Philippe FICHET.
  *
  * This library is free software; you can redistribute it and/or
