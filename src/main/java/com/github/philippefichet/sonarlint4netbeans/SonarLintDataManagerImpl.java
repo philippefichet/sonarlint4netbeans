@@ -20,6 +20,7 @@
 package com.github.philippefichet.sonarlint4netbeans;
 
 import com.github.philippefichet.sonarlint4netbeans.project.SonarLintProjectPreferenceScope;
+import com.github.philippefichet.sonarlint4netbeans.remote.configuration.SonarLintRemoteProjectConfiguration;
 import java.awt.Image;
 import java.io.File;
 import java.nio.charset.Charset;
@@ -43,6 +44,14 @@ import org.openide.util.NbPreferences;
  */
 public class SonarLintDataManagerImpl implements SonarLintDataManager {
     private static final String PREFERENCE_SCOPE_KEY = "sonarlint-preference-scope";
+    @Override
+    public Preferences getRemoteConfigurationPreferences(Project project) {
+        if (project == null) {
+            return getGlobalSettingsPreferences();
+        }
+        return ProjectUtils.getPreferences(project, SonarLintRemoteProjectConfiguration.class, true);
+    }
+
     @Override
     public Preferences getPreferences(Project project) {
         if (project == null) {

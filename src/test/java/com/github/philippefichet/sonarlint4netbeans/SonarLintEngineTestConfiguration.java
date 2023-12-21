@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
+import org.sonarsource.sonarlint.core.commons.Language;
 import org.sonarsource.sonarlint.core.commons.RuleKey;
 
 /**
@@ -44,6 +45,7 @@ public final class SonarLintEngineTestConfiguration {
     private final List<RuleParameter> ruleParameters;
     private final Map<Project, Map<String, String>> extraProperties;
     private final List<String> requirePlugin;
+    private final Language[] enabledLanguages;
 
     private final boolean requireNodeJS;
 
@@ -56,6 +58,7 @@ public final class SonarLintEngineTestConfiguration {
         this.requireNodeJS = builder.requireNodeJS;
         this.extraProperties = builder.extraProperties;
         this.requirePlugin = builder.requirePlugin;
+        this.enabledLanguages = builder.enabledLanguages;
     }
 
     public List<RuleKey> getExcludedRules() {
@@ -84,6 +87,10 @@ public final class SonarLintEngineTestConfiguration {
 
     public Map<Project, Map<String, String>> getExtraProperties() {
         return extraProperties;
+    }
+
+    public Language[] getEnabledLanguages() {
+        return enabledLanguages;
     }
 
     @Override
@@ -128,6 +135,7 @@ public final class SonarLintEngineTestConfiguration {
         private final Map<Project, Map<String, String>> extraProperties = new HashMap<>();
         private final List<String> requirePlugin = new ArrayList<>();
         private boolean requireNodeJS = false;
+        private Language[] enabledLanguages = Language.values();
 
         public Builder description(String description) {
             this.description = description;
@@ -178,6 +186,11 @@ public final class SonarLintEngineTestConfiguration {
         
         public Builder requirePlugin(String pluginKey) {
             requirePlugin.add(pluginKey);
+            return this;
+        }
+
+        public Builder enabledLanguages(Language ... enabledLanguages) {
+            this.enabledLanguages = enabledLanguages;
             return this;
         }
 

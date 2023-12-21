@@ -20,8 +20,12 @@
 package com.github.philippefichet.sonarlint4netbeans.junit.jupiter.extension;
 
 import com.github.philippefichet.sonarlint4netbeans.Predicates;
+import com.github.philippefichet.sonarlint4netbeans.SonarLintEngine;
+import com.github.philippefichet.sonarlint4netbeans.SonarLintEngineImpl;
 import com.github.philippefichet.sonarlint4netbeans.assertj.SonarLintArgumentMatchers;
+import com.github.philippefichet.sonarlint4netbeans.remote.SonarLintRemoteEngine;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -38,6 +42,7 @@ import org.netbeans.modules.openide.util.GlobalLookup;
 import org.openide.util.Lookup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.sonarsource.sonarlint.core.commons.Language;
 
 /**
  *
@@ -118,18 +123,22 @@ public final class SonarLintLookupMockedExtension implements InvocationIntercept
             });
         }
 
+        mockLookupMethodInstance(lookupMethodInstance);
+    }
+
+    private void mockLookupMethodInstance(Map<Class<?>, Supplier<?>> lookupMethodInstance) {
         if (!lookupMethodInstance.isEmpty()) {
             Map<Class<?>, Object> instances = new HashMap<>();
             lookupMethodInstance.forEach(
                 (Class<?> clazz, Supplier<?> supplier) -> {
-                    Mockito.when(mockedLookup.lookup(clazz))
+                Mockito.when(mockedLookup.lookup(clazz))
                     .thenAnswer(
                         (InvocationOnMock iom) -> {
                             if (logCall) {
                                 LOG.debug("defaultLookup.lookup(Class<?>) for an specific instance called with \"{}\"", clazz);
                             }
                             return instances.computeIfAbsent(clazz, (Class<?> cls) -> supplier.get());
-                    });
+                        });
                 }
             );
         }
@@ -137,6 +146,20 @@ public final class SonarLintLookupMockedExtension implements InvocationIntercept
 
     @Override
     public void interceptTestMethod(Invocation<Void> invocation, ReflectiveInvocationContext<Method> invocationContext, ExtensionContext extensionContext) throws Throwable {
+        SonarLintEngineEnableLanguage annotation = invocationContext.getExecutable().getAnnotation(SonarLintEngineEnableLanguage.class);
+        Language[] languages = annotation == null ? Language.values() : annotation.languages();
+        LOG.info("Language enabled: \"{}\"", Arrays.toString(languages));
+        Map<Class<?>, Supplier<?>> lookupMethodInstanceEngines = new HashMap<>();
+        lookupMethodInstanceEngines.put(SonarLintEngine.class, () -> {
+            SonarLintEngineImpl engine = new SonarLintEngineImpl(languages);
+            engine.waitingInitialization();
+            return engine;
+        });
+        lookupMethodInstanceEngines.put(SonarLintRemoteEngine.class, () -> {
+            SonarLintRemoteEngine engine = new SonarLintRemoteEngine(languages);
+            return engine;
+        });
+        mockLookupMethodInstance(lookupMethodInstanceEngines);
         executeInMockedLookup(() -> {
             try {
                 InvocationInterceptor.super.interceptTestMethod(

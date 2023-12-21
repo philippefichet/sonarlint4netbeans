@@ -88,8 +88,17 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
     private final List<Consumer<SonarLintEngine>> configurationChanged = Collections.synchronizedList(new ArrayList<>());
     private final Map<String, Path> pluginPaths = new HashMap<>();
     private final Lookup lookup = Lookup.getDefault();
+    private final Language[] languages;
 
+    /**
+     * Default constructor for lookup
+     */
     public SonarLintEngineImpl() {
+        this(Language.values());
+    }
+
+    public SonarLintEngineImpl(Language[] languages) {
+        this.languages = languages;
         SonarLintDataManager sonarLintDataManager = getSonarLintDataManager();
         pluginPaths.put("java", sonarLintDataManager.getInstalledFile("sonar/plugins/sonar-java-plugin-" + SONAR_JAVA_PLUGIN_VERSION + ".jar").toPath());
         pluginPaths.put("javascript", sonarLintDataManager.getInstalledFile("sonar/plugins/sonar-javascript-plugin-" + SONAR_JAVASCRIPT_PLUGIN_VERSION + ".jar").toPath());
@@ -160,7 +169,7 @@ public final class SonarLintEngineImpl implements SonarLintEngine {
         
         List<Path> allPluginPaths = new ArrayList<>(allPlugins.values());
         StandaloneGlobalConfiguration.Builder configBuilder = StandaloneGlobalConfiguration.builder()
-            .addEnabledLanguages(Language.values())
+            .addEnabledLanguages(languages)
             .addPlugins(allPluginPaths.toArray(new Path[allPluginPaths.size()]));
         Optional<String> nodeJSPathOptional = getNodeJSPath();
         Optional<Version> nodeJSVersionOptional = getNodeJSVersion();

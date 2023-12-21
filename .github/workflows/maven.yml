@@ -22,7 +22,9 @@ jobs:
         java-version: 11
         distribution: temurin
     - name: Build with Maven
-      run: mvn clean package source:jar javadoc:jar verify spotless:check
+      env:
+        SONARLINT4NETBEANS_TEST_REMOTE_PROJECT_MAVEN1_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      run: mvn -D clean package source:jar javadoc:jar verify spotless:check
       timeout-minutes: 10
     - name: Test Report
       uses: dorny/test-reporter@v1

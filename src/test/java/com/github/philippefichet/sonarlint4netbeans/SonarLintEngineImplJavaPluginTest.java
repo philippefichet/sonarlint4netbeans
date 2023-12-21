@@ -32,6 +32,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.commons.IssueSeverity;
+import org.sonarsource.sonarlint.core.commons.Language;
 import org.sonarsource.sonarlint.core.commons.RuleType;
 
 /**
@@ -54,6 +55,7 @@ final class SonarLintEngineImplJavaPluginTest {
             Arguments.of(
                 SonarLintEngineTestConfiguration.builder()
                 .requirePlugin("java")
+                .enabledLanguages(Language.JAVA)
                 .description("SonarLintFileDemo.java with rule java:S115 but without java:S122 and java:S1118 to check CODE_SMELL CRITICAL")
                 .includeRules("java:S115")
                 .excludeRules("java:S1220", "java:S1118")
@@ -75,6 +77,7 @@ final class SonarLintEngineImplJavaPluginTest {
             Arguments.of(
                 SonarLintEngineTestConfiguration.builder()
                 .requirePlugin("java")
+                .enabledLanguages(Language.JAVA)
                 .description("NewClass.java with rule java:S1133 but without java:S1186, java:S1598, java:S100, java:S1134, java:S2168 and java:S115  to check CODE_SMELL INFO")
                 .includeRules("java:S1133")
                 .excludeRules("java:S1186", "java:S1598", "java:S100", "java:S1134", "java:S2168", "java:S115")
@@ -96,6 +99,7 @@ final class SonarLintEngineImplJavaPluginTest {
             Arguments.of(
                 SonarLintEngineTestConfiguration.builder()
                 .requirePlugin("java")
+                .enabledLanguages(Language.JAVA)
                 .description("SonarLintFileDemo.java with rule java:S115 but without java:S1220 and S1118 rule with default parameters")
                 .includeRules("java:S115")
                 .excludeRules("java:S1220", "java:S1118")
@@ -117,6 +121,7 @@ final class SonarLintEngineImplJavaPluginTest {
             Arguments.of(
                 SonarLintEngineTestConfiguration.builder()
                 .requirePlugin("java")
+                .enabledLanguages(Language.JAVA)
                 .description("SonarLintFileDemo.java with rule java:S115 but without java:S1220 and S1118 rule with custom parameters")
                 .includeRules("java:S115")
                 .excludeRules("java:S1220", "java:S1118")

@@ -70,6 +70,7 @@ public final class SonarLintRemoteEngine {
     private static final String RUNTIME_NODE_JS_VERSION_PREFERENCE = "nodejs.version";
     private final Clock clock = Clock.systemUTC();
     private final Lookup lookup = Lookup.getDefault();
+    private final Language[] languages;
 
     private final Map<String, ConnectedSonarLintEngineImpl> connectedSonarLintEngineImpls = Collections.synchronizedMap(new HashMap<>());
 
@@ -77,8 +78,16 @@ public final class SonarLintRemoteEngine {
      * Default constructor for Lookup
      */
     public SonarLintRemoteEngine() {
+        this.languages = Language.values();
     }
-    
+
+    /**
+     * Constructor testing, reduce downloads (plugin, rules, ...)
+     */
+    public SonarLintRemoteEngine(Language[] languages) {
+        this.languages = languages;
+    }
+
     private String toKey(SonarLintRemoteProjectConfiguration sonarLintRemoteProjectConfiguration) {
         return sonarLintRemoteProjectConfiguration.getProjectKey() + "-" +
             sonarLintRemoteProjectConfiguration.getOrganization() + "-" +
@@ -139,13 +148,13 @@ public final class SonarLintRemoteEngine {
         String sonarLintHome = System.getProperty("user.home") + File.separator + ".sonarlint4netbeans";
         return connectedSonarLintEngineImpls.computeIfAbsent(
             sonarLintRemoteProjectConfiguration.getConnectionId(),
-            c ->
+            (String connectionId) ->
                 new ConnectedSonarLintEngineImpl(
                     createBuilder()
-                    .setConnectionId(c)
+                    .setConnectionId(connectionId)
                     .setStorageRoot(Paths.get(sonarLintHome, "storage"))
                     .setWorkDir(Paths.get(sonarLintHome, "work"))
-                    .addEnabledLanguages(Language.values())
+                    .addEnabledLanguages(languages)
                     .build()
                 )
         );

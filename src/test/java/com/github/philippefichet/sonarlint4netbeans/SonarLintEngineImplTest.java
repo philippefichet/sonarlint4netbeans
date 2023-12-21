@@ -34,6 +34,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ProjectManagerImplementation;
+import org.sonarsource.sonarlint.core.commons.Language;
 
 /**
  *
@@ -66,7 +67,7 @@ public class SonarLintEngineImplTest {
         String parameterName = "max";
         String parameterValueOnProjectScope = "5";
         String parameterValueOnGlobalScope = "4";
-        SonarLintEngineImpl sonarLintEngine = new SonarLintEngineImpl();
+        SonarLintEngineImpl sonarLintEngine = new SonarLintEngineImpl(new Language[] {Language.JAVA});
         sonarLintEngine.waitingInitialization();
         sonarLintEngine.getPreferences(SonarLintEngine.GLOBAL_SETTINGS_PROJECT).removeNode();
         sonarLintEngine.setRuleParameter(ruleKey, parameterName, parameterValueOnProjectScope, mockedProjectWithProjectScope);
@@ -132,7 +133,7 @@ public class SonarLintEngineImplTest {
         Map<String, String> exptectedProperties
     ) {
         // Given
-        SonarLintEngineImpl sonarLintEngine = new SonarLintEngineImpl();
+        SonarLintEngineImpl sonarLintEngine = new SonarLintEngineImpl(new Language[] {});
         sonarLintEngine.waitingInitialization();
         sonarLintEngine.setExtraProperties(actualGlobalProperties, SonarLintEngine.GLOBAL_SETTINGS_PROJECT);
         sonarLintEngine.setExtraProperties(actualProjectProperties, project);

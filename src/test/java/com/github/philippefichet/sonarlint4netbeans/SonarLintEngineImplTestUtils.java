@@ -51,7 +51,7 @@ public final class SonarLintEngineImplTestUtils {
 
     public static void analyzeTesting(SonarLintEngineTestConfiguration testConfiguration, List<Issue> expectedIssue) throws BackingStoreException, IOException
     {
-        SonarLintEngineImpl sonarLintEngine = new SonarLintEngineImpl();
+        SonarLintEngineImpl sonarLintEngine = new SonarLintEngineImpl(testConfiguration.getEnabledLanguages());
         sonarLintEngine.waitingInitialization();
         if (testConfiguration.isRequireNodeJS()) {
             SonarLintTestUtils.installNodeJS();

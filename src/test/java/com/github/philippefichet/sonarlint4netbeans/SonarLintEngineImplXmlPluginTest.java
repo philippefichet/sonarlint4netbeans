@@ -33,6 +33,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.commons.IssueSeverity;
+import org.sonarsource.sonarlint.core.commons.Language;
 import org.sonarsource.sonarlint.core.commons.RuleType;
 
 /**
@@ -57,6 +58,7 @@ public class SonarLintEngineImplXmlPluginTest {
                 SonarLintEngineTestConfiguration.builder()
                 .description("sonarlin-example.php with rule php:S101 but without php:S1105 to check php plugin")
                 .requirePlugin("xml")
+                .enabledLanguages(Language.XML)
                 .includeRules("xml:S1134")
                 .addClientInputFile(new File("./src/test/resources/sonarlint-example.xml"))
                 .build(),

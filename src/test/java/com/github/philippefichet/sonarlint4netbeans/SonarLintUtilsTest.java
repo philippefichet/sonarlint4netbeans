@@ -19,6 +19,7 @@
  */
 package com.github.philippefichet.sonarlint4netbeans;
 
+import com.github.philippefichet.sonarlint4netbeans.junit.jupiter.extension.SonarLintEngineEnableLanguage;
 import com.github.philippefichet.sonarlint4netbeans.junit.jupiter.extension.SonarLintLookupMockedExtension;
 import com.github.philippefichet.sonarlint4netbeans.project.SonarLintProjectPreferenceScope;
 import com.github.philippefichet.sonarlint4netbeans.treenode.SonarLintAnalyzerRootNode;
@@ -68,6 +69,7 @@ import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleDetails;
 import org.sonarsource.sonarlint.core.client.api.standalone.StandaloneRuleParam;
 import org.sonarsource.sonarlint.core.commons.IssueSeverity;
+import org.sonarsource.sonarlint.core.commons.Language;
 import org.sonarsource.sonarlint.core.commons.RuleKey;
 import org.sonarsource.sonarlint.core.commons.RuleType;
 import org.sonarsource.sonarlint.core.commons.Version;
@@ -82,38 +84,34 @@ class SonarLintUtilsTest {
 
     @Nested
     class ProjectBased {
-        private final Project mockedProjectWithProjectScope = Mockito.mock(Project.class);
-        private final Project mockedSecondProjectWithGlobalScope = Mockito.mock(Project.class);
-        private final Project mockedThirdProjectWithGlobalScope = Mockito.mock(Project.class);
-        private final Project mockedFirstProjectWithGlobalScope = Mockito.mock(Project.class);
+        private final Project mockedProjectWithProjectScope = new ProjectMockedBuilder().build();
+        private final Project mockedSecondProjectWithGlobalScope = new ProjectMockedBuilder().build();
+        private final Project mockedThirdProjectWithGlobalScope = new ProjectMockedBuilder().build();
+        private final Project mockedFirstProjectWithGlobalScope = new ProjectMockedBuilder().build();
+        private final Project sonarlint4netbeansSampleMavenProject = new ProjectMockedBuilder()
+            .projectDirectory(new File("./src/test/samples/sonarlint4netbeans-sample-mavenproject"))
+            .build();
 
         @RegisterExtension
         private final SonarLintLookupMockedExtension lookupExtension = SonarLintLookupMockedExtension.builder()
             .logCall()
-            .mockLookupMethodInstanceWith(SonarLintEngine.class, () -> {
-                SonarLintEngineImpl engine = new SonarLintEngineImpl();
-                engine.waitingInitialization();
-                return engine;
-            })
             .mockLookupMethodWith(ProjectManagerImplementation.class, Mockito.mock(ProjectManagerImplementation.class))
             .mockLookupMethodWith(SonarLintOptions.class, Mockito.mock(SonarLintOptions.class))
             .mockLookupMethodWith(
                 SonarLintDataManager.class,
                 new SonarLintDataManagerMockedBuilder()
-                    .createPreferences(mockedProjectWithProjectScope)
-                    .preferencesScope(mockedProjectWithProjectScope, SonarLintProjectPreferenceScope.PROJECT)
-                    .createPreferences(mockedFirstProjectWithGlobalScope)
-                    .preferencesScope(mockedFirstProjectWithGlobalScope, SonarLintProjectPreferenceScope.GLOBAL)
-                    .createPreferences(mockedSecondProjectWithGlobalScope)
-                    .preferencesScope(mockedSecondProjectWithGlobalScope, SonarLintProjectPreferenceScope.GLOBAL)
-                    .createPreferences(mockedThirdProjectWithGlobalScope)
-                    .preferencesScope(mockedThirdProjectWithGlobalScope, SonarLintProjectPreferenceScope.GLOBAL)
+                    .createPreferences(mockedProjectWithProjectScope, SonarLintProjectPreferenceScope.PROJECT)
+                    .createPreferences(mockedFirstProjectWithGlobalScope, SonarLintProjectPreferenceScope.GLOBAL)
+                    .createPreferences(mockedSecondProjectWithGlobalScope, SonarLintProjectPreferenceScope.GLOBAL)
+                    .createPreferences(mockedThirdProjectWithGlobalScope, SonarLintProjectPreferenceScope.GLOBAL)
                     .preferencesScope(SonarLintEngine.GLOBAL_SETTINGS_PROJECT, SonarLintProjectPreferenceScope.GLOBAL)
+                    .createPreferences(sonarlint4netbeansSampleMavenProject, SonarLintProjectPreferenceScope.REMOTE)
                     .build()
             ).build();
 
         @Test
         @DisplayName("Analyze hierarchical tree used in \"Analyze with Sonarlint\"")
+        @SonarLintEngineEnableLanguage(languages = Language.JAVA)
         void likeAnalyzeWithSonarlint() throws IOException, BackingStoreException {
             // first step, check all issue in file
             List<Issue> actualIssues = new ArrayList<>();
@@ -249,6 +247,7 @@ class SonarLintUtilsTest {
 
         @Test
         @DisplayName("Analyze with custom rule parameter value on project with global scope")
+        @SonarLintEngineEnableLanguage(languages = Language.JAVA)
         void ruleParameterChangedOnProjectWithGlobalScope() throws IOException, BackingStoreException {
             SonarLintDataManager sonarlintDataMangerMocked = lookupExtension.lookupMocked(SonarLintDataManager.class).get();
             SonarLintEngine sonarLintEngine = SonarLintTestUtils.getCleanSonarLintEngine();
@@ -303,6 +302,7 @@ class SonarLintUtilsTest {
 
         @Test
         @DisplayName("Analyze with custom rule parameter value on project")
+        @SonarLintEngineEnableLanguage(languages = Language.JAVA)
         void ruleParameterChangedOnProject() throws IOException, BackingStoreException {
             SonarLintDataManager sonarlintDataMangerMocked = lookupExtension.lookupMocked(SonarLintDataManager.class).get();
             SonarLintEngine sonarLintEngine = SonarLintTestUtils.getCleanSonarLintEngine();
@@ -351,6 +351,7 @@ class SonarLintUtilsTest {
 
         @Test
         @DisplayName("Check custom rule parameter value from extractRuleParameters on project with global scope")
+        @SonarLintEngineEnableLanguage(languages = Language.JAVA)
         void extractRuleParametersWithCustomValueOnProjectWithGlobalScope() throws BackingStoreException, MalformedURLException {
             SonarLintEngine sonarLintEngine = new SonarLintEngineImpl();
             SonarLintTestUtils.cleanSonarLintEngine(sonarLintEngine);
@@ -386,6 +387,7 @@ class SonarLintUtilsTest {
 
         @Test
         @DisplayName("Analyze with extra properties on project")
+        @SonarLintEngineEnableLanguage(languages = Language.JAVA)
         void extraPropertiesOnProject() throws IOException, BackingStoreException {
             String commonExtraPropertyName = "sonar.java.source";
             SonarLintDataManager sonarlintDataMangerMocked = lookupExtension.lookupMocked(SonarLintDataManager.class).get();
@@ -473,6 +475,7 @@ class SonarLintUtilsTest {
 
         @Test
         @DisplayName("Check custom rule parameter value from extractRuleParameters")
+        @SonarLintEngineEnableLanguage(languages = Language.JAVA)
         void extractRuleParametersWithCustomValue() throws BackingStoreException {
             SonarLintEngine sonarLintEngine = SonarLintTestUtils.getCleanSonarLintEngine();
             String ruleKeyString = "java:S115";
@@ -487,6 +490,7 @@ class SonarLintUtilsTest {
 
         @Test
         @DisplayName("Check default rule parameter value from extractRuleParameters")
+        @SonarLintEngineEnableLanguage(languages = Language.JAVA)
         void extractRuleParametersWithDefaultValue() throws BackingStoreException {
             SonarLintEngine sonarLintEngine = SonarLintTestUtils.getCleanSonarLintEngine();
             String ruleKeyString = "java:S115";
@@ -500,6 +504,7 @@ class SonarLintUtilsTest {
 
         @Test
         @DisplayName("Analyze hierarchical tree used in \"Analyze with Sonarlint\" with a custom rule parameter value")
+        @SonarLintEngineEnableLanguage(languages = Language.JAVA)
         void likeAnalyzeWithSonarlintWithParameter() throws BackingStoreException, IOException {
             SonarLintEngine sonarLintEngine = SonarLintTestUtils.getCleanSonarLintEngine();
             sonarLintEngine.getAllRuleDetails().forEach(ruleKey -> sonarLintEngine.excludeRuleKey(RuleKey.parse(ruleKey.getKey()), SonarLintEngine.GLOBAL_SETTINGS_PROJECT));
@@ -585,6 +590,7 @@ class SonarLintUtilsTest {
 
         @Test
         @DisplayName("Analyze with custom rule parameter value")
+        @SonarLintEngineEnableLanguage(languages = Language.JAVA)
         void ruleParameterChanged() throws BackingStoreException, IOException {
             SonarLintEngine sonarLintEngine = SonarLintTestUtils.getCleanSonarLintEngine();
             String ruleKeyString = "java:S115";
@@ -602,6 +608,7 @@ class SonarLintUtilsTest {
 
         @Test
         @DisplayName("Analyze with custom rule parameter value to check ${projectDir}")
+        @SonarLintEngineEnableLanguage(languages = Language.JAVA)
         void analyseFilesOnTwoProjectWithProjectDirInProperties(
             @TempDir File projectDir1,
             @TempDir File projectDir2,

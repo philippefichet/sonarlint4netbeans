@@ -27,6 +27,7 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.netbeans.api.project.Project;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -53,6 +54,24 @@ public final class SonarLintDataManagerMockedBuilder {
     {
         Mockito.when(sonarLintDataManagerMocked.getPreferences(project))
             .thenReturn(new SonarLintPreferencesForTesting());
+        Mockito.when(sonarLintDataManagerMocked.getRemoteConfigurationPreferences(project))
+            .thenReturn(new SonarLintPreferencesForTesting());
+        return this;
+    }
+
+    public SonarLintDataManagerMockedBuilder createPreferences(Project project, SonarLintProjectPreferenceScope scope)
+    {
+        createPreferences(project);
+        preferencesScope(project, scope);
+        return this;
+    }
+
+    public SonarLintDataManagerMockedBuilder addFileToProject(Project project, File file)
+    {
+        Mockito.when(sonarLintDataManagerMocked.getProject(file))
+            .thenReturn(Optional.of(project));
+        Mockito.when(sonarLintDataManagerMocked.getProject(FileUtil.toFileObject(file)))
+            .thenReturn(Optional.of(project));
         return this;
     }
 

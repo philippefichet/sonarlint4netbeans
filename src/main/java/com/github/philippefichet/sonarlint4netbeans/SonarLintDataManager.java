@@ -35,9 +35,16 @@ import org.openide.filesystems.FileObject;
  */
 public interface SonarLintDataManager {
     /**
+     * Retrieve project preferences data for remote configuration (sonarcloud/sonarqube)
+     * @param project project to retrieve preference
+     * @return project preferences data for remote configuration (sonarcloud/sonarqube) or global settings preference if project is null
+     */
+    public Preferences getRemoteConfigurationPreferences(Project project);
+
+    /**
      * Retrieve project preferences data
      * @param project project to retrieve preference
-     * @return project preferences data or global settings preference if project if null
+     * @return project preferences data or global settings preference if project is null
      */
     public Preferences getPreferences(Project project);
 

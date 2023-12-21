@@ -19,17 +19,18 @@
  */
 package com.github.philippefichet.sonarlint4netbeans.remote.configuration;
 
+import com.github.philippefichet.sonarlint4netbeans.SonarLintDataManager;
 import java.io.File;
 import java.util.Map;
 import java.util.Optional;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRepository;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -54,7 +55,8 @@ public class SonarLintRemoteProjectConfiguration {
     }
 
     public static SonarLintRemoteProjectConfiguration fromProject(Project project) {
-        Preferences preferences = ProjectUtils.getPreferences(project, SonarLintRemoteProjectConfiguration.class, true);
+        SonarLintDataManager sonarLintDataManager = Lookup.getDefault().lookup(SonarLintDataManager.class);
+        Preferences preferences = sonarLintDataManager.getRemoteConfigurationPreferences(project);
         return new SonarLintRemoteProjectConfiguration(
             project,
             preferences.get(PROP_CONNECTION_ID, null),
@@ -66,6 +68,7 @@ public class SonarLintRemoteProjectConfiguration {
 
     public static SonarLintRemoteProjectConfiguration fromProject(Project project, String connectionId, String projectKey, String organization) {
         File projectDir = FileUtil.toFile(project.getProjectDirectory());
+        // TODO
         GitRepository instance = GitRepository.getInstance(projectDir);
         Map<String, GitBranch> branches = null;
         try {
@@ -82,7 +85,8 @@ public class SonarLintRemoteProjectConfiguration {
     }
 
     public static void save(Project project, String sonarLintRemoteConnectionId, String projectKey, String organization) {
-        Preferences preferences = ProjectUtils.getPreferences(project, SonarLintRemoteProjectConfiguration.class, true);
+        SonarLintDataManager sonarLintDataManager = Lookup.getDefault().lookup(SonarLintDataManager.class);
+        Preferences preferences = sonarLintDataManager.getRemoteConfigurationPreferences(project);
         preferences.put(PROP_CONNECTION_ID, sonarLintRemoteConnectionId);
         preferences.put(PROP_PROJECT_KEY, projectKey);
         preferences.put(PROP_ORGANIZATION, organization);

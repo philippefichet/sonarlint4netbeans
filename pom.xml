@@ -106,6 +106,11 @@
                             <name>sonarlint4netbeans.test.skip.javascript</name>
                             <value>${sonarlint4netbeans.test.skip.javascript}</value>
                         </property>
+                        <!-- For test with real sonarcloud calls -->
+                        <property>
+                            <name>sonarlint4netbeans.test.remote.project-maven1.token</name>
+                            <value>${sonarlint4netbeans.test.remote.project-maven1.token}</value>
+                        </property>
                     </systemProperties>
                     <!-- https://maven.apache.org/surefire/maven-surefire-plugin/examples/junit-platform.html#surefire-extensions-and-reports-configuration-for-displayname -->
                     <!-- Surefire Extensions and Reports Configuration for @DisplayName -->
@@ -129,11 +134,6 @@
                         <usePhrasedClassNameInTestCaseSummary>true</usePhrasedClassNameInTestCaseSummary>
                     </statelessTestsetInfoReporter>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>3.2.2</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -516,5 +516,8 @@
         <surefire.reportFormat>plain</surefire.reportFormat>
         <!-- to use friends org.netbeans.modules.git -->
         <maven.nbm.verify>warn</maven.nbm.verify>
+        <sonarlint4netbeans.test.remote.project-maven1.token>
+            ${env.SONARLINT4NETBEANS_TEST_REMOTE_PROJECT_MAVEN1_TOKEN}
+        </sonarlint4netbeans.test.remote.project-maven1.token>
     </properties>
 </project>
