@@ -194,7 +194,7 @@ public class SonarLintEngineImplJavascriptPluginTest {
                 SonarLintEngineTestConfiguration.builder()
                 .description("sonarlint-example.css with rule css:S1116 to check one issue on line \"4\"")
                 .requirePlugin("javascript")
-                .enabledLanguages(Language.JS)
+                .enabledLanguages(Language.CSS)
                 .requireNodeJS()
                 .includeRules("css:S1116")
                 .addClientInputFile(new File("./src/test/resources/sonarlint-example.css"))

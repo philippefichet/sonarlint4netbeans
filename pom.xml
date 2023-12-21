@@ -85,33 +85,15 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.2</version>
                 <configuration>
-                    <systemProperties>
-                        <property>
-                            <name>java.util.logging.config.file</name>
-                            <value>./src/test/resources/logging.properties</value>
-                        </property>
-                        <property>
-                            <name>file.encoding</name>
-                            <value>UTF-8</value>
-                        </property>
-                        <property>
-                            <name>junit.jupiter.extensions.autodetection.enabled</name>
-                            <value>true</value>
-                        </property>
-                        <property>
-                            <name>hasNodeJSRuntime</name>
-                            <value>${hasNodeJSRuntime}</value>
-                        </property>
-                        <property>
-                            <name>sonarlint4netbeans.test.skip.javascript</name>
-                            <value>${sonarlint4netbeans.test.skip.javascript}</value>
-                        </property>
+                    <systemPropertyVariables>
+                        <java.util.logging.config.file>./src/test/resources/logging.properties</java.util.logging.config.file>
+                        <file.encoding>UTF-8</file.encoding>
+                        <junit.jupiter.extensions.autodetection.enabled>true</junit.jupiter.extensions.autodetection.enabled>
+                        <hasNodeJSRuntime>${hasNodeJSRuntime}</hasNodeJSRuntime>
+                        <sonarlint4netbeans.test.skip.javascript>${sonarlint4netbeans.test.skip.javascript}</sonarlint4netbeans.test.skip.javascript>
                         <!-- For test with real sonarcloud calls -->
-                        <property>
-                            <name>sonarlint4netbeans.test.remote.project-maven1.token</name>
-                            <value>${sonarlint4netbeans.test.remote.project-maven1.token}</value>
-                        </property>
-                    </systemProperties>
+                        <sonarlint4netbeans.test.remote.project-maven1.token>${sonarlint4netbeans.test.remote.project-maven1.token}</sonarlint4netbeans.test.remote.project-maven1.token>
+                    </systemPropertyVariables>
                     <!-- https://maven.apache.org/surefire/maven-surefire-plugin/examples/junit-platform.html#surefire-extensions-and-reports-configuration-for-displayname -->
                     <!-- Surefire Extensions and Reports Configuration for @DisplayName -->
                     <statelessTestsetReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
