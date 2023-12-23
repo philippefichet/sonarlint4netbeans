@@ -75,7 +75,6 @@ public class NewClass {
      * Use "sonar.java.libraries=${projectDir}/target/lib/*.jar" and 
      * java:S2629 must be enabled and slf4j-api-1.7.36 copied in target/lib
      * to show an issue
-     * Or cloud analyse
      */
     public static void checkJavaS2629WithExtraPropertiesAndProjectDir(String arg1) {
         org.slf4j.LoggerFactory.getLogger("Testing").debug("message: " + arg1);

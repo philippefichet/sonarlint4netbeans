@@ -57,23 +57,35 @@ import org.sonarsource.sonarlint.core.commons.RuleType;
     disabledReason = "Disabled because require token to check remote issue on sample project"
 )
 public class SonarLintRemoteEngineTest {
-    
+
     private final Project sonarlint4netbeansSampleMavenProject = new ProjectMockedBuilder()
-        .projectDirectory(new File("./src/test/samples/sonarlint4netbeans-sample-mavenproject/branch-main"))
+        .projectDirectory(new File("./src/test/samples/sonarlint4netbeans-sample-mavenproject/branch-master"))
         .build();
-    
+
     private final File sonarlint4netbeansSampleMavenProjectNewClass =
-        new File("./src/test/samples/sonarlint4netbeans-sample-mavenproject/branch-main/src/main/java/com/mycompany/mavenproject1/NewClass.java");
-    
+        new File("./src/test/samples/sonarlint4netbeans-sample-mavenproject/branch-master/src/main/java/com/mycompany/mavenproject1/NewClass.java");
+
+    private final Project sonarlint4netbeansSampleMavenProjectWithLocalChange = new ProjectMockedBuilder()
+        .projectDirectory(new File("./src/test/samples/sonarlint4netbeans-sample-mavenproject/branch-master-with-local-change"))
+        .build();
+
+    private final File sonarlint4netbeansSampleMavenProjectNewClassWithLocalChange =
+        new File("./src/test/samples/sonarlint4netbeans-sample-mavenproject/branch-master-with-local-change/src/main/java/com/mycompany/mavenproject1/NewClass.java");
+
     @RegisterExtension
     SonarLintLookupMockedExtension sonarLintLookupMockedExtension = SonarLintLookupMockedExtension.builder()
         .logCall()
         .mockLookupMethodWith(
             SonarLintDataManager.class,
             new SonarLintDataManagerMockedBuilder()
+            // sonarlint4netbeans-sample-mavenproject / master branch
             .createPreferences(sonarlint4netbeansSampleMavenProject)
             .preferencesScope(sonarlint4netbeansSampleMavenProject, SonarLintProjectPreferenceScope.REMOTE)
             .addFileToProject(sonarlint4netbeansSampleMavenProject, sonarlint4netbeansSampleMavenProjectNewClass)
+            // sonarlint4netbeans-sample-mavenproject / master branch / local change
+            .createPreferences(sonarlint4netbeansSampleMavenProjectWithLocalChange)
+            .preferencesScope(sonarlint4netbeansSampleMavenProjectWithLocalChange, SonarLintProjectPreferenceScope.REMOTE)
+            .addFileToProject(sonarlint4netbeansSampleMavenProjectWithLocalChange, sonarlint4netbeansSampleMavenProjectNewClassWithLocalChange)
             .build()
         ).mockLookupMethodWith(Project.class, Mockito.mock(Project.class))
         .mockLookupMethodWith(SonarLintRemoteConnectionConfigurationManagement.class, Mockito.mock(SonarLintRemoteConnectionConfigurationManagement.class))
@@ -114,6 +126,7 @@ public class SonarLintRemoteEngineTest {
         sync.getTask().waitFinished(30_000);
         List<Issue> issues = SonarLintUtils.analyze(FileUtil.toFileObject(sonarlint4netbeansSampleMavenProjectNewClass), null);
         Assertions.assertThat(issues)
+        .filteredOn("ruleKey", "java:S2629")
         .extracting(DefaultIssueTestImpl::toTuple)
         .containsAnyOf(
             new DefaultIssueTestImpl.Builder()
@@ -122,6 +135,54 @@ public class SonarLintRemoteEngineTest {
             .ruleKey("java:S2629")
             .startLine(80)
             .endLine(80)
+            .buildTuple()
+        );
+    }
+
+    @Test
+    public void remoteWithLocalChange() throws InterruptedException, IOException {
+        SonarLintRemoteConnectionConfigurationManagement sonarLintRemoteConnectionConfigurationManagement = Lookup.getDefault().lookup(SonarLintRemoteConnectionConfigurationManagement.class);
+        String connectionId = "testing-connection-id-sonarcloud";
+        String projectKey = "philippefichet_sonarlint4netbeans-sample-mavenproject";
+        String branchName = "master";
+        String baseURL = "https://sonarcloud.io";
+        boolean isSonarCloud = true;
+        String organization = "philippefichet";
+        String login = System.getProperty("sonarlint4netbeans.test.remote.project-maven1.token");
+        SonarLintRemoteConnectionConfiguration sonarLintRemoteConnectionConfiguration = new SonarLintRemoteConnectionConfiguration(
+            connectionId,
+            baseURL,
+            isSonarCloud
+        );
+        Mockito.when(sonarLintRemoteConnectionConfigurationManagement.getAuthTokenFromConnectionId(connectionId))
+            .thenReturn(Optional.of(login));
+        Mockito.when(sonarLintRemoteConnectionConfigurationManagement.getSonarLintConnectionConfigurationFromConnectionId(connectionId))
+            .thenReturn(Optional.of(sonarLintRemoteConnectionConfiguration));
+        
+        SonarLintRemoteEngine remoteEngine = new SonarLintRemoteEngine(new Language[] {Language.JAVA});
+        SonarLintRemoteProjectConfiguration sonarLintRemoteProjectConfiguration = new SonarLintRemoteProjectConfiguration(
+            sonarlint4netbeansSampleMavenProjectWithLocalChange,
+            connectionId,
+            projectKey,
+            organization,
+            branchName
+        );
+        SonarLintRemoteProjectConfiguration.save(sonarlint4netbeansSampleMavenProjectWithLocalChange, connectionId, projectKey, organization);
+        TaskWrapper sync = remoteEngine.launchResyncTask(
+            sonarLintRemoteProjectConfiguration
+        );
+        sync.getTask().waitFinished(30_000);
+        List<Issue> issues = SonarLintUtils.analyze(FileUtil.toFileObject(sonarlint4netbeansSampleMavenProjectNewClassWithLocalChange), null);
+        Assertions.assertThat(issues)
+        .filteredOn("ruleKey", "java:S2629")
+        .extracting(DefaultIssueTestImpl::toTuple)
+        .containsAnyOf(
+            new DefaultIssueTestImpl.Builder()
+            .severity(IssueSeverity.MAJOR)
+            .type(RuleType.CODE_SMELL)
+            .ruleKey("java:S2629")
+            .startLine(82)
+            .endLine(82)
             .buildTuple()
         );
     }

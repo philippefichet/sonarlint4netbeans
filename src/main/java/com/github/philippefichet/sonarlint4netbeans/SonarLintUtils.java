@@ -65,7 +65,6 @@ import org.sonarsource.nodejs.NodeCommand;
 import org.sonarsource.nodejs.NodeCommandBuilderImpl;
 import org.sonarsource.nodejs.NodeCommandException;
 import org.sonarsource.sonarlint.core.analysis.api.AnalysisResults;
-import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
 import org.sonarsource.sonarlint.core.client.api.common.RuleDetails;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.IssueListener;
@@ -268,74 +267,20 @@ public final class SonarLintUtils {
         Path path = project == null
             ? toFile.getParentFile().toPath()
             : FileUtil.toFile(project.getProjectDirectory()).toPath();
-        List<ClientInputFile> clientInputFiles = new ArrayList<>();
         boolean applyTestRules = useTestRules && dataManager.isTest(toFile);
         String relativizeToFile = path.relativize(toFile.toPath()).toString();
-        clientInputFiles.add(new FSClientInputFile(
+        FSClientInputFile clientInputFile = new FSClientInputFile(
             contentToAnalyze == null ? new String(Files.readAllBytes(toFile.toPath())) : contentToAnalyze,
             toFile.toPath().toAbsolutePath(),
             relativizeToFile,
             applyTestRules,
-            FileEncodingQuery.getEncoding(fileObject))
+            FileEncodingQuery.getEncoding(fileObject)
         );
 
         SonarLintProjectPreferenceScope preferencesScope = dataManager.getPreferencesScope(project);
         String sonarLintHome = System.getProperty("user.home") + File.separator + ".sonarlint4netbeans";
         if (preferencesScope == SonarLintProjectPreferenceScope.REMOTE) {
-            SonarLintRemoteEngine remoteEngine = Lookup.getDefault().lookup(SonarLintRemoteEngine.class);
-            SonarLintRemoteProjectConfiguration sonarLintRemoteProjectConfiguration = SonarLintRemoteProjectConfiguration.fromProject(project);
-            ConnectedAnalysisConfiguration build = ConnectedAnalysisConfiguration.builder()
-                .setProjectKey(sonarLintRemoteProjectConfiguration.getProjectKey())
-                .addInputFiles(clientInputFiles)
-                .setBaseDir(new File(sonarLintHome).toPath())
-                // TODO Remove dependency with sonarLintEngine
-                .putAllExtraProperties(getMergedExtraPropertiesAndReplaceVariables(sonarLintEngine, project))
-                .build();
-            List<Issue> listener = new ArrayList<>();
-            AnalysisResults remoteAnalyze = remoteEngine.analyze(
-                sonarLintRemoteProjectConfiguration,
-                build,
-                listener::add,
-                (String formattedMessage, ClientLogOutput.Level level) -> {
-                    System.out.println(level + " | " + formattedMessage);
-                },
-                new ClientProgressMonitor() {
-                    @Override
-                    public boolean isCanceled() {
-                        return false;
-                    }
-
-                    @Override
-                    public void setMessage(String msg) {
-                        LOG.info("ClientProgressMonitor.setMessage(\"" + msg + "\")");
-                    }
-
-                    @Override
-                    public void setFraction(float fraction) {
-                        LOG.info("ClientProgressMonitor.setFraction(" + fraction + ")");
-                    }
-
-                    @Override
-                    public void setIndeterminate(boolean indeterminate) {
-                        LOG.info("ClientProgressMonitor.setIndeterminate(" + indeterminate + ")");
-                    }
-                }
-            );
-
-            List<ServerIssue> serverIssues = remoteEngine.getServerIssues(sonarLintRemoteProjectConfiguration, relativizeToFile);
-            serverIssues.stream()
-                .map(
-                    s ->
-                        new SonarLintIssueWrapperForServerIssue(
-                        clientInputFiles.get(0),
-                        s,
-                            sonarLintEngine.getRuleDetails(s.getRuleKey())
-                    )
-                )
-                .forEach(listener::add);
-            LOG.fine(() -> "Analyze (Remote) result for file \"" + fileObject.getPath() + "\" : " + remoteAnalyze);
-            
-            return listener;
+            return analyzeRemote(sonarLintEngine, project, clientInputFile, sonarLintHome);
         }
 
         Project projectForRules = SonarLintDataManagerUtils.getProjectForAnalyse(dataManager, fileObject);
@@ -346,7 +291,7 @@ public final class SonarLintUtils {
         StandaloneAnalysisConfiguration standaloneAnalysisConfiguration =
             StandaloneAnalysisConfiguration.builder()
             .setBaseDir(new File(sonarLintHome).toPath())
-            .addInputFiles(clientInputFiles)
+            .addInputFiles(clientInputFile)
             .addExcludedRules(excludedRules)
             .addIncludedRules(includedRules)
             .addRuleParameters(sonarLintEngine.getRuleParameters(projectForRules))
@@ -365,6 +310,61 @@ public final class SonarLintUtils {
         LOG.info("End analyze");
         LOG.fine(() -> "Analyze result for file \"" + fileObject.getPath() + "\" : " + analyze);
         return issues;
+    }
+
+    private static List<Issue> analyzeRemote(SonarLintEngine sonarLintEngine, Project project, FSClientInputFile clientInputFile, String sonarLintHome) {
+        SonarLintRemoteEngine remoteEngine = Lookup.getDefault().lookup(SonarLintRemoteEngine.class);
+        SonarLintRemoteProjectConfiguration sonarLintRemoteProjectConfiguration = SonarLintRemoteProjectConfiguration.fromProject(project);
+        ConnectedAnalysisConfiguration build = ConnectedAnalysisConfiguration.builder()
+            .setProjectKey(sonarLintRemoteProjectConfiguration.getProjectKey())
+            .addInputFiles(clientInputFile)
+            .setBaseDir(new File(sonarLintHome).toPath())
+            .build();
+        List<Issue> listener = new ArrayList<>();
+        AnalysisResults remoteAnalyze = remoteEngine.analyze(
+            sonarLintRemoteProjectConfiguration,
+            build,
+            listener::add,
+            (String formattedMessage, ClientLogOutput.Level level) -> {
+                System.out.println(level + " | " + formattedMessage);
+            },
+            new ClientProgressMonitor() {
+                @Override
+                public boolean isCanceled() {
+                    return false;
+                }
+                
+                @Override
+                public void setMessage(String msg) {
+                    LOG.info("ClientProgressMonitor.setMessage(\"" + msg + "\")");
+                }
+                
+                @Override
+                public void setFraction(float fraction) {
+                    LOG.info("ClientProgressMonitor.setFraction(" + fraction + ")");
+                }
+                
+                @Override
+                public void setIndeterminate(boolean indeterminate) {
+                    LOG.info("ClientProgressMonitor.setIndeterminate(" + indeterminate + ")");
+                }
+            }
+        );
+
+        List<ServerIssue> serverIssues = remoteEngine.getServerIssues(sonarLintRemoteProjectConfiguration, clientInputFile.relativePath());
+        serverIssues.stream()
+            .map(
+                s -> 
+                    new SonarLintIssueWrapperForServerIssue(
+                        clientInputFile,
+                        s,
+                        // TODO replace by a sonarcloud/sonarqube rules store
+                        sonarLintEngine.getRuleDetails(s.getRuleKey())
+                    )
+            )
+            .forEach(listener::add);
+        LOG.fine(() -> "Analyze (Remote) result for file \"" + clientInputFile.uri() + "\" : " + remoteAnalyze);
+        return listener;
     }
 
     /**

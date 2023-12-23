@@ -19,6 +19,7 @@
  */
 package com.github.philippefichet.sonarlint4netbeans.remote.wrapper;
 
+import com.github.philippefichet.sonarlint4netbeans.FSClientInputFile;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +35,9 @@ import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 import org.sonarsource.sonarlint.core.commons.RuleType;
 import org.sonarsource.sonarlint.core.commons.SoftwareQuality;
 import org.sonarsource.sonarlint.core.commons.TextRange;
+import org.sonarsource.sonarlint.core.commons.TextRangeWithHash;
 import org.sonarsource.sonarlint.core.commons.VulnerabilityProbability;
+import org.sonarsource.sonarlint.core.serverconnection.issues.FileLevelServerIssue;
 import org.sonarsource.sonarlint.core.serverconnection.issues.LineLevelServerIssue;
 import org.sonarsource.sonarlint.core.serverconnection.issues.RangeLevelServerIssue;
 import org.sonarsource.sonarlint.core.serverconnection.issues.ServerIssue;
@@ -46,13 +49,37 @@ import org.sonarsource.sonarlint.core.serverconnection.issues.ServerIssue;
 public class SonarLintIssueWrapperForServerIssue implements Issue {
 
     private final ServerIssue serverIssue;
-    private final ClientInputFile clientInputFile;
+    private final FSClientInputFile clientInputFile;
     private final Optional<StandaloneRuleDetails> ruleDetails;
+    private final Integer startLine;
+    private final Integer endLine;
 
-    public SonarLintIssueWrapperForServerIssue(ClientInputFile clientInputFile, ServerIssue serverIssue, Optional<StandaloneRuleDetails> ruleDetails) {
+    public SonarLintIssueWrapperForServerIssue(FSClientInputFile clientInputFile, ServerIssue serverIssue, Optional<StandaloneRuleDetails> ruleDetails) {
         this.clientInputFile = clientInputFile;
         this.serverIssue = serverIssue;
         this.ruleDetails = ruleDetails;
+
+        if (serverIssue instanceof FileLevelServerIssue) {
+            FileLevelServerIssue flsi = (FileLevelServerIssue)serverIssue;
+            startLine = null;
+            endLine = null;
+        } else if (serverIssue instanceof LineLevelServerIssue) {
+            LineLevelServerIssue llsi = (LineLevelServerIssue)serverIssue;
+            List<String> lineHashes = clientInputFile.getLineHashes();
+            // Naive implementation because of possible collision
+            // TODO improve search if possible (nearest line?)
+            int indexOf = lineHashes.indexOf(llsi.getLineHash()) + 1;
+            startLine = indexOf;
+            endLine = indexOf;
+        } else if (serverIssue instanceof RangeLevelServerIssue) {
+            RangeLevelServerIssue rlsi = (RangeLevelServerIssue)serverIssue;
+            TextRangeWithHash textRange = rlsi.getTextRange();
+            startLine = textRange.getStartLine();
+            endLine = textRange.getStartLine();
+        } else {
+            startLine = null;
+            endLine = null;
+        }
     }
 
     @Override
@@ -118,12 +145,7 @@ public class SonarLintIssueWrapperForServerIssue implements Issue {
 
     @Override
     public Integer getStartLine() {
-        if (serverIssue instanceof RangeLevelServerIssue) {
-            return ((RangeLevelServerIssue)serverIssue).getTextRange().getStartLine();
-        } else if(serverIssue instanceof LineLevelServerIssue){
-            return ((LineLevelServerIssue)serverIssue).getLine();
-        }
-        return null;
+        return startLine;
     }
 
     @Override
@@ -136,12 +158,7 @@ public class SonarLintIssueWrapperForServerIssue implements Issue {
 
     @Override
     public Integer getEndLine() {
-        if (serverIssue instanceof RangeLevelServerIssue) {
-            return ((RangeLevelServerIssue)serverIssue).getTextRange().getEndLine();
-        } else if(serverIssue instanceof LineLevelServerIssue){
-            return ((LineLevelServerIssue)serverIssue).getLine();
-        }
-        return null;
+        return endLine;
     }
 
     @Override
@@ -163,6 +180,4 @@ public class SonarLintIssueWrapperForServerIssue implements Issue {
         // TODO
         return Collections.emptyMap();
     }
-    
-    
 }
