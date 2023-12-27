@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package com.github.philippefichet.sonarlint4netbeans;
+package com.github.philippefichet.sonarlint4netbeans.issue;
 
 import java.util.List;
 import java.util.Map;

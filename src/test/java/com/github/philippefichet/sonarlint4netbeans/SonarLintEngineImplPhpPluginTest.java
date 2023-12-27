@@ -19,6 +19,7 @@
  */
 package com.github.philippefichet.sonarlint4netbeans;
 
+import com.github.philippefichet.sonarlint4netbeans.issue.DefaultIssueTestImpl;
 import com.github.philippefichet.sonarlint4netbeans.junit.jupiter.extension.SonarLintLookupMockedExtension;
 import java.io.File;
 import java.io.IOException;

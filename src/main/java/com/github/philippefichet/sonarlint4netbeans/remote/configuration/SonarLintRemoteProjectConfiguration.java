@@ -20,16 +20,10 @@
 package com.github.philippefichet.sonarlint4netbeans.remote.configuration;
 
 import com.github.philippefichet.sonarlint4netbeans.SonarLintDataManager;
-import java.io.File;
-import java.util.Map;
+import com.github.philippefichet.sonarlint4netbeans.git.GitUtils;
 import java.util.Optional;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
-import org.netbeans.libs.git.GitBranch;
-import org.netbeans.libs.git.GitException;
-import org.netbeans.libs.git.GitRepository;
-import org.netbeans.libs.git.progress.ProgressMonitor;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
 /**
@@ -67,20 +61,12 @@ public class SonarLintRemoteProjectConfiguration {
     }
 
     public static SonarLintRemoteProjectConfiguration fromProject(Project project, String connectionId, String projectKey, String organization) {
-        File projectDir = FileUtil.toFile(project.getProjectDirectory());
-        // TODO
-        GitRepository instance = GitRepository.getInstance(projectDir);
-        Map<String, GitBranch> branches = null;
-        try {
-            branches = instance.createClient().getBranches(false, new ProgressMonitor.DefaultProgressMonitor());
-        } catch (GitException ex) {
-        }
         return new SonarLintRemoteProjectConfiguration(
             project,
             connectionId,
             projectKey,
             organization,
-            branches == null ? null : branches.values().iterator().next().getName()
+            GitUtils.getProjectActiveBranch(project.getProjectDirectory()).orElse(null)
         );
     }
 
@@ -96,19 +82,7 @@ public class SonarLintRemoteProjectConfiguration {
         if (activeBranch != null) {
             return Optional.of(activeBranch);
         }
-        File projectDir = FileUtil.toFile(project.getProjectDirectory());
-
-        GitRepository instance = GitRepository.getInstance(projectDir);
-        Map<String, GitBranch> branches = null;
-        try {
-            branches = instance.createClient().getBranches(false, new ProgressMonitor.DefaultProgressMonitor());
-        } catch (GitException ex) {
-            // Exceptions.printStackTrace(ex);
-        }
-        if (branches != null) {
-            return Optional.of(branches.values().iterator().next().getName());
-        }
-        return Optional.empty();
+        return GitUtils.getProjectActiveBranch(project.getProjectDirectory());
     }
 
     public String getConnectionId() {

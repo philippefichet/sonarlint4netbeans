@@ -19,11 +19,12 @@
  */
 package com.github.philippefichet.sonarlint4netbeans.remote;
 
-import com.github.philippefichet.sonarlint4netbeans.DefaultIssueTestImpl;
 import com.github.philippefichet.sonarlint4netbeans.ProjectMockedBuilder;
 import com.github.philippefichet.sonarlint4netbeans.SonarLintDataManager;
 import com.github.philippefichet.sonarlint4netbeans.SonarLintDataManagerMockedBuilder;
 import com.github.philippefichet.sonarlint4netbeans.SonarLintUtils;
+import com.github.philippefichet.sonarlint4netbeans.issue.DefaultIssueTestImpl;
+import com.github.philippefichet.sonarlint4netbeans.issue.IssueTestFactory;
 import com.github.philippefichet.sonarlint4netbeans.junit.jupiter.extension.SonarLintLookupMockedExtension;
 import com.github.philippefichet.sonarlint4netbeans.project.SonarLintProjectPreferenceScope;
 import com.github.philippefichet.sonarlint4netbeans.remote.configuration.SonarLintRemoteConnectionConfiguration;
@@ -43,9 +44,7 @@ import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
-import org.sonarsource.sonarlint.core.commons.IssueSeverity;
 import org.sonarsource.sonarlint.core.commons.Language;
-import org.sonarsource.sonarlint.core.commons.RuleType;
 
 /**
  *
@@ -126,16 +125,23 @@ public class SonarLintRemoteEngineTest {
         sync.getTask().waitFinished(30_000);
         List<Issue> issues = SonarLintUtils.analyze(FileUtil.toFileObject(sonarlint4netbeansSampleMavenProjectNewClass), null);
         Assertions.assertThat(issues)
-        .filteredOn("ruleKey", "java:S2629")
         .extracting(DefaultIssueTestImpl::toTuple)
-        .containsAnyOf(
-            new DefaultIssueTestImpl.Builder()
-            .severity(IssueSeverity.MAJOR)
-            .type(RuleType.CODE_SMELL)
-            .ruleKey("java:S2629")
-            .startLine(80)
-            .endLine(80)
-            .buildTuple()
+        .containsExactlyInAnyOrder(
+            // Local issue
+            IssueTestFactory.javaS115(26, 31, 56).buildTuple(),
+            IssueTestFactory.javaS1133(33, 16, 32).buildTuple(),
+            IssueTestFactory.javaS1186(33, 16, 32).buildTuple(),
+            IssueTestFactory.javaS100(35, 16, 47).buildTuple(),
+            IssueTestFactory.javaS1186(35, 16, 47).buildTuple(),
+            IssueTestFactory.javaS1134(38, 0, 17).buildTuple(),
+            IssueTestFactory.javaS2168(41, 12, 24).buildTuple(),
+            IssueTestFactory.javaS106(54, 16, 26).buildTuple(),
+            IssueTestFactory.javaS1172(60, 44, 50).buildTuple(),
+            IssueTestFactory.javaS107(60, 23, 39).buildTuple(),
+            IssueTestFactory.javaS106(61, 8, 18).buildTuple(),
+            // Server issue
+            IssueTestFactory.javaS2629(80).buildTuple(),
+            IssueTestFactory.javaS3457(80).buildTuple()
         );
     }
 
@@ -176,14 +182,6 @@ public class SonarLintRemoteEngineTest {
         Assertions.assertThat(issues)
         .filteredOn("ruleKey", "java:S2629")
         .extracting(DefaultIssueTestImpl::toTuple)
-        .containsAnyOf(
-            new DefaultIssueTestImpl.Builder()
-            .severity(IssueSeverity.MAJOR)
-            .type(RuleType.CODE_SMELL)
-            .ruleKey("java:S2629")
-            .startLine(82)
-            .endLine(82)
-            .buildTuple()
-        );
+        .containsAnyOf(IssueTestFactory.javaS2629(82).buildTuple());
     }
 }

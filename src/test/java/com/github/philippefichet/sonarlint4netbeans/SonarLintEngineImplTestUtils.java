@@ -19,6 +19,7 @@
  */
 package com.github.philippefichet.sonarlint4netbeans;
 
+import com.github.philippefichet.sonarlint4netbeans.issue.DefaultIssueTestImpl;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;

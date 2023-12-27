@@ -19,10 +19,11 @@
  */
 package com.github.philippefichet.sonarlint4netbeans;
 
+import com.github.philippefichet.sonarlint4netbeans.issue.IssueUtils;
+import com.github.philippefichet.sonarlint4netbeans.issue.IssueWrapperForServerIssue;
 import com.github.philippefichet.sonarlint4netbeans.project.SonarLintProjectPreferenceScope;
 import com.github.philippefichet.sonarlint4netbeans.remote.SonarLintRemoteEngine;
 import com.github.philippefichet.sonarlint4netbeans.remote.configuration.SonarLintRemoteProjectConfiguration;
-import com.github.philippefichet.sonarlint4netbeans.remote.wrapper.SonarLintIssueWrapperForServerIssue;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -350,18 +351,20 @@ public final class SonarLintUtils {
                 }
             }
         );
-
         List<ServerIssue> serverIssues = remoteEngine.getServerIssues(sonarLintRemoteProjectConfiguration, clientInputFile.relativePath());
         serverIssues.stream()
-            .map(
-                s -> 
-                    new SonarLintIssueWrapperForServerIssue(
+            .map((ServerIssue s) -> 
+                    new IssueWrapperForServerIssue(
                         clientInputFile,
                         s,
                         // TODO replace by a sonarcloud/sonarqube rules store
                         sonarLintEngine.getRuleDetails(s.getRuleKey())
                     )
             )
+            // Remove server issue not found in local change
+            .filter((IssueWrapperForServerIssue s) -> s.getStartLine() != -1)
+            // Add only no local issue
+            .filter((IssueWrapperForServerIssue s) -> !IssueUtils.containsSimilarIssue(listener, s))
             .forEach(listener::add);
         LOG.fine(() -> "Analyze (Remote) result for file \"" + clientInputFile.uri() + "\" : " + remoteAnalyze);
         return listener;

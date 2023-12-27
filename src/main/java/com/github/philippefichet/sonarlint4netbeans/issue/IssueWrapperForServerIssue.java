@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
  * MA 02110-1301  USA
  */
-package com.github.philippefichet.sonarlint4netbeans.remote.wrapper;
+package com.github.philippefichet.sonarlint4netbeans.issue;
 
 import com.github.philippefichet.sonarlint4netbeans.FSClientInputFile;
 import java.util.Collections;
@@ -46,7 +46,7 @@ import org.sonarsource.sonarlint.core.serverconnection.issues.ServerIssue;
  *
  * @author FICHET Philippe &lt;philippe.fichet@laposte.net&gt;
  */
-public class SonarLintIssueWrapperForServerIssue implements Issue {
+public class IssueWrapperForServerIssue implements Issue {
 
     private final ServerIssue serverIssue;
     private final FSClientInputFile clientInputFile;
@@ -54,7 +54,7 @@ public class SonarLintIssueWrapperForServerIssue implements Issue {
     private final Integer startLine;
     private final Integer endLine;
 
-    public SonarLintIssueWrapperForServerIssue(FSClientInputFile clientInputFile, ServerIssue serverIssue, Optional<StandaloneRuleDetails> ruleDetails) {
+    public IssueWrapperForServerIssue(FSClientInputFile clientInputFile, ServerIssue serverIssue, Optional<StandaloneRuleDetails> ruleDetails) {
         this.clientInputFile = clientInputFile;
         this.serverIssue = serverIssue;
         this.ruleDetails = ruleDetails;

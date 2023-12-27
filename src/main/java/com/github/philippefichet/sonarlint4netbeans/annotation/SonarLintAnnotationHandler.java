@@ -23,6 +23,7 @@ import com.github.philippefichet.sonarlint4netbeans.SonarLintDataManager;
 import com.github.philippefichet.sonarlint4netbeans.SonarLintDataManagerUtils;
 import com.github.philippefichet.sonarlint4netbeans.SonarLintEngine;
 import com.github.philippefichet.sonarlint4netbeans.SonarLintUtils;
+import com.github.philippefichet.sonarlint4netbeans.issue.IssueWrapperForServerIssue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -108,7 +109,7 @@ public final class SonarLintAnnotationHandler {
         }
 
         List<Issue> issues = SonarLintUtils.analyze(fileObject, textToAnalyze);
-        issues.forEach(sue -> {
+        issues.forEach((Issue sue) -> {
             Integer startLine = sue.getStartLine();
             Integer endLine = sue.getEndLine();
             Integer startLineOffset = sue.getStartLineOffset();
@@ -130,10 +131,15 @@ public final class SonarLintAnnotationHandler {
             int nbEndLineOffset = NbDocument.findLineOffset(editorCookie.getDocument(), endLine - 1);
             int endOffset = nbEndLineOffset + endLineOffset;
             int length = endOffset - startOffset;
+            SonarLintAnnotation.Origin origin = 
+                sue instanceof IssueWrapperForServerIssue
+                    ? SonarLintAnnotation.Origin.SONARCLOUD
+                    : SonarLintAnnotation.Origin.SONARLINT;
             standaloneSonarLintEngine.getRuleDetails(sue.getRuleKey()).ifPresent(
                 (StandaloneRuleDetails  ruleDetails) ->
                 currentAnnocationOnFileObject.add(
                     new SonarLintAnnotation(
+                        origin,
                         sue.getRuleKey(),
                         ruleDetails.getName(),
                         SonarLintUtils.extractRuleParameters(standaloneSonarLintEngine, sue.getRuleKey(), projectForAnalyse),

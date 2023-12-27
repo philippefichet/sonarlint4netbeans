@@ -217,8 +217,6 @@ public final class SonarLintRemoteEngine {
         );
         
         ConnectedSonarLintEngineImpl connectedSonarLintEngineImpl = getConnectedSonarLintEngineImpl(sonarLintRemoteProjectConfiguration);
-//        connectedSonarLintEngineImpl.getActiveRuleDetails(endpoint, client, relativizePathToAnalyze, relativizePathToAnalyze);
-//        connectedSonarLintEngineImpl.downloadAllServerIssuesForFile(endpoint, client, projectBinding, relativizePathToAnalyze, relativizePathToAnalyze, monitor);AllServerIssues(endpoint, client, relativizePathToAnalyze, relativizePathToAnalyze, monitor);
         return connectedSonarLintEngineImpl.getServerIssues(
             projectBinding,
             findBestBranch(connectedSonarLintEngineImpl, sonarLintRemoteProjectConfiguration),

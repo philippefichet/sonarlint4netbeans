@@ -433,12 +433,6 @@
             <artifactId>org-netbeans-modules-keyring</artifactId>
             <version>${org.netbeans.version}</version>
         </dependency>
-        <!-- TODO Voir pour gérer directement git -->
-        <dependency>
-            <groupId>org.netbeans.api</groupId>
-            <artifactId>org-netbeans-libs-git</artifactId>
-            <version>${org.netbeans.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -496,8 +490,6 @@
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <!-- For most test result detail -->
         <surefire.reportFormat>plain</surefire.reportFormat>
-        <!-- to use friends org.netbeans.modules.git -->
-        <maven.nbm.verify>warn</maven.nbm.verify>
         <sonarlint4netbeans.test.remote.project-maven1.token>
             ${env.SONARLINT4NETBEANS_TEST_REMOTE_PROJECT_MAVEN1_TOKEN}
         </sonarlint4netbeans.test.remote.project-maven1.token>
