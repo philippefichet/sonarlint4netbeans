@@ -7,7 +7,7 @@ on:
   push:
     branches:
       - master
-      - sonarcloud
+      - branch-*
   pull_request:
     types: [opened, synchronize, reopened]
 
