@@ -9,8 +9,7 @@ on:
       - master
       - sonarcloud
   pull_request:
-    branches:
-      - master
+    types: [opened, synchronize, reopened]
 
 jobs:
   build:
