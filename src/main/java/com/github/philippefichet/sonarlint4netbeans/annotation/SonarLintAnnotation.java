@@ -36,15 +36,32 @@ public class SonarLintAnnotation extends Annotation {
     public static final String ANNOTATION_TYPE_MAJOR = "com-github-philippefichet-sonarlint4netbeans-annotation-major";
     public static final String ANNOTATION_TYPE_CRITIAL = "com-github-philippefichet-sonarlint4netbeans-annotation-critical";
     public static final String ANNOTATION_TYPE_BLOCKER = "com-github-philippefichet-sonarlint4netbeans-annotation-blocker";
+    
+    public static final String ANNOTATION_TYPE_SONARCLOUD_GENERIC = "com-github-philippefichet-sonarlint4netbeans-annotation-sonarcloud-generic";
+    public static final String ANNOTATION_TYPE_SONARCLOUD_INFO = "com-github-philippefichet-sonarlint4netbeans-annotation-sonarcloud-info";
+    public static final String ANNOTATION_TYPE_SONARCLOUD_MINOR = "com-github-philippefichet-sonarlint4netbeans-annotation-sonarcloud-minor";
+    public static final String ANNOTATION_TYPE_SONARCLOUD_MAJOR = "com-github-philippefichet-sonarlint4netbeans-annotation-sonarcloud-major";
+    public static final String ANNOTATION_TYPE_SONARCLOUD_CRITIAL = "com-github-philippefichet-sonarlint4netbeans-annotation-sonarcloud-critical";
+    public static final String ANNOTATION_TYPE_SONARCLOUD_BLOCKER = "com-github-philippefichet-sonarlint4netbeans-annotation-sonarcloud-blocker";
+
     private final long startOffest;
     private final int length;
     private final String shortDescription;
     private final String ruleKey;
     private final String ruleName;
     private final IssueSeverity severity;
+    private final Origin origin;
+    
+    public enum Origin
+    {
+        SONARLINT,
+        SONARCLOUD,
+        SONARQUBE
+    }
 
-    public SonarLintAnnotation(String ruleKey, String ruleName, Map<StandaloneRuleParam, String> ruleParams, IssueSeverity severity, long startOffest, int length) {
+    public SonarLintAnnotation(Origin origin, String ruleKey, String ruleName, Map<StandaloneRuleParam, String> ruleParams, IssueSeverity severity, long startOffest, int length) {
         super();
+        this.origin = origin;
         this.startOffest = startOffest;
         this.length = length;
         this.ruleKey = ruleKey;
@@ -86,19 +103,36 @@ public class SonarLintAnnotation extends Annotation {
 
     @Override
     public String getAnnotationType() {
-        switch(severity.name()) {
-            case "INFO":
-                return ANNOTATION_TYPE_INFO;
-            case "MINOR":
-                return ANNOTATION_TYPE_MINOR;
-            case "MAJOR":
-                return ANNOTATION_TYPE_MAJOR;
-            case "CRITICAL":
-                return ANNOTATION_TYPE_CRITIAL;
-            case "BLOCKER":
-                return ANNOTATION_TYPE_BLOCKER;
-            default:
-                return ANNOTATION_TYPE_GENERIC;
+        if (origin == Origin.SONARCLOUD) {
+            switch(severity.name()) {
+                case "INFO":
+                    return ANNOTATION_TYPE_SONARCLOUD_INFO;
+                case "MINOR":
+                    return ANNOTATION_TYPE_SONARCLOUD_MINOR;
+                case "MAJOR":
+                    return ANNOTATION_TYPE_SONARCLOUD_MAJOR;
+                case "CRITICAL":
+                    return ANNOTATION_TYPE_SONARCLOUD_CRITIAL;
+                case "BLOCKER":
+                    return ANNOTATION_TYPE_SONARCLOUD_BLOCKER;
+                default:
+                    return ANNOTATION_TYPE_SONARCLOUD_GENERIC;
+            }
+        } else {
+            switch(severity.name()) {
+                case "INFO":
+                    return ANNOTATION_TYPE_INFO;
+                case "MINOR":
+                    return ANNOTATION_TYPE_MINOR;
+                case "MAJOR":
+                    return ANNOTATION_TYPE_MAJOR;
+                case "CRITICAL":
+                    return ANNOTATION_TYPE_CRITIAL;
+                case "BLOCKER":
+                    return ANNOTATION_TYPE_BLOCKER;
+                default:
+                    return ANNOTATION_TYPE_GENERIC;
+            }
         }
     }
 

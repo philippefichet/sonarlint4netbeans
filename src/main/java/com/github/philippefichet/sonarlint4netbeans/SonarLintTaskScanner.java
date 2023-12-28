@@ -19,6 +19,7 @@
  */
 package com.github.philippefichet.sonarlint4netbeans;
 
+import com.github.philippefichet.sonarlint4netbeans.issue.IssueWrapperForServerIssue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -47,7 +48,6 @@ public class SonarLintTaskScanner extends FileTaskScanner implements PropertyCha
 
     public SonarLintTaskScanner(String displayName, String description) {
         super(displayName, description, "Miscellaneous/SonarLint");
-
     }
 
     public static SonarLintTaskScanner create() {
@@ -70,10 +70,15 @@ public class SonarLintTaskScanner extends FileTaskScanner implements PropertyCha
             return analyze.stream()
                 .map(issue -> {
                     Integer startLine = issue.getStartLine();
+                    // TODO use rules store
                     Optional<StandaloneRuleDetails> ruleDetails = sonarLintEngine.getRuleDetails(issue.getRuleKey());
+                    String prefix = issue instanceof IssueWrapperForServerIssue
+                        ? "nb-sonarcloud-"
+                        : "nb-sonarlint-";
+                    String groupName = issue.getSeverity().name().toLowerCase();
                     return Task.create(
                         fileObject,
-                        "nb-sonarlint-" + issue.getSeverity().name().toLowerCase(),
+                        prefix + groupName,
                         issue.getRuleKey() + " = " + ruleDetails.map(StandaloneRuleDetails::getName).orElse("unknown"),
                         startLine == null ? 1 : startLine
                     );

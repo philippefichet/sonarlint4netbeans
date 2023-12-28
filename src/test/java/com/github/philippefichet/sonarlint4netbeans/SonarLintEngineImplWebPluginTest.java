@@ -19,6 +19,8 @@
  */
 package com.github.philippefichet.sonarlint4netbeans;
 
+import com.github.philippefichet.sonarlint4netbeans.issue.DefaultIssueTestImpl;
+import com.github.philippefichet.sonarlint4netbeans.junit.jupiter.extension.SonarLintLookupMockedExtension;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -32,6 +34,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.sonarsource.sonarlint.core.client.api.common.analysis.Issue;
 import org.sonarsource.sonarlint.core.commons.IssueSeverity;
+import org.sonarsource.sonarlint.core.commons.Language;
 import org.sonarsource.sonarlint.core.commons.RuleType;
 
 /**
@@ -56,6 +59,7 @@ public class SonarLintEngineImplWebPluginTest {
                 SonarLintEngineTestConfiguration.builder()
                 .description("sonarlin-example.php with rule php:S101 but without php:S1105 to check php plugin")
                 .requirePlugin("web")
+                .enabledLanguages(Language.HTML)
                 .includeRules("Web:BoldAndItalicTagsCheck", "Web:S5254")
                 .addClientInputFile(new File("./src/test/resources/sonarlint-example.html"))
                 .build(),

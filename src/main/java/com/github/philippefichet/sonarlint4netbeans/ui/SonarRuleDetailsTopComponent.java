@@ -149,6 +149,7 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
     
     private SonarRuleDetailsPanel getOrCreateAndAddSonarRuleDetailsPanelFromProject(Project project)
     {
+        // TODO to be adapted to display what is possible in the case of remote scope
         Project searchedProject = SonarLintDataManagerUtils.getProjectForAnalyse(sonarLintDataManager, project);
         for (Component component : tabs.getComponents()) {
             if (component instanceof SonarRuleDetailsPanel) {
@@ -159,11 +160,11 @@ public final class SonarRuleDetailsTopComponent extends TopComponent {
                 }
             }
         }
-        
+
         SonarRuleDetailsPanel sonarRuleDetailsPanel = new SonarRuleDetailsPanel(sonarLintEngine, searchedProject);
-        
+
         String title = 
-            sonarLintDataManager.getPreferencesScope(project) == SonarLintProjectPreferenceScope.PROJECT
+            sonarLintDataManager.getPreferencesScope(project) != SonarLintProjectPreferenceScope.GLOBAL
             ? ProjectUtils.getInformation(searchedProject).getDisplayName()
             : org.openide.util.NbBundle.getMessage(SonarRuleDetailsTopComponent.class, "SonarRuleDetailsTopComponent.globalSettingsProject");
 

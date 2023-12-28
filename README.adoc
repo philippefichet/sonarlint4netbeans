@@ -1,5 +1,7 @@
-:toc:
+:toc: left
 :toclevels: 5
+:sectnums: 8
+:icons: font
 
 = sonarlint4netbeans
 
@@ -25,8 +27,13 @@ It requests netbeans in version 13.0 or higher and Java in version 11 or higher.
 - Enable or disabled test rules on test files
 - Severity icons
 - Partial Support on C/C++ project (show xref:README-CFamily.adoc[README-CFamily])
+- SonarCloud/SonarQube support
 
 == Release 2.x to 3.x
+
+== SonarCloud
+
+Branch analysis must be https://docs.sonarsource.com/sonarcloud/enriching/branch-analysis-setup/#sonarlint[correctly configured] to be fully functional, otherwise only analysis on the main branch will be performed.
 
 === Plugins
 

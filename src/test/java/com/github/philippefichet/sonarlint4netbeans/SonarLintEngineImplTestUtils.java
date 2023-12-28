@@ -19,6 +19,7 @@
  */
 package com.github.philippefichet.sonarlint4netbeans;
 
+import com.github.philippefichet.sonarlint4netbeans.issue.DefaultIssueTestImpl;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ public final class SonarLintEngineImplTestUtils {
 
     public static void analyzeTesting(SonarLintEngineTestConfiguration testConfiguration, List<Issue> expectedIssue) throws BackingStoreException, IOException
     {
-        SonarLintEngineImpl sonarLintEngine = new SonarLintEngineImpl();
+        SonarLintEngineImpl sonarLintEngine = new SonarLintEngineImpl(testConfiguration.getEnabledLanguages());
         sonarLintEngine.waitingInitialization();
         if (testConfiguration.isRequireNodeJS()) {
             SonarLintTestUtils.installNodeJS();

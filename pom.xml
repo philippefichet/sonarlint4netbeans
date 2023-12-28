@@ -85,28 +85,15 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.2</version>
                 <configuration>
-                    <systemProperties>
-                        <property>
-                            <name>java.util.logging.config.file</name>
-                            <value>./src/test/resources/logging.properties</value>
-                        </property>
-                        <property>
-                            <name>file.encoding</name>
-                            <value>UTF-8</value>
-                        </property>
-                        <property>
-                            <name>junit.jupiter.extensions.autodetection.enabled</name>
-                            <value>true</value>
-                        </property>
-                        <property>
-                            <name>hasNodeJSRuntime</name>
-                            <value>${hasNodeJSRuntime}</value>
-                        </property>
-                        <property>
-                            <name>sonarlint4netbeans.test.skip.javascript</name>
-                            <value>${sonarlint4netbeans.test.skip.javascript}</value>
-                        </property>
-                    </systemProperties>
+                    <systemPropertyVariables>
+                        <java.util.logging.config.file>./src/test/resources/logging.properties</java.util.logging.config.file>
+                        <file.encoding>UTF-8</file.encoding>
+                        <junit.jupiter.extensions.autodetection.enabled>true</junit.jupiter.extensions.autodetection.enabled>
+                        <hasNodeJSRuntime>${hasNodeJSRuntime}</hasNodeJSRuntime>
+                        <sonarlint4netbeans.test.skip.javascript>${sonarlint4netbeans.test.skip.javascript}</sonarlint4netbeans.test.skip.javascript>
+                        <!-- For test with real sonarcloud calls -->
+                        <sonarlint4netbeans.test.remote.project-maven1.token>${sonarlint4netbeans.test.remote.project-maven1.token}</sonarlint4netbeans.test.remote.project-maven1.token>
+                    </systemPropertyVariables>
                     <!-- https://maven.apache.org/surefire/maven-surefire-plugin/examples/junit-platform.html#surefire-extensions-and-reports-configuration-for-displayname -->
                     <!-- Surefire Extensions and Reports Configuration for @DisplayName -->
                     <statelessTestsetReporter implementation="org.apache.maven.plugin.surefire.extensions.junit5.JUnit5Xml30StatelessReporter">
@@ -270,6 +257,22 @@
             <artifactId>sonarlint-core</artifactId>
             <version>9.3.1.74774</version>
         </dependency>
+        <!-- to connected engine -->
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
+            <version>1.8.20</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${org.slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-jdk14</artifactId>
+            <version>${org.slf4j.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.sonarsource.javascript</groupId>
             <artifactId>nodejs-utils</artifactId>
@@ -328,6 +331,11 @@
         <dependency>
             <groupId>org.netbeans.api</groupId>
             <artifactId>org-netbeans-modules-projectapi</artifactId>
+            <version>${org.netbeans.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-projectuiapi-base</artifactId>
             <version>${org.netbeans.version}</version>
         </dependency>
         <dependency>
@@ -421,6 +429,11 @@
             <version>${org.netbeans.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.netbeans.api</groupId>
+            <artifactId>org-netbeans-modules-keyring</artifactId>
+            <version>${org.netbeans.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>${junit-jupiter.version}</version>
@@ -458,12 +471,6 @@
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${org.slf4j.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <version>${org.slf4j.version}</version>
             <scope>test</scope>
@@ -483,5 +490,8 @@
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
         <!-- For most test result detail -->
         <surefire.reportFormat>plain</surefire.reportFormat>
+        <sonarlint4netbeans.test.remote.project-maven1.token>
+            ${env.SONARLINT4NETBEANS_TEST_REMOTE_PROJECT_MAVEN1_TOKEN}
+        </sonarlint4netbeans.test.remote.project-maven1.token>
     </properties>
 </project>

@@ -25,5 +25,7 @@ package com.github.philippefichet.sonarlint4netbeans.project;
  */
 public enum SonarLintProjectPreferenceScope {
     PROJECT,
-    GLOBAL;
+    GLOBAL,
+    REMOTE,
+    ;
 }

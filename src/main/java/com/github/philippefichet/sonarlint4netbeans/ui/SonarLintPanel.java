@@ -22,6 +22,7 @@ package com.github.philippefichet.sonarlint4netbeans.ui;
 import com.github.philippefichet.sonarlint4netbeans.SonarLintEngine;
 import com.github.philippefichet.sonarlint4netbeans.SonarLintOptions;
 import com.github.philippefichet.sonarlint4netbeans.SonarLintUtils;
+import com.github.philippefichet.sonarlint4netbeans.remote.ui.SonarLintSonarCloudPanel;
 import java.awt.BorderLayout;
 import java.util.HashMap;
 import java.util.Map;
@@ -112,6 +113,9 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         }
         if ("Plugins".equals(category)) {
             initPluginsPanel(engine);
+        }
+        if ("Remote".equals(category)) {
+            initSonarLintRemotePanel();
         }
         optionPanel.revalidate();
         optionPanel.repaint();
@@ -208,6 +212,11 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         );
     }
 
+    private void initSonarLintRemotePanel() {
+        optionPanel.removeAll();
+        optionPanel.add(new SonarLintSonarCloudPanel());
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -230,7 +239,7 @@ public final class SonarLintPanel extends javax.swing.JPanel {
         categoriesPanel.setPreferredSize(new java.awt.Dimension(100, 100));
 
         categoriesList.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Options", "Rules", "Analyzers", "Properties", "Plugins" };
+            String[] strings = { "Options", "Rules", "Analyzers", "Properties", "Plugins", "Remote" };
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });

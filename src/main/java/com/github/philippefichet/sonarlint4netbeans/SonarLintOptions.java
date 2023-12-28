@@ -41,6 +41,7 @@ public class SonarLintOptions {
     public FileObject getSonarLintDetailsStyle() throws IOException
     {
         if (stylesheet == null) {
+            // java:S2095 detected only in remote issue
             OutputStream createAndOpen = getFileSystem().getRoot().createAndOpen("sonar-rule-details-style.css");
             byte[] byteArray = getPreferences().getByteArray("options.stylesheet", null);
             if (byteArray == null || byteArray.length == 0) {

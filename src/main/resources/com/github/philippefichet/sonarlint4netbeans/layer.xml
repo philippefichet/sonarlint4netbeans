@@ -83,6 +83,30 @@
                   url="nbresloc:/com/github/philippefichet/sonarlint4netbeans/sonarlint-blocker-annotation.xml">
                 <attr name="requireProject" boolvalue="false"/>
             </file>
+            <file name="SonarCloud"
+                  url="nbresloc:/com/github/philippefichet/sonarlint4netbeans/sonarcloud-annotation.xml">
+                <attr name="requireProject" boolvalue="false"/>
+            </file>
+            <file name="SonarCloudInfo"
+                  url="nbresloc:/com/github/philippefichet/sonarlint4netbeans/sonarcloud-info-annotation.xml">
+                <attr name="requireProject" boolvalue="false"/>
+            </file>
+            <file name="SonarCloudMinor"
+                  url="nbresloc:/com/github/philippefichet/sonarlint4netbeans/sonarcloud-minor-annotation.xml">
+                <attr name="requireProject" boolvalue="false"/>
+            </file>
+            <file name="SonarCloudMajor"
+                  url="nbresloc:/com/github/philippefichet/sonarlint4netbeans/sonarcloud-major-annotation.xml">
+                <attr name="requireProject" boolvalue="false"/>
+            </file>
+            <file name="SonarCloudCritical"
+                  url="nbresloc:/com/github/philippefichet/sonarlint4netbeans/sonarcloud-critical-annotation.xml">
+                <attr name="requireProject" boolvalue="false"/>
+            </file>
+            <file name="SonarCloudBlocker"
+                  url="nbresloc:/com/github/philippefichet/sonarlint4netbeans/sonarcloud-blocker-annotation.xml">
+                <attr name="requireProject" boolvalue="false"/>
+            </file>
         </folder>
     </folder>
     <folder name="TaskList">
@@ -96,6 +120,7 @@
                 <attr name="iconKey" stringvalue="ICON_sonarlint"/>
                 <attr name="position" intvalue="150"/>
             </file>
+            <!-- SonarLint -->
             <file name="sonarlint-info.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.spi.tasklist.Task.createGroup"/>
                 <attr name="localizingBundle" stringvalue="com.github.philippefichet.sonarlint4netbeans.Bundle"/>
@@ -139,6 +164,52 @@
                 <attr name="diplayNameKey" stringvalue="LBL_sonarlint_group_blocker"/>
                 <attr name="descriptionKey" stringvalue="HINT_sonarlint_group_blocker"/>
                 <attr name="iconKey" stringvalue="ICON_sonarlint_blocker"/>
+                <attr name="position" intvalue="150"/>
+            </file>
+            <!-- SonarCloud -->
+            <file name="sonarcloud-info.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.spi.tasklist.Task.createGroup"/>
+                <attr name="localizingBundle" stringvalue="com.github.philippefichet.sonarlint4netbeans.Bundle"/>
+                <attr name="groupName" stringvalue="nb-sonarcloud-info"/>
+                <attr name="diplayNameKey" stringvalue="LBL_sonarcloud_group_info"/>
+                <attr name="descriptionKey" stringvalue="HINT_sonarcloud_group_info"/>
+                <attr name="iconKey" stringvalue="ICON_sonarcloud_info"/>
+                <attr name="position" intvalue="150"/>
+            </file>
+            <file name="sonarcloud-minor.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.spi.tasklist.Task.createGroup"/>
+                <attr name="localizingBundle" stringvalue="com.github.philippefichet.sonarlint4netbeans.Bundle"/>
+                <attr name="groupName" stringvalue="nb-sonarcloud-minor"/>
+                <attr name="diplayNameKey" stringvalue="LBL_sonarcloud_group_minor"/>
+                <attr name="descriptionKey" stringvalue="HINT_sonarcloud_group_minor"/>
+                <attr name="iconKey" stringvalue="ICON_sonarcloud_minor"/>
+                <attr name="position" intvalue="150"/>
+            </file>
+            <file name="sonarcloud-major.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.spi.tasklist.Task.createGroup"/>
+                <attr name="localizingBundle" stringvalue="com.github.philippefichet.sonarlint4netbeans.Bundle"/>
+                <attr name="groupName" stringvalue="nb-sonarcloud-major"/>
+                <attr name="diplayNameKey" stringvalue="LBL_sonarcloud_group_major"/>
+                <attr name="descriptionKey" stringvalue="HINT_sonarcloud_group_major"/>
+                <attr name="iconKey" stringvalue="ICON_sonarcloud_major"/>
+                <attr name="position" intvalue="150"/>
+            </file>
+            <file name="sonarcloud-critical.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.spi.tasklist.Task.createGroup"/>
+                <attr name="localizingBundle" stringvalue="com.github.philippefichet.sonarlint4netbeans.Bundle"/>
+                <attr name="groupName" stringvalue="nb-sonarcloud-critical"/>
+                <attr name="diplayNameKey" stringvalue="LBL_sonarcloud_group_critical"/>
+                <attr name="descriptionKey" stringvalue="HINT_sonarcloud_group_critical"/>
+                <attr name="iconKey" stringvalue="ICON_sonarcloud_critical"/>
+                <attr name="position" intvalue="150"/>
+            </file>
+            <file name="sonarcloud-blocker.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.spi.tasklist.Task.createGroup"/>
+                <attr name="localizingBundle" stringvalue="com.github.philippefichet.sonarlint4netbeans.Bundle"/>
+                <attr name="groupName" stringvalue="nb-sonarcloud-blocker"/>
+                <attr name="diplayNameKey" stringvalue="LBL_sonarcloud_group_blocker"/>
+                <attr name="descriptionKey" stringvalue="HINT_sonarcloud_group_blocker"/>
+                <attr name="iconKey" stringvalue="ICON_sonarcloud_blocker"/>
                 <attr name="position" intvalue="150"/>
             </file>
         </folder>

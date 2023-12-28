@@ -21,9 +21,16 @@ package com.github.philippefichet.sonarlint4netbeans.project.ui;
 
 import com.github.philippefichet.sonarlint4netbeans.SonarLintDataManager;
 import com.github.philippefichet.sonarlint4netbeans.project.SonarLintProjectPreferenceScope;
+import com.github.philippefichet.sonarlint4netbeans.remote.SonarLintRemoteEngine;
+import com.github.philippefichet.sonarlint4netbeans.remote.configuration.SonarLintRemoteConnectionConfigurationManagement;
+import com.github.philippefichet.sonarlint4netbeans.remote.configuration.SonarLintRemoteProjectConfiguration;
+import com.github.philippefichet.sonarlint4netbeans.remote.synchronization.TaskWrapper;
 import java.awt.event.ActionEvent;
+import java.util.Optional;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.awt.Mnemonics;
+import org.openide.util.Lookup;
 
 /**
  * Panel to choose project scope for rule settings
@@ -34,6 +41,7 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 })
 public class SonarLintProjectCustomizerPanel extends javax.swing.JPanel {
     private SonarLintProjectPreferenceScope scope = SonarLintProjectPreferenceScope.GLOBAL;
+    private final Project project;
 
     /**
      * Creates new form SonarLintProjectCustomizerPanel
@@ -43,18 +51,43 @@ public class SonarLintProjectCustomizerPanel extends javax.swing.JPanel {
      */
     public SonarLintProjectCustomizerPanel(SonarLintDataManager sonarLintDataManager, Project project, ProjectCustomizer.Category category) {
         initComponents();
+        this.project = project;
         SonarLintProjectPreferenceScope actualScope = sonarLintDataManager.getPreferencesScope(project);
         if (actualScope == SonarLintProjectPreferenceScope.PROJECT) {
             scopeProjectRadioButton.setSelected(true);
+            scope = SonarLintProjectPreferenceScope.PROJECT;
         }
-        category.setOkButtonListener((ActionEvent actionEvent) ->
-            sonarLintDataManager.setPreferencesScope(project, scope)
-        );
+        if (actualScope == SonarLintProjectPreferenceScope.GLOBAL) {
+            scopeGlobalRadioButton.setSelected(true);
+        }
+        if (actualScope == SonarLintProjectPreferenceScope.REMOTE) {
+            scope = SonarLintProjectPreferenceScope.REMOTE;
+            scopeRemoteRadioButton.setSelected(true);
+            scopeRemoteRadioButtonActionPerformed(null);
+            SonarLintRemoteProjectConfiguration projectConfiguration = SonarLintRemoteProjectConfiguration.fromProject(project);
+            connectionsComboBox.setSelectedItem(projectConfiguration.getConnectionId());
+            projectKeyTextField.setText(projectConfiguration.getProjectKey());
+            organisationTextField.setText(projectConfiguration.getOrganization());
+        }
+        category.setOkButtonListener((ActionEvent actionEvent) -> {
+            sonarLintDataManager.setPreferencesScope(project, scope);
+            if (scope == SonarLintProjectPreferenceScope.REMOTE) {
+                SonarLintRemoteProjectConfiguration.save(
+                    project,
+                    (String)connectionsComboBox.getSelectedItem(),
+                    projectKeyTextField.getText(),
+                    organisationTextField.getText()
+                );
+            }
+        });
         scopeGlobalRadioButton.addActionListener((ActionEvent actionEvent) ->
             scope = SonarLintProjectPreferenceScope.GLOBAL
         );
         scopeProjectRadioButton.addActionListener((ActionEvent actionEvent) ->
             scope = SonarLintProjectPreferenceScope.PROJECT
+        );
+        scopeRemoteRadioButton.addActionListener((ActionEvent actionEvent) ->
+            scope = SonarLintProjectPreferenceScope.REMOTE
         );
     }
 
@@ -69,30 +102,217 @@ public class SonarLintProjectCustomizerPanel extends javax.swing.JPanel {
 
         scopeRadioButtonGroup = new javax.swing.ButtonGroup();
         jPanel1 = new javax.swing.JPanel();
+        jPanel3 = new javax.swing.JPanel();
         scopeGlobalRadioButton = new javax.swing.JRadioButton();
         scopeProjectRadioButton = new javax.swing.JRadioButton();
+        scopeRemoteRadioButton = new javax.swing.JRadioButton();
+        remoteConfiguration = new javax.swing.JPanel();
+        jPanel4 = new javax.swing.JPanel();
+        warningLabel = new javax.swing.JLabel();
+        jPanel5 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        connectionsLabel = new javax.swing.JLabel();
+        connectionsComboBox = new javax.swing.JComboBox<>();
+        projectKeyLabel = new javax.swing.JLabel();
+        projectKeyTextField = new javax.swing.JTextField();
+        organisationLabel = new javax.swing.JLabel();
+        organisationTextField = new javax.swing.JTextField();
+        jPanel6 = new javax.swing.JPanel();
+        syncProject = new javax.swing.JButton();
 
         setLayout(new java.awt.BorderLayout());
 
-        jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.PAGE_AXIS));
+        jPanel1.setLayout(new java.awt.BorderLayout());
+
+        jPanel3.setLayout(new javax.swing.BoxLayout(jPanel3, javax.swing.BoxLayout.PAGE_AXIS));
 
         scopeRadioButtonGroup.add(scopeGlobalRadioButton);
         scopeGlobalRadioButton.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(scopeGlobalRadioButton, org.openide.util.NbBundle.getMessage(SonarLintProjectCustomizerPanel.class, "SonarLintProjectCustomizerPanel.scopeGlobalRadioButton.text")); // NOI18N
-        jPanel1.add(scopeGlobalRadioButton);
+        scopeGlobalRadioButton.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jPanel3.add(scopeGlobalRadioButton);
 
         scopeRadioButtonGroup.add(scopeProjectRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(scopeProjectRadioButton, org.openide.util.NbBundle.getMessage(SonarLintProjectCustomizerPanel.class, "SonarLintProjectCustomizerPanel.scopeProjectRadioButton.text")); // NOI18N
-        jPanel1.add(scopeProjectRadioButton);
+        jPanel3.add(scopeProjectRadioButton);
+
+        scopeRadioButtonGroup.add(scopeRemoteRadioButton);
+        org.openide.awt.Mnemonics.setLocalizedText(scopeRemoteRadioButton, org.openide.util.NbBundle.getMessage(SonarLintProjectCustomizerPanel.class, "SonarLintProjectCustomizerPanel.scopeRemoteRadioButton.text")); // NOI18N
+        scopeRemoteRadioButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                scopeRemoteRadioButtonActionPerformed(evt);
+            }
+        });
+        jPanel3.add(scopeRemoteRadioButton);
+
+        jPanel1.add(jPanel3, java.awt.BorderLayout.NORTH);
+
+        remoteConfiguration.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(SonarLintProjectCustomizerPanel.class, "SonarLintProjectCustomizerPanel.remoteConfiguration.border.title"))); // NOI18N
+        remoteConfiguration.setEnabled(false);
+        remoteConfiguration.setLayout(new java.awt.BorderLayout());
+
+        jPanel4.setLayout(new javax.swing.BoxLayout(jPanel4, javax.swing.BoxLayout.LINE_AXIS));
+
+        org.openide.awt.Mnemonics.setLocalizedText(warningLabel, org.openide.util.NbBundle.getMessage(SonarLintProjectCustomizerPanel.class, "SonarLintProjectCustomizerPanel.warningLabel.text")); // NOI18N
+        jPanel4.add(warningLabel);
+
+        remoteConfiguration.add(jPanel4, java.awt.BorderLayout.NORTH);
+
+        jPanel5.setLayout(new java.awt.BorderLayout());
+
+        jPanel2.setLayout(new java.awt.GridLayout(4, 0));
+
+        org.openide.awt.Mnemonics.setLocalizedText(connectionsLabel, org.openide.util.NbBundle.getMessage(SonarLintProjectCustomizerPanel.class, "SonarLintProjectCustomizerPanel.connectionsLabel.text")); // NOI18N
+        jPanel2.add(connectionsLabel);
+
+        jPanel2.add(connectionsComboBox);
+
+        org.openide.awt.Mnemonics.setLocalizedText(projectKeyLabel, org.openide.util.NbBundle.getMessage(SonarLintProjectCustomizerPanel.class, "SonarLintProjectCustomizerPanel.projectKeyLabel.text")); // NOI18N
+        jPanel2.add(projectKeyLabel);
+
+        projectKeyTextField.setText(org.openide.util.NbBundle.getMessage(SonarLintProjectCustomizerPanel.class, "SonarLintProjectCustomizerPanel.projectKeyTextField.text")); // NOI18N
+        jPanel2.add(projectKeyTextField);
+
+        org.openide.awt.Mnemonics.setLocalizedText(organisationLabel, org.openide.util.NbBundle.getMessage(SonarLintProjectCustomizerPanel.class, "SonarLintProjectCustomizerPanel.organisationLabel.text")); // NOI18N
+        jPanel2.add(organisationLabel);
+
+        organisationTextField.setText(org.openide.util.NbBundle.getMessage(SonarLintProjectCustomizerPanel.class, "SonarLintProjectCustomizerPanel.organisationTextField.text")); // NOI18N
+        jPanel2.add(organisationTextField);
+
+        jPanel5.add(jPanel2, java.awt.BorderLayout.NORTH);
+
+        org.openide.awt.Mnemonics.setLocalizedText(syncProject, org.openide.util.NbBundle.getMessage(SonarLintProjectCustomizerPanel.class, "SonarLintProjectCustomizerPanel.syncProject.text")); // NOI18N
+        syncProject.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                syncProjectActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
+        jPanel6.setLayout(jPanel6Layout);
+        jPanel6Layout.setHorizontalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel6Layout.createSequentialGroup()
+                .addContainerGap(150, Short.MAX_VALUE)
+                .addComponent(syncProject)
+                .addContainerGap(150, Short.MAX_VALUE))
+        );
+        jPanel6Layout.setVerticalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel6Layout.createSequentialGroup()
+                .addGap(5, 5, 5)
+                .addComponent(syncProject)
+                .addGap(50, 50, 50))
+        );
+
+        jPanel5.add(jPanel6, java.awt.BorderLayout.CENTER);
+
+        remoteConfiguration.add(jPanel5, java.awt.BorderLayout.CENTER);
+
+        jPanel1.add(remoteConfiguration, java.awt.BorderLayout.CENTER);
 
         add(jPanel1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void scopeRemoteRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeRemoteRadioButtonActionPerformed
+        boolean enabledRemoteConfiguration = scopeRemoteRadioButton.isSelected();
+        remoteConfiguration.setEnabled(enabledRemoteConfiguration);
+        connectionsLabel.setEnabled(enabledRemoteConfiguration);
+        connectionsComboBox.setEnabled(enabledRemoteConfiguration);
+        projectKeyLabel.setEnabled(enabledRemoteConfiguration);
+        projectKeyTextField.setEnabled(enabledRemoteConfiguration);
+        organisationLabel.setEnabled(enabledRemoteConfiguration);
+        organisationTextField.setEnabled(enabledRemoteConfiguration);
+        syncProject.setEnabled(enabledRemoteConfiguration);
+        if (enabledRemoteConfiguration) {
+            connectionsComboBox.removeAllItems();
+            SonarLintRemoteConnectionConfigurationManagement sonarLintRemoteConnectionConfigurationManagement = Lookup.getDefault().lookup(SonarLintRemoteConnectionConfigurationManagement.class);
+            sonarLintRemoteConnectionConfigurationManagement.getAllSonarLintConnectionConfigurations()
+                .forEach(c -> connectionsComboBox.addItem(c.getConnectionId()));
+        }
+    }//GEN-LAST:event_scopeRemoteRadioButtonActionPerformed
+
+    private void syncProjectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_syncProjectActionPerformed
+        String sonarLintRemoteConnectionId = (String)connectionsComboBox.getSelectedItem();
+        if (sonarLintRemoteConnectionId != null) {
+            SonarLintRemoteEngine sonarLintRemoteEngine = Lookup.getDefault().lookup(SonarLintRemoteEngine.class);
+            SonarLintRemoteProjectConfiguration projectConfiguration = SonarLintRemoteProjectConfiguration.fromProject(
+                project,
+                sonarLintRemoteConnectionId,
+                projectKeyTextField.getText(),
+                organisationTextField.getText()
+            );
+            Optional<TaskWrapper> launchedResyncTask = sonarLintRemoteEngine.getLaunchedResyncTask(projectConfiguration);
+            if (launchedResyncTask.isPresent() && launchedResyncTask.get().getTask().isFinished() == false) {
+                launchedResyncTask.get().getTask().addTaskListener(
+                    task -> 
+                    Mnemonics.setLocalizedText(syncProject, org.openide.util.NbBundle.getMessage(SonarLintProjectCustomizerPanel.class, "SonarLintProjectCustomizerPanel.syncProject.text"))
+                );
+                launchedResyncTask.get().getSonarLintRemoteSynchronizationTask().cancel();
+            } else {
+                TaskWrapper launchResyncTask = sonarLintRemoteEngine.launchResyncTask(projectConfiguration);
+                launchResyncTask.getTask().addTaskListener(
+                    task -> 
+                    Mnemonics.setLocalizedText(syncProject, org.openide.util.NbBundle.getMessage(SonarLintProjectCustomizerPanel.class, "SonarLintProjectCustomizerPanel.syncProject.text"))
+                );
+                Mnemonics.setLocalizedText(syncProject, org.openide.util.NbBundle.getMessage(SonarLintProjectCustomizerPanel.class, "SonarLintProjectCustomizerPanel.syncProject.textCancel")); // NOI18N
+            }
+//            
+//            Cancellable cancellable = currentRemoteSyncCancellable.get();
+//            if (cancellable != null) {
+//                cancellable.cancel();
+//            }
+//            if (currentRemoteSync != null && currentRemoteSync.isAlive()) {
+//                currentRemoteSync.interrupt();
+//                org.openide.awt.Mnemonics.setLocalizedText(syncProject, org.openide.util.NbBundle.getMessage(SonarLintProjectCustomizerPanel.class, "SonarLintProjectCustomizerPanel.syncProject.text")); // NOI18N
+//            } else {
+//                currentRemoteSync = new Thread(() -> {
+//                    currentRemoteSyncCancellable.set(
+//                        sonarLintRemoteEngine.sync(
+//                            projectConfiguration,
+//                            (Status status, String message, int progress) -> {
+//                                    SwingUtilities.invokeLater(() -> {
+//                                    progressSyncProject.setString(message);
+//                                    progressSyncProject.setIndeterminate(progress < 0);
+//                                    if (progress >= 0) {
+//                                        progressSyncProject.setValue(progress);
+//                                    }
+//                                    if (status == Status.FINISH) {
+//                                        org.openide.awt.Mnemonics.setLocalizedText(syncProject, org.openide.util.NbBundle.getMessage(SonarLintProjectCustomizerPanel.class, "SonarLintProjectCustomizerPanel.syncProject.text")); // NOI18N
+//
+//                                    }
+//                                });
+//                            }
+//                    )
+//                );
+//                    currentRemoteSyncCancellable.get().run();
+//                    });
+//                currentRemoteSync.start();
+//                org.openide.awt.Mnemonics.setLocalizedText(syncProject, org.openide.util.NbBundle.getMessage(SonarLintProjectCustomizerPanel.class, "SonarLintProjectCustomizerPanel.syncProject.textCancel")); // NOI18N
+//            }
+        }
+    }//GEN-LAST:event_syncProjectActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox<String> connectionsComboBox;
+    private javax.swing.JLabel connectionsLabel;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
+    private javax.swing.JLabel organisationLabel;
+    private javax.swing.JTextField organisationTextField;
+    private javax.swing.JLabel projectKeyLabel;
+    private javax.swing.JTextField projectKeyTextField;
+    private javax.swing.JPanel remoteConfiguration;
     private javax.swing.JRadioButton scopeGlobalRadioButton;
     private javax.swing.JRadioButton scopeProjectRadioButton;
     private javax.swing.ButtonGroup scopeRadioButtonGroup;
+    private javax.swing.JRadioButton scopeRemoteRadioButton;
+    private javax.swing.JButton syncProject;
+    private javax.swing.JLabel warningLabel;
     // End of variables declaration//GEN-END:variables
 }

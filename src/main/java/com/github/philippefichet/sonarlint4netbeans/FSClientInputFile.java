@@ -19,6 +19,7 @@
  */
 package com.github.philippefichet.sonarlint4netbeans;
 
+import com.github.philippefichet.sonarlint4netbeans.remote.SourceLineHashesComputer;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,6 +28,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import org.openide.util.Exceptions;
 import org.sonarsource.sonarlint.core.analysis.api.ClientInputFile;
 
 /**
@@ -41,6 +43,7 @@ public class FSClientInputFile implements ClientInputFile {
     private final Charset encoding;
     private final String content;
     private final List<ClientInputFileListener> clientInputFileURIEvents = new ArrayList<>();
+    private SourceLineHashesComputer sourceLineHashesComputer;
 
     public FSClientInputFile(String content, Path path, String relativePath, boolean isTest, Charset encoding) {
         this.content = content;
@@ -103,6 +106,21 @@ public class FSClientInputFile implements ClientInputFile {
                 clientInputFileURIEvent.consume(path.toUri());
             }
         }
+    }
+
+    public List<String> getLineHashes() {
+        if (sourceLineHashesComputer == null) {
+            try {
+                String[] split = contents().split("\n");
+                sourceLineHashesComputer = new SourceLineHashesComputer(split.length);
+                for (String line : split) {
+                    sourceLineHashesComputer.addLine(line);
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return sourceLineHashesComputer.getLineHashes();
     }
 
     @Override
